@@ -12,25 +12,21 @@ data class BsgClass(
     val body: BsgClassBody
 ) {
     fun toC(ctx: AstContext) {
-
         val classMeta = ctx.astMetadata.getClass(name)
         val classScope = ClassScope(classMeta)
 
-
-        // Complete
         // Header basics
         ctx.hFile.appendLine("#ifndef BSG_H__$name")
         ctx.hFile.appendLine("#define BSG_H__$name")
 
         // Includes
-        // TODO: include any supertypes.
-        // TODO: Include the header that defines NULL -- in cFile.
+        ctx.hFile.appendLine("#include \"bsg_preamble.h\"")
+        ctx.cFile.appendLine("#include \"${name}.h\"")
 
-        // Complete
         // Type number
-        ctx.hFile.appendLine("const BSG_AnyType BSG_Type__$name = ${ctx.getNextTypeNum()}l;")
+        ctx.hFile.appendLine("const BSG_AnyType BSG_Type__$name;")
+        ctx.cFile.appendLine("const BSG_AnyType BSG_Type__$name = ${ctx.getNextTypeNum()}l;")
 
-//        // Complete
         // Instance - Struct containing fields
         ctx.hFile.appendLine("struct BSG_Instance__$name {")
         ctx.hFile.appendLine("struct BSG_AnyBaseInstance* baseInstance;")
@@ -40,7 +36,6 @@ data class BsgClass(
         }
         ctx.hFile.appendLine("};")
 
-        // Complete
         // BaseInstance - Struct containing sub-object instances, including self.
         ctx.hFile.appendLine("struct BSG_BaseInstance__$name {")
         ctx.hFile.appendLine("struct BSG_AnyBaseClass* baseClass;")
@@ -50,7 +45,6 @@ data class BsgClass(
         }
         ctx.hFile.appendLine("};")
 
-        // Complete
         // Class - Struct containing pointers to non-overridden methods.
         ctx.hFile.appendLine("struct BSG_Class__$name {")
         ctx.astMetadata.getClass(name)
@@ -66,7 +60,6 @@ data class BsgClass(
             }
         ctx.hFile.appendLine("};")
 
-        // Complete
         // BaseMethods - Functions used in BaseClass. "cast", "retain", and "release" methods.
         // Cast
         ctx.hFile.appendLine("struct BSG_AnyInstance* BSG_BaseMethod__${name}_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);")
@@ -111,7 +104,6 @@ data class BsgClass(
         ctx.cFile.appendLine("}")
         ctx.cFile.appendLine("}")
 
-        // Complete
         // BaseClassSingleton - Implementation of BaseClass struct, containing  of cast method.
         ctx.hFile.appendLine("extern struct BSG_BaseClass BSG_BaseClassSingleton__$name;")
         ctx.cFile.appendLine("struct BSG_BaseClass BSG_BaseClassSingleton__$name = {")
@@ -120,7 +112,6 @@ data class BsgClass(
         ctx.cFile.appendLine(".release = &BSG_BaseMethod__${name}_release,")
         ctx.cFile.appendLine("};")
 
-        // Complete
         // Methods - Functions for each method defined. Used in ClassSingleton.
         body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }.forEach { method ->
             val methodMeta = ctx.astMetadata.getClass(name).methods[method.name]!!
@@ -147,7 +138,6 @@ data class BsgClass(
             ctx.hFile.appendLine("};")
         }
 
-        // Complete
         // ClassSingletons - Implementation of Classes (all implemented) with method pointers set.
         getSuperClassesAndSelf(ctx).forEach { superCls ->
             ctx.hFile.appendLine("extern struct BSG_Class__${superCls.name} BSG_ClassSingleton__${name}_${superCls.name};")
@@ -158,7 +148,6 @@ data class BsgClass(
             ctx.cFile.appendLine("};")
         }
 
-        // Complete
         // Constructor - Function for creating class.
         ctx.hFile.appendLine("extern struct BSG_Instance__$name* BSG_Constructor__$name();")
         ctx.cFile.appendLine("struct BSG_Instance__$name* BSG_Constructor__$name() {")
@@ -185,7 +174,6 @@ data class BsgClass(
         ctx.cFile.appendLine("return &baseInstance->$name;")
         ctx.cFile.appendLine("}")
 
-        // Complete
         // Footer
         ctx.hFile.appendLine("#endif")
     }

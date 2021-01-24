@@ -48,7 +48,3 @@ sealed class BsgType {
 
     abstract fun getCTypeInternal(builder: StringBuilder)
 }
-
-fun main() {
-    println("Hello")
-}

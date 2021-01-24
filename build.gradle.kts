@@ -13,6 +13,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test-junit"))
     implementation("org.jparsec:jparsec:3.1")
+    implementation("net.sourceforge.argparse4j:argparse4j:0.8.1")
 }
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "1.8"
