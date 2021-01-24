@@ -1,0 +1,29 @@
+class Example {
+    var sampleField: Int;
+
+    getSamplePlusTwenty(): Int {
+        var x: Int;
+        x = 10;
+        return this.sampleField + x * 2;
+    }
+
+    doubleSample(): Int {
+        return this.sampleField * 2;
+    }
+
+    doubleDoubleSample(): Int {
+        return doubleSample() + doubleSample();
+    }
+
+    addXToSample(x: Int): Int {
+        return x + sampleField;
+    }
+
+    getSampleField(): Int {
+        return sampleField;
+    }
+
+    setSampleField(sampleField: Int): Void {
+        this.sampleField = sampleField;
+    }
+}

@@ -1,0 +1,20 @@
+class PuppyDog {
+    var example: Example;
+
+    setExample(example: Example): Void {
+        this.example = example;
+    }
+
+    getExample(): Example {
+        return example;
+    }
+
+    makeNewExample(): Example {
+        return new Example();
+    }
+
+    makeNewButDontReturnExample(): Void {
+        var ex: Example;
+        ex = new Example();
+    }
+}
