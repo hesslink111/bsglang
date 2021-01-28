@@ -194,9 +194,8 @@ data class BsgClass(
                 ?.methods?.firstOrNull { "Main" in it.attributes }
                 ?.let { mainMethod ->
                     assert(mainMethod.arguments.isEmpty()) { "Arguments must be empty in main method." }
-                    ctx.mainCFileMain.appendLine("struct BSG_Instance__$name* mainInstance = BSG_Constructor__$name();")
-                    ctx.mainCFileMain.appendLine("mainInstance->baseInstance->baseClass->retain(mainInstance->baseInstance);")
-                    ctx.mainCFileMain.appendLine("mainInstance->class->${mainMethod.name}(mainInstance);")
+                    ctx.mainCFileMain.appendLine("$name->baseInstance->baseClass->retain($name->baseInstance);")
+                    ctx.mainCFileMain.appendLine("$name->class->${mainMethod.name}($name);")
                 }
 
         // Footer
