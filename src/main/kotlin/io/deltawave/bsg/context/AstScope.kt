@@ -2,11 +2,18 @@ package io.deltawave.bsg.context
 
 import io.deltawave.bsg.ast.type.BsgType
 
-class ClassScope(private val classMetadata: ClassMetadata) {
+class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>) {
+    private val globalVars = globalVarList.associateBy { it.varName }
+    fun getVarMeta(varName: String): VarMetadata.LocalOrGlobal {
+        return globalVars[varName] ?: error("Could not find var in scope: $varName")
+    }
+}
+
+class ClassScope(private val globalScope: GlobalScope, private val classMetadata: ClassMetadata) {
     fun getVarMeta(varName: String): VarMetadata {
         return classMetadata.fields[varName]
                 ?: classMetadata.methods[varName]
-                ?: error("Could not find var in scope: $varName")
+                ?: globalScope.getVarMeta(varName)
     }
 
     fun methodScope(methodMeta: VarMetadata.Method): MethodScope {
@@ -33,7 +40,7 @@ class MethodScope(private val parentScope: ClassScope, val thisVarType: BsgType.
         currentScope[varName] = if(fieldOf != null) {
             VarMetadata.Field(varName, type, fieldOf)
         } else {
-            VarMetadata.Local(varName, type)
+            VarMetadata.LocalOrGlobal(varName, type)
         }
     }
 

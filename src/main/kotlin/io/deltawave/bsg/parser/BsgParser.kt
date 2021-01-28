@@ -2,9 +2,7 @@ package io.deltawave.bsg.parser
 
 import io.deltawave.bsg.ast.*
 import io.deltawave.bsg.util.Either
-import io.deltawave.bsg.util.Either.Left
 import io.deltawave.bsg.util.either
-import io.deltawave.bsg.util.orNull
 import org.jparsec.Parser
 import org.jparsec.Parsers.sequence
 
@@ -24,6 +22,7 @@ object BsgParser {
     }
 
     val method: Parser<BsgMethod> = sequence(
+        AttributesParser.attributes.followedBy(Tokens.ws).optional(emptySet()),
         Tokens.identifier
             .followedBy(Tokens.ws)
             .followedBy(Tokens.openParen)
@@ -46,7 +45,7 @@ object BsgParser {
             .followedBy(Tokens.ws),
         methodBody
             .followedBy(Tokens.ws),
-    ) { methodName, arguments, returnType, methodBody -> BsgMethod(methodName, arguments, returnType, methodBody) }
+    ) { attrs, methodName, arguments, returnType, methodBody -> BsgMethod(methodName, arguments, returnType, methodBody, attrs) }
 
     val classBody: Parser<BsgClassBody> = sequence(
         Tokens.openCurly.followedBy(Tokens.ws),
@@ -58,6 +57,7 @@ object BsgParser {
         fieldOrMethods.filterIsInstance<Either.Right<BsgMethod>>().map { it.value }) }
 
     val classParser: Parser<BsgClass> = sequence(
+        AttributesParser.attributes.followedBy(Tokens.ws).optional(emptySet()),
         Tokens.classKeyword.followedBy(Tokens.ws), // Class
         Tokens.identifier.followedBy(Tokens.ws), // ClassName
         sequence(
@@ -71,10 +71,13 @@ object BsgParser {
             .followedBy(Tokens.ws)
                 .asOptional().map { it.orElseGet { emptyList() } },
         classBody
-    ) { _, className, superClasses, body -> BsgClass(className, superClasses, body) }
+    ) { attrs, _, className, superClasses, body -> BsgClass(className, superClasses, body, attrs) }
 
-    val file = sequence(
+    val file: Parser<BsgFile> = sequence(
         Tokens.ws,
+        StatementParser.headerStatement
+                .followedBy(Tokens.ws).many()
+                .followedBy(Tokens.ws),
         classParser.followedBy(Tokens.ws)
-    ) { _, c -> c }
+    ) { _, hSources, cls -> BsgFile(hSources, cls) }
 }

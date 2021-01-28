@@ -1,0 +1,9 @@
+import IO;
+
+[Singleton]
+class MainClass {
+    [Main]
+    main(): Void {
+        IO.println("Hello, world!");
+    }
+}

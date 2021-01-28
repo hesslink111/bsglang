@@ -11,23 +11,27 @@ object Tokens {
     val ws: Parser<Void> = Patterns.many(CharPredicates.IS_WHITESPACE).toScanner("whitespace")
 
     val classKeyword: Parser<Void> = Scanners.string("class")
-    val extendsKeyword: Parser<Void> = Scanners.string("extends")
-    val implementsKeyword: Parser<Void> = Scanners.string("implements")
     val returnKeyword: Parser<Void> = Scanners.string("return")
     val newKeyword: Parser<Void> = Scanners.string("new")
+    val importKeyword: Parser<Void> = Scanners.string("import")
 
     val varKeyword: Parser<Var> = Scanners.string("var").map { Var }
+
+    val cKeyword: Parser<Void> = Scanners.string("c")
+    val hKeyword: Parser<Void> = Scanners.string("h")
 
     val char: Parser<Void> = Scanners.string("Char")
     val bool: Parser<Void> = Scanners.string("Bool")
     val byte: Parser<Void> = Scanners.string("Byte")
     val short: Parser<Void> = Scanners.string("Short")
     val int: Parser<Void> = Scanners.string("Int")
-    val long: Parser<Void> = Scanners.string("Void")
+    val long: Parser<Void> = Scanners.string("Long")
     val ubyte: Parser<Void> = Scanners.string("UByte")
     val ushort: Parser<Void> = Scanners.string("UShort")
     val uint: Parser<Void> = Scanners.string("UInt")
     val ulong: Parser<Void> = Scanners.string("ULong")
+    val void: Parser<Void> = Scanners.string("Void")
+    val opaque: Parser<Void> = Scanners.string("Opaque")
 
     val openCurly: Parser<Void> = Scanners.string("{")
     val closeCurly: Parser<Void> = Scanners.string("}")
@@ -52,4 +56,6 @@ object Tokens {
     val identifier: Parser<String> = Scanners.IDENTIFIER
     val integerLiteral: Parser<String> = Scanners.INTEGER
     val floatLiteral: Parser<String> = Scanners.INTEGER.followedBy(dot).followedBy(Scanners.INTEGER)
+    val stringLiteral: Parser<String> = Scanners.DOUBLE_QUOTE_STRING
+            .map { it.drop(1).dropLast(1) }
 }

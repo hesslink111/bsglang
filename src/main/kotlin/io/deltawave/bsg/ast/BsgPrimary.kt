@@ -59,6 +59,25 @@ sealed class BsgPrimary {
         }
     }
 
+    data class StringLiteral(val stringContents: String): BsgPrimary() {
+        override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+            val resultName = ctx.getUniqueVarName()
+            val strVar = ctx.getUniqueVarName()
+            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__String();")
+            ctx.cFile.appendLine("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
+            ctx.cFile.appendLine("char* $strVar = \"$stringContents\";")
+            ctx.cFile.appendLine("$resultName->cStr = (BSG_Opaque) malloc(${stringContents.length + 1} * sizeof(char));")
+            ctx.cFile.appendLine("strcpy((char*)$resultName->cStr, $strVar);")
+            val resultLifetime = ctx.getUniqueLifetime()
+            scope.storeLifetimeAssociation(resultName, resultLifetime, getType(ctx, scope))
+            return VarLifetime(resultName, resultLifetime)
+        }
+
+        override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+            return BsgType.Class("String")
+        }
+    }
+
     data class FloatLiteral(val float: String): BsgPrimary() {
         override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()

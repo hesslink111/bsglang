@@ -1,19 +1,17 @@
 package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.context.AstContext
-import io.deltawave.bsg.context.ClassMetadata
-import io.deltawave.bsg.context.ClassScope
-import io.deltawave.bsg.context.VarMetadata
+import io.deltawave.bsg.context.*
 
 data class BsgClass(
     val name: String,
     val directSuperClasses: List<String>,
-    val body: BsgClassBody
+    val body: BsgClassBody,
+    val attributes: Set<String>
 ) {
-    fun toC(ctx: AstContext) {
+    fun toC(ctx: AstContext, globalScope: GlobalScope, hSources: List<BsgHeaderStatement>) {
         val classMeta = ctx.astMetadata.getClass(name)
-        val classScope = ClassScope(classMeta)
+        val classScope = ClassScope(globalScope, classMeta)
 
         // Header basics
         ctx.hFile.appendLine("#ifndef BSG_H__$name")
@@ -22,6 +20,7 @@ data class BsgClass(
         // Includes
         ctx.hFile.appendLine("#include \"bsg_preamble.h\"")
         ctx.cFile.appendLine("#include \"${name}.h\"")
+        hSources.forEach { it.toC(ctx) }
 
         // Type number
         ctx.hFile.appendLine("const BSG_AnyType BSG_Type__$name;")
@@ -84,6 +83,13 @@ data class BsgClass(
         ctx.cFile.appendLine("base->refCount--;")
         ctx.cFile.appendLine("if(base->refCount <= 0) {")
         ctx.cFile.appendLine("struct BSG_BaseInstance__$name* b = (struct BSG_BaseInstance__$name*)base;")
+        body.methods.firstOrNull { it.name == "deinit" }?.let { deinitMethod ->
+            assert(deinitMethod.arguments.isEmpty()) { "deinit method must take no arguments." }
+            ctx.cFile.appendLine("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release.
+            ctx.cFile.appendLine("struct BSG_Instance__$name* this = &b->$name;")
+            ctx.cFile.appendLine("this->class->deinit(this);")
+            ctx.cFile.appendLine("base->refCount--;") // End hack.
+        }
         getSuperClassesAndSelf(ctx).forEach { cls ->
             cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
                 val fieldAccess = "b->${cls.name}.${field.varName}"
@@ -173,6 +179,25 @@ data class BsgClass(
         }
         ctx.cFile.appendLine("return &baseInstance->$name;")
         ctx.cFile.appendLine("}")
+
+        // Global variables
+        if("Singleton" in attributes) {
+            ctx.hFile.appendLine("extern struct BSG_Instance__$name* $name;")
+            ctx.cFile.appendLine("struct BSG_Instance__$name* $name = NULL;")
+            ctx.mainHFile.appendLine("#include \"$name.h\"")
+            ctx.mainCFileInit.appendLine("$name = BSG_Constructor__$name();")
+            ctx.mainCFileInit.appendLine("$name->baseInstance->baseClass->retain($name->baseInstance);")
+        }
+
+        // Main
+        body.takeIf { "Singleton" in attributes }
+                ?.methods?.firstOrNull { "Main" in it.attributes }
+                ?.let { mainMethod ->
+                    assert(mainMethod.arguments.isEmpty()) { "Arguments must be empty in main method." }
+                    ctx.mainCFileMain.appendLine("struct BSG_Instance__$name* mainInstance = BSG_Constructor__$name();")
+                    ctx.mainCFileMain.appendLine("mainInstance->baseInstance->baseClass->retain(mainInstance->baseInstance);")
+                    ctx.mainCFileMain.appendLine("mainInstance->class->${mainMethod.name}(mainInstance);")
+                }
 
         // Footer
         ctx.hFile.appendLine("#endif")

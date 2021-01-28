@@ -1,0 +1,10 @@
+h "#include <string.h>";
+
+class String {
+    var length: Int;
+    var cStr: Opaque;
+
+    deinit(): Void {
+        c "free(this->cStr);";
+    }
+}

@@ -1,9 +1,9 @@
 package io.deltawave.bsg.parser
 
 import io.deltawave.bsg.ast.BsgField
+import io.deltawave.bsg.ast.BsgHeaderStatement
 import io.deltawave.bsg.ast.BsgStatement
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.util.either
 import org.jparsec.Parser
 import org.jparsec.Parsers.or
 import org.jparsec.Parsers.sequence
@@ -38,6 +38,11 @@ object StatementParser {
 
     val declarationStatement: Parser<BsgStatement> = field.map { BsgStatement.Declaration(it) }
 
+    val expressionStatement: Parser<BsgStatement> = ExpressionParser.expression
+            .followedBy(Tokens.ws)
+            .followedBy(Tokens.semicolon)
+            .map { BsgStatement.Expression(it) }
+
     val assignmentStatement: Parser<BsgStatement> = sequence(
         ExpressionParser.lValueExpression
             .followedBy(Tokens.ws)
@@ -48,10 +53,38 @@ object StatementParser {
             .followedBy(Tokens.semicolon)
     ) { lValue, rValue -> BsgStatement.Assignment(lValue, rValue) }
 
+    val cSourceStatement: Parser<BsgStatement> = sequence(
+        Tokens.cKeyword.followedBy(Tokens.ws),
+        Tokens.stringLiteral
+                .followedBy(Tokens.ws)
+                .followedBy(Tokens.semicolon)
+    ) { _, str -> BsgStatement.CSource(str) }
+
+    val hSourceStatement: Parser<BsgHeaderStatement> = sequence(
+            Tokens.hKeyword.followedBy(Tokens.ws),
+            Tokens.stringLiteral
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.semicolon)
+    ) { _, str -> BsgHeaderStatement.HSource(str) }
+
+    val importStatement: Parser<BsgHeaderStatement> = sequence(
+            Tokens.importKeyword.followedBy(Tokens.ws),
+            Tokens.identifier
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.semicolon)
+    ) { _, name -> BsgHeaderStatement.Import(name) }
+
+    val headerStatement: Parser<BsgHeaderStatement> = or(
+            hSourceStatement,
+            importStatement
+    )
+
     val statement: Parser<BsgStatement> = or(
+        cSourceStatement,
         emptyReturnStatement,
         returnStatement,
         declarationStatement,
+        expressionStatement,
         assignmentStatement
     )
 }

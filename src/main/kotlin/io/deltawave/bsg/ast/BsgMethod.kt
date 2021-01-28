@@ -8,7 +8,8 @@ data class BsgMethod(
         val name: String,
         val arguments: List<Pair<String, BsgType>>,
         val returnType: BsgType,
-        val body: BsgMethodBody
+        val body: BsgMethodBody,
+        val attributes: Set<String>
 ) {
     fun toC(ctx: AstContext, scope: MethodScope) {
         // Add all class/method args to lifetimes.

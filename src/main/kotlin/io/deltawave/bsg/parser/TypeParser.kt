@@ -18,6 +18,8 @@ object TypeParser {
         Tokens.ushort,
         Tokens.uint,
         Tokens.ulong,
+        Tokens.void,
+        Tokens.opaque
     ).source().map { BsgType.Primitive(it) }
 
     val classType: Parser<BsgType> = Tokens.identifier.map { BsgType.Class(it) }

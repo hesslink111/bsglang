@@ -143,10 +143,16 @@ sealed class BsgPostfix {
 
             val cls = ctx.astMetadata.getClass(expType.name)
             val resultVar = methodOrFieldAccessToC(ctx, cls, expVar, identifier)
-            return if(getType(ctx, scope, exp).let { it is BsgType.Class || it is BsgType.Method }) {
+            val resultType = getType(ctx, scope, exp)
+            return if(resultType is BsgType.Class) {
                 val resultLifetime = ctx.getUniqueLifetime()
                 scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
                 ctx.cFile.appendLine("$resultVar->baseInstance->baseClass->retain($resultVar->baseInstance);")
+                VarLifetime(resultVar, resultLifetime)
+            } else if(resultType is BsgType.Method) {
+                val resultLifetime = ctx.getUniqueLifetime()
+                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
+                ctx.cFile.appendLine("$resultVar.this->baseInstance->baseClass->retain($resultVar.this->baseInstance);")
                 VarLifetime(resultVar, resultLifetime)
             } else {
                 VarLifetime(resultVar, null)
@@ -182,8 +188,13 @@ sealed class BsgPostfix {
 
             val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")
             val resultVar = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
-            return if(getType(ctx, scope, exp).let { it is BsgType.Class || it is BsgType.Method }) {
+            val resultType = getType(ctx, scope, exp)
+            if(resultType is BsgType.Primitive && resultType.name == "Void") {
+                ctx.cFile.appendLine("$expVar.method($argVars);")
+            } else {
+                ctx.cFile.appendLine("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
+            }
+            return if(resultType.let { it is BsgType.Class || it is BsgType.Method }) {
                 val resultLifetime = ctx.getUniqueLifetime()
                 scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
                 VarLifetime(resultVar, resultLifetime)

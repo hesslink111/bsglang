@@ -3,6 +3,9 @@ package io.deltawave.bsg.context
 data class AstContext(
     val hFile: StringBuilder,
     val cFile: StringBuilder,
+    val mainHFile: StringBuilder,
+    val mainCFileInit: StringBuilder,
+    val mainCFileMain: StringBuilder,
     val astMetadata: AstMetadata
 ) {
     private var nextTypeNum: Int = 0

@@ -31,14 +31,15 @@ data class AstMetadata(private val classes: List<BsgClass>) {
                 }
                 val methodOf = BsgType.Class(methodOfClass.name)
                 val methodType = BsgType.Method(method.arguments.map { (_, type) -> type }, method.returnType)
-                VarMetadata.Method(method.name, methodType, methodOf = methodOf, method.arguments)
+                VarMetadata.Method(method.name, methodType, methodOf = methodOf, method.arguments, method.attributes)
             }
             val superClassTypes = superClasses.map { superClass -> BsgType.Class(superClass.name) }
             ClassMetadata(
                     BsgType.Class(name),
                     fieldVars.associateBy { it.varName },
                     methodVars.associateBy { it.varName },
-                    superClassTypes.toSet()
+                    superClassTypes.toSet(),
+                    cls.attributes
             )
         }
     }

@@ -1,0 +1,9 @@
+h "#include <stdio.h>";
+import String;
+
+[Singleton]
+class IO {
+    println(message: String): Void {
+        c "puts(message->cStr);";
+    }
+}

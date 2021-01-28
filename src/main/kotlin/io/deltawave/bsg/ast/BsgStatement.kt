@@ -1,12 +1,15 @@
 package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.context.AstContext
-import io.deltawave.bsg.context.LValueMetadata
-import io.deltawave.bsg.context.MethodScope
-import io.deltawave.bsg.context.VarMetadata
+import io.deltawave.bsg.context.*
 
 sealed class BsgStatement {
+    data class Expression(val exp: BsgExpression): BsgStatement() {
+        override fun toC(ctx: AstContext, scope: MethodScope) {
+            exp.toC(ctx, scope)
+        }
+    }
+
     data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
         override fun toC(ctx: AstContext, scope: MethodScope) {
             assert(lValue.getType(ctx, scope) == rValue.getType(ctx, scope))
@@ -103,5 +106,27 @@ sealed class BsgStatement {
         }
     }
 
+    class CSource(val c: String): BsgStatement() {
+        override fun toC(ctx: AstContext, scope: MethodScope) {
+            ctx.cFile.appendLine(c)
+        }
+    }
+
     abstract fun toC(ctx: AstContext, scope: MethodScope)
+}
+
+sealed class BsgHeaderStatement {
+    class HSource(val c: String): BsgHeaderStatement() {
+        override fun toC(ctx: AstContext) {
+            ctx.hFile.appendLine(c)
+        }
+    }
+
+    class Import(val name: String): BsgHeaderStatement() {
+        override fun toC(ctx: AstContext) {
+            ctx.hFile.appendLine("#include \"$name.h\"")
+        }
+    }
+
+    abstract fun toC(ctx: AstContext)
 }
