@@ -1,4 +1,4 @@
-### BSG Language Compiler.
+### BSG Language & Compiler
 
 Example usage:
 ```
