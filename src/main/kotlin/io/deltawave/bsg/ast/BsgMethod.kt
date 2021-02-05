@@ -2,7 +2,7 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.AstContext
-import io.deltawave.bsg.context.MethodScope
+import io.deltawave.bsg.context.BlockScope
 
 data class BsgMethod(
         val name: String,
@@ -11,10 +11,10 @@ data class BsgMethod(
         val body: BsgMethodBody,
         val attributes: Set<String>
 ) {
-    fun toC(ctx: AstContext, scope: MethodScope) {
+    fun toC(ctx: AstContext, scope: BlockScope) {
         // Add all class/method args to lifetimes.
         scope.storeLifetimeAssociation("this", ctx.getUniqueLifetime(), scope.getThisType())
-        arguments.filter { (_, argType) -> argType is BsgType.Class || argType is BsgType.Method }
+        arguments.filter { (_, argType) -> argType is BsgType.Class || argType is BsgType.Method || argType is BsgType.Any }
                 .forEach { (argName, argType) ->
             scope.storeLifetimeAssociation(argName, ctx.getUniqueLifetime(), argType)
         }

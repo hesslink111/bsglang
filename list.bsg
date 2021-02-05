@@ -1,0 +1,88 @@
+h "#include <string.h>";
+import IO;
+import StringExtensions;
+
+class List {
+    var arr: Opaque;
+    var size: Int;
+    var capacity: Int;
+
+    init(): Void {
+        c "this->arr = malloc(10 * sizeof(struct BSG_Any));";
+        this.capacity = 10;
+        this.size = 0;
+    }
+
+    add(value: Any): Void {
+        if(this.size + 1 > this.capacity) {
+            var newCapacity: Int;
+            newCapacity = this.capacity + this.capacity / 2;
+            c "this->arr = realloc(this->arr, newCapacity * sizeof(struct BSG_Any));";
+            capacity = newCapacity;
+        }
+
+        c "((struct BSG_Any*) this->arr)[this->size] = value;";
+        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
+        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+        c "}";
+
+        size = size + 1;
+    }
+
+    set(index: Int, value: Any): Void {
+        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
+        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+        c "}";
+
+        c "struct BSG_Any prevVal = ((struct BSG_Any*)this->arr)[index];";
+        c "if(!prevVal.isPrimitive && prevVal.instanceOrPrimitive.instance) {";
+        c "prevVal.instanceOrPrimitive.instance->baseInstance->baseClass->release(prevVal.instanceOrPrimitive.instance->baseInstance);";
+        c "}";
+
+        c "((struct BSG_Any*)this->arr)[index] = value;";
+    }
+
+    get(index: Int): Any {
+        var value: Any;
+        c "value = ((struct BSG_Any*)this->arr)[index];";
+        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
+        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+        c "}";
+        return value;
+    }
+
+    remove(index: Int): Void {
+        var value: Any;
+        c "value = ((struct BSG_Any*)this->arr)[index];";
+        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
+        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->release(value.instanceOrPrimitive.instance->baseInstance);";
+        c "}";
+        var numToCopy: Int;
+        numToCopy = size - index;
+        c "memcpy(((struct BSG_Any*)this->arr) + index, ((struct BSG_Any*)this->arr) + index + 1, numToCopy * sizeof(struct BSG_Any));";
+        size = size - 1;
+    }
+
+    clear(): Void {
+        deinit();
+        init();
+    }
+
+    releaseAll(): Void {
+        var i: Int;
+        i = 0;
+        while(i < size) {
+            i = i + 1;
+            var value: Any;
+            c "value = ((struct BSG_Any*)this->arr)[i];";
+            c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
+            c "value.instanceOrPrimitive.instance->baseInstance->baseClass->release(value.instanceOrPrimitive.instance->baseInstance);";
+            c "}";
+        }
+    }
+
+    deinit(): Void {
+        releaseAll();
+        c "free(this->arr);";
+    }
+}

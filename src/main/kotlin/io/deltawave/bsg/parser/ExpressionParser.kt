@@ -25,19 +25,31 @@ object ExpressionParser {
         accesses.fold(term) { term, postfix -> BsgPostfixExpression(term, postfix) }
     } }
 
+    fun cast(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+            access(exp).followedBy(Tokens.ws),
+            sequence(
+                    Tokens.asKeyword.followedBy(Tokens.ws),
+                    TypeParser.type
+            ).asOptional()
+    ) { acc, t -> if(t.isPresent) {
+        BsgExpression.Cast(acc, t.get())
+    } else {
+        acc
+    } }
+
     fun mul(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
-        access(exp).followedBy(Tokens.ws),
+        cast(exp).followedBy(Tokens.ws),
         sequence(
             Tokens.ws,
             or(Tokens.mul, Tokens.div).source().followedBy(Tokens.ws),
-            exp,
+            cast(exp),
         ) { _, op, exp -> Pair(op, exp) }
             .asOptional()
-    ) { acc, addExp ->
+    ) { ca, addExp ->
         if(addExp.isPresent)
-            BsgExpression.Mul(acc, addExp.get().first, addExp.get().second)
+            BsgExpression.Mul(ca, addExp.get().first, addExp.get().second)
         else
-            acc
+            ca
     }
 
     fun add(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
@@ -46,7 +58,7 @@ object ExpressionParser {
         sequence(
             Tokens.ws,
             or(Tokens.plus, Tokens.minus).source().followedBy(Tokens.ws),
-            exp,
+            mul(exp)
         ) { _, op, exp -> Pair(op, exp) }
             .asOptional()
     ) { mul, addExp ->
@@ -56,9 +68,19 @@ object ExpressionParser {
             mul
     }
 
+    fun comparison(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+        add(exp).followedBy(Tokens.ws),
+        sequence(
+            Tokens.ws,
+            or(Tokens.gt, Tokens.gte, Tokens.eqeq, Tokens.lt, Tokens.lte).source().followedBy(Tokens.ws),
+            add(exp)
+        ) { _, op, e -> Pair(op, e) }
+            .asOptional()
+    ) { a, compExp -> compExp.map<BsgExpression>{ (op, e) -> BsgExpression.Comparison(a, op, e) }.orElseGet { a } }
+
     val expression: Parser<BsgExpression> by lazy {
         val expRef = Parser.newReference<BsgExpression>()
-        val exp = add(expRef.lazy())
+        val exp = comparison(expRef.lazy())
         expRef.set(exp)
         exp
     }

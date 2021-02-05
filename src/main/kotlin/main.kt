@@ -8,6 +8,7 @@ import io.deltawave.bsg.util.Uncrustify
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import java.io.File
+import java.lang.Exception
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -48,7 +49,14 @@ fun main(args: Array<String>) {
 //    val outputExecutableFile: File? = namespace.getString("output")?.let { File(it) }
 
     // Parse.
-    val parsedFiles = fileNames.map { BsgParser.file.parse(File(it).readText()) }
+    val parsedFiles = fileNames.map {
+        try {
+            BsgParser.file.parse(File(it).readText())
+        } catch(ex: Exception) {
+            println("Error while parsing $it")
+            throw ex
+        }
+    }
 
     val globalScope = GlobalScope(parsedFiles.map { it.cls }.flatMap {
         if("Singleton" in it.attributes) {

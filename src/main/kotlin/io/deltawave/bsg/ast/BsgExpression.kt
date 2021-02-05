@@ -4,8 +4,49 @@ import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
 
 sealed class BsgExpression {
-    data class Add(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+    data class Cast(val exp: BsgExpression, val toType: BsgType): BsgExpression() {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+            val (expVar, expLifetime) = exp.toC(ctx, scope)
+            val expType = exp.getType(ctx, scope)
+            val resultVar = ctx.getUniqueVarName()
+
+            if(expType is BsgType.Class && toType is BsgType.Class) {
+                // Class cast.
+                ctx.cFile.appendLine("${toType.getCType()} $resultVar = $expVar->baseInstance->baseClass->cast($expVar->baseInstance, BSG_Type__${toType.name});")
+            } else if(expType is BsgType.Class && toType is BsgType.Any) {
+                // Class to Any.
+                ctx.cFile.appendLine("struct BSG_Any $resultVar;")
+                ctx.cFile.appendLine("$resultVar.isPrimitive = 0;")
+                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.instance = (struct BSG_AnyInstance*) $expVar;")
+            } else if(expType is BsgType.Method) {
+                error("Method casting not yet supported.")
+            } else if(expType is BsgType.Primitive && toType is BsgType.Any) {
+                // Primitive to Any.
+                ctx.cFile.appendLine("struct BSG_Any $resultVar;")
+                ctx.cFile.appendLine("$resultVar.isPrimitive = 1;")
+                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.primitive.${expType.name}Value = $expVar;")
+            } else if(expType is BsgType.Primitive && toType is BsgType.Primitive) {
+                // Primitive to Primitive
+                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar;")
+            } else if(expType is BsgType.Any && toType is BsgType.Primitive) {
+                // Any to Primitive
+                ctx.cFile.appendLine("${toType.getCType()} $resultVar = $expVar.instanceOrPrimitive.primitive.${toType.name}Value;")
+            } else if(expType is BsgType.Any && toType is BsgType.Class) {
+                // Any to Class
+                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar.instanceOrPrimitive.instance;")
+            } else {
+                error("Cast not supported: from $expType to $toType")
+            }
+            return VarLifetime(resultVar, expLifetime)
+        }
+
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+            return toType
+        }
+    }
+
+    data class Comparison(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
@@ -13,14 +54,29 @@ sealed class BsgExpression {
             return VarLifetime(u, null) // Only used for primitives.
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+            assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
+            return e1.getType(ctx, scope)
+        }
+    }
+
+    data class Add(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+            val (var1, _) = e1.toC(ctx, scope)
+            val (var2, _) = e2.toC(ctx, scope)
+            val u = ctx.getUniqueVarName()
+            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            return VarLifetime(u, null) // Only used for primitives.
+        }
+
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
             assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
             return e1.getType(ctx, scope)
         }
     }
 
     data class Mul(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
@@ -28,36 +84,36 @@ sealed class BsgExpression {
             return VarLifetime(u, null) // Only used for primitives.
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
             assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
             return e1.getType(ctx, scope)
         }
     }
 
     data class Parenthetical(val exp: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
             return exp.toC(ctx, scope)
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope): BsgType = exp.getType(ctx, scope)
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType = exp.getType(ctx, scope)
     }
 
     data class Primary(val primary: BsgPrimary): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
             return primary.toC(ctx, scope)
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope) = primary.getType(ctx, scope)
+        override fun getType(ctx: AstContext, scope: BlockScope) = primary.getType(ctx, scope)
     }
 
     // Writes to c file and returns variable name.
-    abstract fun toC(ctx: AstContext, scope: MethodScope): VarLifetime
-    abstract fun getType(ctx: AstContext, scope: MethodScope): BsgType
+    abstract fun toC(ctx: AstContext, scope: BlockScope): VarLifetime
+    abstract fun getType(ctx: AstContext, scope: BlockScope): BsgType
 }
 
 sealed class BsgLValueExpression {
     data class Access(val term: BsgExpression, val identifier: String): BsgLValueExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): LValueMetadata {
+        override fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata {
             val (termVar, _) = term.toC(ctx, scope) // Don't care what the lifetime was.
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
@@ -66,7 +122,7 @@ sealed class BsgLValueExpression {
             return LValueMetadata.Field(resultVar)
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
             val termType = term.getType(ctx, scope) as? BsgType.Class ?: error("Cannot perform field access on non-class type.")
             val fieldMeta = ctx.astMetadata.getClass(termType.name).fields[identifier] ?: error("Cannot find field $identifier in type $termType.")
             return fieldMeta.type
@@ -74,7 +130,7 @@ sealed class BsgLValueExpression {
     }
 
     data class Var(val identifier: String): BsgLValueExpression() {
-        override fun toC(ctx: AstContext, scope: MethodScope): LValueMetadata {
+        override fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata {
             val varMeta = scope.getVarMeta(identifier)
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
@@ -90,24 +146,24 @@ sealed class BsgLValueExpression {
             return LValueMetadata.Local(resultVar, identifier)
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
             return scope.getVarMeta(identifier).type
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: MethodScope): LValueMetadata
-    abstract fun getType(ctx: AstContext, scope: MethodScope): BsgType
+    abstract fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata
+    abstract fun getType(ctx: AstContext, scope: BlockScope): BsgType
 }
 
 data class BsgPostfixExpression(
     val exp: BsgExpression,
     val postfix: BsgPostfix
 ): BsgExpression() {
-    override fun toC(ctx: AstContext, scope: MethodScope): VarLifetime {
+    override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
         return postfix.toC(ctx, scope, exp)
     }
 
-    override fun getType(ctx: AstContext, scope: MethodScope): BsgType {
+    override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
         return postfix.getType(ctx, scope, exp)
     }
 }
@@ -137,7 +193,7 @@ fun methodOrFieldAccessToC(ctx: AstContext, cls: ClassMetadata, instanceVar: Str
 
 sealed class BsgPostfix {
     data class Dot(val identifier: String): BsgPostfix() {
-        override fun toC(ctx: AstContext, scope: MethodScope, exp: BsgExpression): VarLifetime {
+        override fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val (expVar, _) = exp.toC(ctx, scope)
             val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
 
@@ -154,12 +210,19 @@ sealed class BsgPostfix {
                 scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
                 ctx.cFile.appendLine("$resultVar.this->baseInstance->baseClass->retain($resultVar.this->baseInstance);")
                 VarLifetime(resultVar, resultLifetime)
+            } else if(resultType is BsgType.Any) {
+                val resultLifetime = ctx.getUniqueLifetime()
+                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
+                ctx.cFile.appendLine("if(!$resultVar.isPrimitive) {")
+                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.instance->baseInstance->baseClass->retain($resultVar.instanceOrPrimitive.instance->baseInstance);")
+                ctx.cFile.appendLine("}")
+                VarLifetime(resultVar, resultLifetime)
             } else {
                 VarLifetime(resultVar, null)
             }
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope, exp: BsgExpression): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {
             val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
             return ctx.astMetadata.getClass(expType.name).let {
                 it.methods[identifier]?.type ?: it.fields[identifier]?.type ?: error("No field or method in $expType named $identifier")
@@ -169,7 +232,7 @@ sealed class BsgPostfix {
 
     // Need to have the object whose method is being called.
     data class Call(val args: List<BsgExpression>): BsgPostfix() {
-        override fun toC(ctx: AstContext, scope: MethodScope, exp: BsgExpression): VarLifetime {
+        override fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val (expVar, _) = exp.toC(ctx, scope) // Method Fat Pointer
 
             val argVarNames = args.map { it.toC(ctx, scope).varName }
@@ -183,6 +246,10 @@ sealed class BsgPostfix {
                     ctx.cFile.appendLine("$argName->baseInstance->baseClass->retain($argName->baseInstance);")
                 } else if(argType is BsgType.Method) {
                     ctx.cFile.appendLine("$argName.this->baseInstance->baseClass->retain($argName.this->baseInstance);")
+                } else if(argType is BsgType.Any) {
+                    ctx.cFile.appendLine("if(!$argName.isPrimitive) {")
+                    ctx.cFile.appendLine("$argName.instanceOrPrimitive.instance->baseInstance->baseClass->retain($argName.instanceOrPrimitive.instance->baseInstance);")
+                    ctx.cFile.appendLine("}")
                 }
             }
 
@@ -194,7 +261,7 @@ sealed class BsgPostfix {
             } else {
                 ctx.cFile.appendLine("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
             }
-            return if(resultType.let { it is BsgType.Class || it is BsgType.Method }) {
+            return if(resultType.let { it is BsgType.Class || it is BsgType.Method || it is BsgType.Any }) {
                 val resultLifetime = ctx.getUniqueLifetime()
                 scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
                 VarLifetime(resultVar, resultLifetime)
@@ -203,12 +270,12 @@ sealed class BsgPostfix {
             }
         }
 
-        override fun getType(ctx: AstContext, scope: MethodScope, exp: BsgExpression): BsgType {
+        override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {
             val expType = exp.getType(ctx, scope) as? BsgType.Method ?: error("Can only perform call on method type.")
             return expType.returnType
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: MethodScope, exp: BsgExpression): VarLifetime
-    abstract fun getType(ctx: AstContext, scope: MethodScope, exp: BsgExpression): BsgType
+    abstract fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime
+    abstract fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType
 }

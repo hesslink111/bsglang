@@ -2,37 +2,39 @@ package io.deltawave.bsg.context
 
 import io.deltawave.bsg.ast.type.BsgType
 
-class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>) {
+interface Scope {
+    fun getVarMeta(varName: String): VarMetadata
+}
+
+class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>): Scope {
     private val globalVars = globalVarList.associateBy { it.varName }
-    fun getVarMeta(varName: String): VarMetadata.LocalOrGlobal {
+    override fun getVarMeta(varName: String): VarMetadata.LocalOrGlobal {
         return globalVars[varName] ?: error("Could not find var in scope: $varName")
     }
 }
 
-class ClassScope(private val globalScope: GlobalScope, private val classMetadata: ClassMetadata) {
-    fun getVarMeta(varName: String): VarMetadata {
+class ClassScope(private val globalScope: GlobalScope, private val classMetadata: ClassMetadata): Scope {
+    override fun getVarMeta(varName: String): VarMetadata {
         return classMetadata.fields[varName]
                 ?: classMetadata.methods[varName]
                 ?: globalScope.getVarMeta(varName)
     }
 
-    fun methodScope(methodMeta: VarMetadata.Method): MethodScope {
-        return MethodScope(parentScope = this, thisVarType = classMetadata.type, methodMeta = methodMeta)
+    fun methodScope(methodMeta: VarMetadata.Method): BlockScope {
+        val methodScope = BlockScope(parentScope = this, thisVarType = classMetadata.type)
+        methodScope.addVarMeta("this", classMetadata.type, fieldOf = null)
+        methodMeta.args.forEach { (name, type) ->
+            methodScope.addVarMeta(name, type, fieldOf = null)
+        }
+        return methodScope
     }
 }
 
-class MethodScope(private val parentScope: ClassScope, val thisVarType: BsgType.Class, methodMeta: VarMetadata.Method) {
+class BlockScope(private val parentScope: Scope, val thisVarType: BsgType.Class): Scope {
     private val currentScope = mutableMapOf<String, VarMetadata>()
     private val lifetimesByVar = mutableMapOf<String, Pair<Lifetime, BsgType>>()
 
-    init {
-        addVarMeta("this", thisVarType, fieldOf = null)
-        methodMeta.args.forEach { (name, type) ->
-            addVarMeta(name, type, fieldOf = null)
-        }
-    }
-
-    fun getVarMeta(varName: String): VarMetadata {
+    override fun getVarMeta(varName: String): VarMetadata {
         return currentScope[varName] ?: parentScope.getVarMeta(varName)
     }
 
@@ -66,5 +68,9 @@ class MethodScope(private val parentScope: ClassScope, val thisVarType: BsgType.
         return lifetimesByVar.entries
                 .first { (_, lt) -> lt.first == lifetime }
                 .let { (varName, lt) -> Pair(varName, lt.second) }
+    }
+
+    fun subScope(): BlockScope {
+        return BlockScope(this, thisVarType)
     }
 }

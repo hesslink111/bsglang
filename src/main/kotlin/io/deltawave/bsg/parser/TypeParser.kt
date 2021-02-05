@@ -7,6 +7,8 @@ import org.jparsec.Parsers.or
 import org.jparsec.Parsers.sequence
 
 object TypeParser {
+    val anyType: Parser<BsgType> = Tokens.any.map { BsgType.Any }
+
     val primitiveType: Parser<BsgType> = or(
         Tokens.char,
         Tokens.bool,
@@ -47,6 +49,7 @@ object TypeParser {
     val type: Parser<BsgType> by lazy {
         val tRef = Parser.newReference<BsgType>()
         val t = or(
+            anyType,
             primitiveType,
             classType,
             methodType(tRef.lazy())

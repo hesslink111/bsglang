@@ -1,6 +1,12 @@
 package io.deltawave.bsg.ast.type
 
 sealed class BsgType {
+    object Any: BsgType() {
+        override fun getCTypeInternal(builder: StringBuilder) {
+            builder.append("struct BSG_Any")
+        }
+    }
+
     data class Class(val name: String): BsgType() {
         override fun getCTypeInternal(builder: StringBuilder) {
             builder.append("struct BSG_Instance__$name*")

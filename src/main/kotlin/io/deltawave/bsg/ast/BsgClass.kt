@@ -85,7 +85,7 @@ data class BsgClass(
         ctx.cFile.appendLine("struct BSG_BaseInstance__$name* b = (struct BSG_BaseInstance__$name*)base;")
         body.methods.firstOrNull { it.name == "deinit" }?.let { deinitMethod ->
             assert(deinitMethod.arguments.isEmpty()) { "deinit method must take no arguments." }
-            ctx.cFile.appendLine("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release.
+            ctx.cFile.appendLine("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release. // TODO: No hacks.
             ctx.cFile.appendLine("struct BSG_Instance__$name* this = &b->$name;")
             ctx.cFile.appendLine("this->class->deinit(this);")
             ctx.cFile.appendLine("base->refCount--;") // End hack.
@@ -101,6 +101,10 @@ data class BsgClass(
                 } else if(field.type is BsgType.Method) {
                     ctx.cFile.appendLine("if($fieldAccess.this) {")
                     ctx.cFile.appendLine("$fieldAccess.this->baseInstance->baseClass->release($fieldAccess.this->baseInstance);")
+                    ctx.cFile.appendLine("}")
+                } else if(field.type is BsgType.Any) {
+                    ctx.cFile.appendLine("if(!$fieldAccess.isPrimitive && $fieldAccess.instanceOrPrimitive.instance) {")
+                    ctx.cFile.appendLine("$fieldAccess.instanceOrPrimitive.instance->baseInstance->baseClass->release($fieldAccess.instanceOrPrimitive.instance->baseInstance);")
                     ctx.cFile.appendLine("}")
                 }
 
@@ -174,8 +178,19 @@ data class BsgClass(
                     ctx.cFile.appendLine("$fieldAccess = NULL;")
                 } else if(field.type is BsgType.Method) {
                     ctx.cFile.appendLine("$fieldAccess.this = NULL;")
+                } else if(field.type is BsgType.Any) {
+                    ctx.cFile.appendLine("$fieldAccess.isPrimitive = 0;")
+                    ctx.cFile.appendLine("$fieldAccess.instanceOrPrimitive.instance = NULL;")
                 }
             }
+        }
+        // Call init method.
+        body.methods.firstOrNull { it.name == "init" }?.let { deinitMethod ->
+            assert(deinitMethod.arguments.isEmpty()) { "init method must take no arguments." }
+            ctx.cFile.appendLine("baseInstance->refCount += 2;") // Hack to make sure init doesn't try to release. // TODO: No hacks.
+            ctx.cFile.appendLine("struct BSG_Instance__$name* this = &baseInstance->$name;")
+            ctx.cFile.appendLine("this->class->init(this);")
+            ctx.cFile.appendLine("baseInstance->refCount--;") // End hack.
         }
         ctx.cFile.appendLine("return &baseInstance->$name;")
         ctx.cFile.appendLine("}")

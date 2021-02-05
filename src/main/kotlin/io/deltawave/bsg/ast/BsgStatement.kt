@@ -4,14 +4,50 @@ import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
 
 sealed class BsgStatement {
+    data class If(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
+            val (conditionVarName, _) = condition.toC(ctx, scope)
+            val conditionType = condition.getType(ctx, scope)
+            assert(conditionType is BsgType.Primitive && conditionType.name == "Bool")
+
+            ctx.cFile.appendLine("if($conditionVarName) {") // Begin if
+            val subScope = scope.subScope()
+
+            statements.forEach { it.toC(ctx, subScope) }
+
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimes())
+            ctx.cFile.appendLine("}") // End if
+        }
+    }
+
+    data class While(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
+            ctx.cFile.appendLine("while(true) {") // Begin while
+            val subScope = scope.subScope()
+
+            val (conditionVarName, _) = condition.toC(ctx, subScope)
+            val conditionType = condition.getType(ctx, subScope)
+            assert(conditionType is BsgType.Primitive && conditionType.name == "Bool")
+
+            ctx.cFile.appendLine("if(!$conditionVarName) {")
+            ctx.cFile.appendLine("break;")
+            ctx.cFile.appendLine("}")
+
+            statements.forEach { it.toC(ctx, subScope) }
+
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimes())
+            ctx.cFile.appendLine("}") // End while
+        }
+    }
+
     data class Expression(val exp: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
             exp.toC(ctx, scope)
         }
     }
 
     data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
             assert(lValue.getType(ctx, scope) == rValue.getType(ctx, scope))
 
             val lValueMeta = lValue.toC(ctx, scope)
@@ -34,8 +70,17 @@ sealed class BsgStatement {
                         ctx.cFile.appendLine("$rValueVar.this->baseInstance->baseClass->retain($rValueVar.this->baseInstance);")
                         ctx.cFile.appendLine("}")
                         // Release lValue if not null.
-                        ctx.cFile.appendLine("if(*${lValueMeta.varName}) {")
+                        ctx.cFile.appendLine("if((*${lValueMeta.varName}).this) {")
                         ctx.cFile.appendLine("(*${lValueMeta.varName}).this->baseInstance->baseClass->release((*${lValueMeta.varName}).this->baseInstance);")
+                        ctx.cFile.appendLine("}")
+                    } else if (rValue.getType(ctx, scope) is BsgType.Any) {
+                        // Retain rValue if not null.
+                        ctx.cFile.appendLine("if(!$rValueVar.isPrimitive && $rValueVar.instanceOrPrimitive.instance) {")
+                        ctx.cFile.appendLine("$rValueVar.this->baseInstance->baseClass->retain($rValueVar.this->baseInstance);")
+                        ctx.cFile.appendLine("}")
+                        // Release lValue if not null.
+                        ctx.cFile.appendLine("if((*${lValueMeta.varName}).isPrimitive && (*${lValueMeta.varName}).instanceOrPrimitive.instance) {")
+                        ctx.cFile.appendLine("(*${lValueMeta.varName}).instanceOrPrimitive.instance->baseInstance->baseClass->release((*${lValueMeta.varName}).instanceOrPrimitive.instance->baseInstance);")
                         ctx.cFile.appendLine("}")
                     }
                 }
@@ -52,67 +97,50 @@ sealed class BsgStatement {
         }
     }
     data class Declaration(val field: BsgField): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
             ctx.cFile.appendLine("${field.type.getCType()} ${field.name};")
-            if(field.type is BsgType.Class) {
-                ctx.cFile.appendLine("${field.name};")
-            } else if(field.type is BsgType.Method) {
-                ctx.cFile.appendLine("${field.name}.this;")
-            }
             scope.addVarMeta(field.name, field.type, fieldOf = null)
         }
     }
 
     data class Return(val expression: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
             val (expVar, expLifetime) = expression.toC(ctx, scope)
-            // Release anything constructed.
-            (scope.getAllLifetimes() - listOfNotNull(expLifetime))
-                    .map { scope.getVarForLifetime(it) }
-                    .forEach { (varName, varType) ->
-                        if(varType is BsgType.Class) {
-                            ctx.cFile.appendLine("if($varName) {")
-                            ctx.cFile.appendLine("$varName->baseInstance->baseClass->release($varName->baseInstance);")
-                            ctx.cFile.appendLine("}")
-                        } else if(varType is BsgType.Method) {
-                            ctx.cFile.appendLine("if($varName.this) {")
-                            ctx.cFile.appendLine("$varName.this->baseInstance->baseClass->release($varName.this->baseInstance);")
-                            ctx.cFile.appendLine("}")
-                        }
-                    }
-
+            releaseLifetimes(ctx, scope, scope.getAllLifetimes() - listOfNotNull(expLifetime))
             ctx.cFile.appendLine("return $expVar;")
         }
     }
 
-    object EmptyReturn: BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
-            // Release anything constructed.
-            (scope.getAllLifetimes())
-                    .map { scope.getVarForLifetime(it) }
-                    .forEach { (varName, varType) ->
-                        if(varType is BsgType.Class) {
-                            ctx.cFile.appendLine("if($varName) {")
-                            ctx.cFile.appendLine("$varName->baseInstance->baseClass->release($varName->baseInstance);")
-                            ctx.cFile.appendLine("}")
-                        } else if(varType is BsgType.Method) {
-                            ctx.cFile.appendLine("if($varName.this) {")
-                            ctx.cFile.appendLine("$varName.this->baseInstance->baseClass->release($varName.this->baseInstance);")
-                            ctx.cFile.appendLine("}")
-                        }
+    fun releaseLifetimes(ctx: AstContext, scope: BlockScope, lifetimes: List<Lifetime>) {
+        lifetimes
+                .map { scope.getVarForLifetime(it) }
+                .forEach { (varName, varType) ->
+                    if(varType is BsgType.Class) {
+                        ctx.cFile.appendLine("if($varName) {")
+                        ctx.cFile.appendLine("$varName->baseInstance->baseClass->release($varName->baseInstance);")
+                        ctx.cFile.appendLine("}")
+                    } else if(varType is BsgType.Method) {
+                        ctx.cFile.appendLine("if($varName.this) {")
+                        ctx.cFile.appendLine("$varName.this->baseInstance->baseClass->release($varName.this->baseInstance);")
+                        ctx.cFile.appendLine("}")
                     }
+                }
+    }
 
+    object EmptyReturn: BsgStatement() {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
+            releaseLifetimes(ctx, scope, scope.getAllLifetimes())
             ctx.cFile.appendLine("return;")
         }
     }
 
     class CSource(val c: String): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: MethodScope) {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
             ctx.cFile.appendLine(c)
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: MethodScope)
+    abstract fun toC(ctx: AstContext, scope: BlockScope)
 }
 
 sealed class BsgHeaderStatement {

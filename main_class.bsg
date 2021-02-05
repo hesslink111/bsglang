@@ -1,9 +1,26 @@
 import IO;
+import List;
+import StringExtensions;
 
 [Singleton]
 class MainClass {
     [Main]
     main(): Void {
-        IO.println("Hello, world!");
+        var l: List;
+        l = new List();
+
+        var i: Int;
+        i = 0;
+        while(i < 50) {
+            l.add(i as Any);
+            i = i + 1;
+        }
+        l.remove(4);
+
+        i = 0;
+        while(i < 49) {
+            IO.println(StringExtensions.intToString(l.get(i) as Int));
+            i = i + 1;
+        }
     }
 }

@@ -1,8 +1,8 @@
 package io.deltawave.bsg.parser
 
-import io.deltawave.bsg.ast.ReservedWords.Let
 import io.deltawave.bsg.ast.ReservedWords.Var
 import org.jparsec.Parser
+import org.jparsec.Parsers.or
 import org.jparsec.Scanners
 import org.jparsec.pattern.CharPredicates
 import org.jparsec.pattern.Patterns
@@ -14,6 +14,9 @@ object Tokens {
     val returnKeyword: Parser<Void> = Scanners.string("return")
     val newKeyword: Parser<Void> = Scanners.string("new")
     val importKeyword: Parser<Void> = Scanners.string("import")
+    val whileKeyword: Parser<Void> = Scanners.string("while")
+    val ifKeyword: Parser<Void> = Scanners.string("if")
+    val asKeyword: Parser<Void> = Scanners.string("as")
 
     val varKeyword: Parser<Var> = Scanners.string("var").map { Var }
 
@@ -32,6 +35,7 @@ object Tokens {
     val ulong: Parser<Void> = Scanners.string("ULong")
     val void: Parser<Void> = Scanners.string("Void")
     val opaque: Parser<Void> = Scanners.string("Opaque")
+    val any: Parser<Void> = Scanners.string("Any")
 
     val openCurly: Parser<Void> = Scanners.string("{")
     val closeCurly: Parser<Void> = Scanners.string("}")
@@ -53,9 +57,15 @@ object Tokens {
     val mul: Parser<Void> = Scanners.string("*")
     val div: Parser<Void> = Scanners.string("/")
 
+    val gt: Parser<Void> = Scanners.string(">")
+    val gte: Parser<Void> = Scanners.string(">=")
+    val eqeq: Parser<Void> = Scanners.string("==")
+    val lt: Parser<Void> = Scanners.string("<")
+    val lte: Parser<Void> = Scanners.string("<=")
+
     val identifier: Parser<String> = Scanners.IDENTIFIER
     val integerLiteral: Parser<String> = Scanners.INTEGER
     val floatLiteral: Parser<String> = Scanners.INTEGER.followedBy(dot).followedBy(Scanners.INTEGER)
-    val stringLiteral: Parser<String> = Scanners.DOUBLE_QUOTE_STRING
+    val stringLiteral: Parser<String> = or(Scanners.DOUBLE_QUOTE_STRING, Scanners.SINGLE_QUOTE_STRING)
             .map { it.drop(1).dropLast(1) }
 }

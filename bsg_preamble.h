@@ -24,21 +24,23 @@ typedef void BSG_Void;
 
 typedef void* BSG_Opaque;
 
-union BSG_AnyValue {
-    BSG_Char char_value;
-    BSG_Byte byte_value;
-    BSG_Short short_value;
-    BSG_Int int_value_value;
-    BSG_Long long_value;
-    BSG_UByte ubyte_value;
-    BSG_UShort ushort_value;
-    BSG_UInt uint_value;
-    BSG_ULong ulong_value;
+union BSG_AnyPrimitive {
+    BSG_Char CharValue;
+    BSG_Byte ByteValue;
+    BSG_Short ShortValue;
+    BSG_Int IntValue;
+    BSG_Long LongValue;
+    BSG_UByte UByteValue;
+    BSG_UShort UShortValue;
+    BSG_UInt UIntValue;
+    BSG_ULong ULongValue;
 
-    BSG_Float float_value;
-    BSG_Double double_value;
+    BSG_Float FloatValue;
+    BSG_Double DoubleValue;
 
-    BSG_Bool bool_value;
+    BSG_Bool BoolValue;
+
+    BSG_Opaque OpaqueValue;
 };
 
 typedef long BSG_AnyType;
@@ -59,6 +61,16 @@ typedef void* BSG_AnyClass;
 struct BSG_AnyInstance {
     struct BSG_AnyBaseInstance* baseInstance;
     BSG_AnyClass class;
+};
+
+union BSG_InstanceOrPrimitive {
+    union BSG_AnyPrimitive primitive;
+    struct BSG_AnyInstance* instance;
+};
+
+struct BSG_Any {
+    BSG_Bool isPrimitive;
+    union BSG_InstanceOrPrimitive instanceOrPrimitive;
 };
 
 #endif

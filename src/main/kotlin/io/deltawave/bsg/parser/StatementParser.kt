@@ -38,6 +38,38 @@ object StatementParser {
 
     val declarationStatement: Parser<BsgStatement> = field.map { BsgStatement.Declaration(it) }
 
+    fun whileStatement(st: Parser<BsgStatement>): Parser<BsgStatement> = sequence(
+            Tokens.whileKeyword
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.openParen)
+                    .followedBy(Tokens.ws),
+            ExpressionParser.expression
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.closeParen)
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.openCurly)
+                    .followedBy(Tokens.ws),
+            st.followedBy(Tokens.ws).many()
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.closeCurly),
+    ) { _, e, sts -> BsgStatement.While(e, sts) }
+
+    fun ifStatement(st: Parser<BsgStatement>): Parser<BsgStatement> = sequence(
+            Tokens.ifKeyword
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.openParen)
+                    .followedBy(Tokens.ws),
+            ExpressionParser.expression
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.closeParen)
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.openCurly)
+                    .followedBy(Tokens.ws),
+            st.followedBy(Tokens.ws).many()
+                    .followedBy(Tokens.ws)
+                    .followedBy(Tokens.closeCurly),
+    ) { _, e, sts -> BsgStatement.If(e, sts) }
+
     val expressionStatement: Parser<BsgStatement> = ExpressionParser.expression
             .followedBy(Tokens.ws)
             .followedBy(Tokens.semicolon)
@@ -79,12 +111,19 @@ object StatementParser {
             importStatement
     )
 
-    val statement: Parser<BsgStatement> = or(
-        cSourceStatement,
-        emptyReturnStatement,
-        returnStatement,
-        declarationStatement,
-        expressionStatement,
-        assignmentStatement
-    )
+    val statement: Parser<BsgStatement> by lazy {
+        val stRef = Parser.newReference<BsgStatement>()
+        val st = or(
+                cSourceStatement,
+                whileStatement(stRef.lazy()),
+                ifStatement(stRef.lazy()),
+                emptyReturnStatement,
+                returnStatement,
+                declarationStatement,
+                expressionStatement,
+                assignmentStatement
+        )
+        stRef.set(st)
+        st
+    }
 }
