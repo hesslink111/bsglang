@@ -2,8 +2,7 @@ class Example {
     var sampleField: Int;
 
     getSamplePlusTwenty(): Int {
-        var x: Int;
-        x = 10;
+        var x: Int = 10;
         return this.sampleField + x * 2;
     }
 

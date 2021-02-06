@@ -1,8 +1,8 @@
-### BSG Language & Compiler
+### BSG Language & Compiler [WIP]
 
 Example usage:
 ```
-java -jar BsgCompiler.jar -i main_class.bsg string.bsg io.bsg -iod /Users/will/Desktop/bsg_output -fio true
+java -jar BsgCompiler.jar -i example_in/main_class.bsg example_in/string.bsg example_in/io.bsg example_in/string_extensions.bsg example_in/list.bsg -iod example_out -fio true
 ```
 
 Example output - see `example_out` folder.

@@ -14,7 +14,7 @@ object Compiler {
         val parsedFiles = inputFiles.map { (fileName, fileContents) ->
             try {
                 BsgParser.file.parse(fileContents)
-            } catch(ex: Error) {
+            } catch(ex: Exception) {
                 println("Error while parsing $fileName")
                 throw ex
             }

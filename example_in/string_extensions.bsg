@@ -4,16 +4,14 @@ import String;
 [Singleton]
 class StringExtensions {
     intToString(i: Int): String {
-        var str: String;
-        str = new String();
+        var str: String = new String();
         c "str->cStr = malloc(1024);";
         c 'snprintf(str->cStr, 1024, "%d", i);';
         return str;
     }
 
     opaqueToString(i: Opaque): String {
-        var str: String;
-        str = new String();
+        var str: String = new String();
         c "str->cStr = malloc(1024);";
         c 'snprintf(str->cStr, 1024, "%p", i);';
         return str;

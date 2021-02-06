@@ -105,4 +105,33 @@ class CompilerTest {
         assertEquals(expectedMainH, Compiler.compile(inputFiles)["main.h"])
         assertEquals(expectedMainC, Compiler.compile(inputFiles)["main.c"])
     }
+
+    @Test
+    fun declarationAndAssignment() {
+        val dThenAInput = mapOf(
+                "DThenA.bsg" to """
+                    class DeclarationThenAssignment {
+                        main(): Void {
+                            var i: Int;
+                            i = 1;
+                        }
+                    }
+                """.trimIndent()
+        )
+        val dThenAOutput = Compiler.compile(dThenAInput)
+
+        val dAndAInput = mapOf(
+                "DAndA.bsg" to """
+                    class DeclarationThenAssignment {
+                        main(): Void {
+                            var i: Int = 1;
+                        }
+                    }
+                """.trimIndent()
+        )
+        val dAndAOutput = Compiler.compile(dAndAInput)
+
+        assertEquals(dThenAOutput["DThenA.h"], dAndAOutput["DAndA.h"])
+        assertEquals(dThenAOutput["DThenA.c"], dAndAOutput["DThenA.c"])
+    }
 }

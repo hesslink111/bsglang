@@ -2,6 +2,8 @@
 #define BSG_H__MainClass
 #include "bsg_preamble.h"
 #include "IO.h"
+#include "List.h"
+#include "StringExtensions.h"
 const BSG_AnyType BSG_Type__MainClass;
 struct BSG_Instance__MainClass {
 	struct BSG_AnyBaseInstance* baseInstance;

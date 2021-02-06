@@ -79,6 +79,12 @@ sealed class BsgStatement {
         }
     }
 
+    data class MultipleStatements(val statements: List<BsgStatement>): BsgStatement() {
+        override fun toC(ctx: AstContext, scope: BlockScope) {
+            statements.forEach { it.toC(ctx, scope) }
+        }
+    }
+
     data class Return(val expression: BsgExpression): BsgStatement() {
         override fun toC(ctx: AstContext, scope: BlockScope) {
             val (expVar, expLifetime) = expression.toC(ctx, scope)

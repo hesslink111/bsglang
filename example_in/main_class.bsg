@@ -6,11 +6,11 @@ import StringExtensions;
 class MainClass {
     [Main]
     main(): Void {
-        var l: List;
-        l = new List();
+        IO.println("Hello, world!");
 
-        var i: Int;
-        i = 0;
+        var l: List = new List();
+
+        var i: Int = 0;
         while(i < 50) {
             l.add(i as Any);
             i = i + 1;
