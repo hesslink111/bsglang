@@ -200,26 +200,13 @@ sealed class BsgPostfix {
             val cls = ctx.astMetadata.getClass(expType.name)
             val resultVar = methodOrFieldAccessToC(ctx, cls, expVar, identifier)
             val resultType = getType(ctx, scope, exp)
-            return if(resultType is BsgType.Class) {
-                val resultLifetime = ctx.getUniqueLifetime()
-                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-                ctx.cFile.appendLine("$resultVar->baseInstance->baseClass->retain($resultVar->baseInstance);")
-                VarLifetime(resultVar, resultLifetime)
-            } else if(resultType is BsgType.Method) {
-                val resultLifetime = ctx.getUniqueLifetime()
-                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-                ctx.cFile.appendLine("$resultVar.this->baseInstance->baseClass->retain($resultVar.this->baseInstance);")
-                VarLifetime(resultVar, resultLifetime)
-            } else if(resultType is BsgType.Any) {
-                val resultLifetime = ctx.getUniqueLifetime()
-                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-                ctx.cFile.appendLine("if(!$resultVar.isPrimitive) {")
-                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.instance->baseInstance->baseClass->retain($resultVar.instanceOrPrimitive.instance->baseInstance);")
-                ctx.cFile.appendLine("}")
-                VarLifetime(resultVar, resultLifetime)
-            } else {
-                VarLifetime(resultVar, null)
-            }
+
+            // Retain
+            val resultLifetime = ctx.getUniqueLifetime()
+            scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
+            ctx.cFile.appendLine(resultType.getCRetain(resultVar))
+
+            return VarLifetime(resultVar, resultLifetime)
         }
 
         override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {
@@ -242,15 +229,7 @@ sealed class BsgPostfix {
             args.forEachIndexed { i, arg ->
                 val argName = argVarNames[i]
                 val argType = arg.getType(ctx, scope)
-                if(argType is BsgType.Class) {
-                    ctx.cFile.appendLine("$argName->baseInstance->baseClass->retain($argName->baseInstance);")
-                } else if(argType is BsgType.Method) {
-                    ctx.cFile.appendLine("$argName.this->baseInstance->baseClass->retain($argName.this->baseInstance);")
-                } else if(argType is BsgType.Any) {
-                    ctx.cFile.appendLine("if(!$argName.isPrimitive) {")
-                    ctx.cFile.appendLine("$argName.instanceOrPrimitive.instance->baseInstance->baseClass->retain($argName.instanceOrPrimitive.instance->baseInstance);")
-                    ctx.cFile.appendLine("}")
-                }
+                ctx.cFile.appendLine(argType.getCRetain(argName))
             }
 
             val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")

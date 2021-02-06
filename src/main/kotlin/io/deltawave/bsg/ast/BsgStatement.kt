@@ -55,34 +55,9 @@ sealed class BsgStatement {
 
             when (lValueMeta) {
                 is LValueMetadata.Field -> { // Only retain/release if assigning to field.
-                    if (rValue.getType(ctx, scope) is BsgType.Class) {
-                        // Retain rValue if not null.
-                        ctx.cFile.appendLine("if($rValueVar) {")
-                        ctx.cFile.appendLine("$rValueVar->baseInstance->baseClass->retain($rValueVar->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                        // Release lValue if not null.
-                        ctx.cFile.appendLine("if(*${lValueMeta.varName}) {")
-                        ctx.cFile.appendLine("(*${lValueMeta.varName})->baseInstance->baseClass->release((*${lValueMeta.varName})->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                    } else if (rValue.getType(ctx, scope) is BsgType.Method) {
-                        // Retain rValue if not null.
-                        ctx.cFile.appendLine("if($rValueVar.this) {")
-                        ctx.cFile.appendLine("$rValueVar.this->baseInstance->baseClass->retain($rValueVar.this->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                        // Release lValue if not null.
-                        ctx.cFile.appendLine("if((*${lValueMeta.varName}).this) {")
-                        ctx.cFile.appendLine("(*${lValueMeta.varName}).this->baseInstance->baseClass->release((*${lValueMeta.varName}).this->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                    } else if (rValue.getType(ctx, scope) is BsgType.Any) {
-                        // Retain rValue if not null.
-                        ctx.cFile.appendLine("if(!$rValueVar.isPrimitive && $rValueVar.instanceOrPrimitive.instance) {")
-                        ctx.cFile.appendLine("$rValueVar.this->baseInstance->baseClass->retain($rValueVar.this->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                        // Release lValue if not null.
-                        ctx.cFile.appendLine("if((*${lValueMeta.varName}).isPrimitive && (*${lValueMeta.varName}).instanceOrPrimitive.instance) {")
-                        ctx.cFile.appendLine("(*${lValueMeta.varName}).instanceOrPrimitive.instance->baseInstance->baseClass->release((*${lValueMeta.varName}).instanceOrPrimitive.instance->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                    }
+                    val rValueType = rValue.getType(ctx, scope)
+                    ctx.cFile.appendLine(rValueType.getCRetain(rValueVar))
+                    ctx.cFile.appendLine(rValueType.getCRelease("(*${lValueMeta.varName})"))
                 }
                 is LValueMetadata.Local -> { // Local variable assignment.
                     // Replace var's current lifetime with new lifetime.
@@ -115,15 +90,7 @@ sealed class BsgStatement {
         lifetimes
                 .map { scope.getVarForLifetime(it) }
                 .forEach { (varName, varType) ->
-                    if(varType is BsgType.Class) {
-                        ctx.cFile.appendLine("if($varName) {")
-                        ctx.cFile.appendLine("$varName->baseInstance->baseClass->release($varName->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                    } else if(varType is BsgType.Method) {
-                        ctx.cFile.appendLine("if($varName.this) {")
-                        ctx.cFile.appendLine("$varName.this->baseInstance->baseClass->release($varName.this->baseInstance);")
-                        ctx.cFile.appendLine("}")
-                    }
+                    ctx.cFile.appendLine(varType.getCRelease(varName))
                 }
     }
 

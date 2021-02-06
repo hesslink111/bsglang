@@ -6,6 +6,7 @@ data class AstContext(
     val mainHFile: StringBuilder,
     val mainCFileInit: StringBuilder,
     val mainCFileMain: StringBuilder,
+    val mainCFileDeinit: StringBuilder,
     val astMetadata: AstMetadata
 ) {
     private var nextTypeNum: Int = 0

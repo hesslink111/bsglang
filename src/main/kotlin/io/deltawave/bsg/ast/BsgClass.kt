@@ -202,6 +202,7 @@ data class BsgClass(
             ctx.mainHFile.appendLine("#include \"$name.h\"")
             ctx.mainCFileInit.appendLine("$name = BSG_Constructor__$name();")
             ctx.mainCFileInit.appendLine("$name->baseInstance->baseClass->retain($name->baseInstance);")
+            ctx.mainCFileDeinit.appendLine("$name->baseInstance->baseClass->release($name->baseInstance);")
         }
 
         // Main

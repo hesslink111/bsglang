@@ -71,6 +71,7 @@ fun main(args: Array<String>) {
     val mainHFileBuilder = StringBuilder()
     val mainCFileInitBuilder = StringBuilder()
     val mainCFileMainBuilder = StringBuilder()
+    val mainCFileDeinitBuilder = StringBuilder()
     parsedFiles.forEach { file ->
         val ctx = AstContext(
                 hFile = StringBuilder(),
@@ -78,6 +79,7 @@ fun main(args: Array<String>) {
                 mainHFile = mainHFileBuilder,
                 mainCFileInit = mainCFileInitBuilder,
                 mainCFileMain = mainCFileMainBuilder,
+                mainCFileDeinit = mainCFileDeinitBuilder,
                 astMetadata = astMeta
         )
 
@@ -115,6 +117,7 @@ fun main(args: Array<String>) {
     mainCFile.appendText("int main() {\n")
     mainCFile.appendText(mainCFileInitBuilder.toString())
     mainCFile.appendText(mainCFileMainBuilder.toString())
+    mainCFile.appendText(mainCFileDeinitBuilder.toString())
     mainCFile.appendText("}\n")
     if(namespace.getBoolean("format_intermediary_out")) {
         Uncrustify.uncrustify(mainHeaderFile.absolutePath)
