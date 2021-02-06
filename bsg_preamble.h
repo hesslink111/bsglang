@@ -66,7 +66,7 @@ struct BSG_AnyInstance {
 typedef void* BSG_AnyMethod;
 
 struct BSG_AnyMethodFatPtr {
-    struct BSG_AnyInstance this;
+    struct BSG_AnyInstance* this;
     BSG_AnyMethod method;
 };
 

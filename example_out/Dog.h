@@ -3,7 +3,8 @@
 #include "bsg_preamble.h"
 #include "Animal.h"
 #include "String.h"
-#define BSG_Type__Dog 1l
+#include "IO.h"
+#define BSG_Type__Dog 5l
 struct BSG_Instance__Dog {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__Dog* class;

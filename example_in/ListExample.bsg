@@ -1,6 +1,9 @@
 import IO;
 import List;
 import StringExtensions;
+import Cat;
+import Dog;
+import Animal;
 
 [Singleton]
 class ListExample {
@@ -8,16 +11,30 @@ class ListExample {
     main(): Void {
         var l: List = new List();
 
+        IO.println("Add two cats:");
         var i: Int = 0;
-        while(i < 50) {
-            l.add(i as Any);
+        while(i < 2) {
+            l.add(new Cat() as Any);
             i = i + 1;
         }
-        l.remove(4);
 
+        IO.println("Replace first cat with dog:");
+        l.set(0, new Dog() as Any);
+
+        IO.println("List with Cats and dogs:");
         i = 0;
-        while(i < 49) {
-            IO.println(StringExtensions.intToString(l.get(i) as Int));
+        while(i < 2) {
+            IO.println((l.get(i) as Animal).talk());
+            i = i + 1;
+        }
+
+        IO.println("Remove the first animal (dog):");
+        l.remove(0);
+
+        IO.println("List with just 1 cat:");
+        i = 0;
+        while(i < 1) {
+            IO.println((l.get(i) as Animal).talk());
             i = i + 1;
         }
     }

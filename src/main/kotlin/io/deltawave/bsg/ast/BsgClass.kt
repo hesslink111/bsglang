@@ -166,13 +166,14 @@ data class BsgClass(
             cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
                 val fieldAccess = "baseInstance->${cls.name}.${field.varName}"
                 // Initialize fields to null.
-                if(field.type is BsgType.Class) {
-                    ctx.cFile.appendLine("$fieldAccess = NULL;")
-                } else if(field.type is BsgType.Method) {
-                    ctx.cFile.appendLine("$fieldAccess.this = NULL;")
-                } else if(field.type is BsgType.Any) {
-                    ctx.cFile.appendLine("$fieldAccess.isPrimitive = 0;")
-                    ctx.cFile.appendLine("$fieldAccess.instanceOrPrimitive.instance = NULL;")
+                when (field.type) {
+                    is BsgType.Class -> ctx.cFile.appendLine("$fieldAccess = NULL;")
+                    is BsgType.Method -> ctx.cFile.appendLine("$fieldAccess.this = NULL;")
+                    is BsgType.Any -> {
+                        ctx.cFile.appendLine("$fieldAccess.type = BSG_Any_ContentType__Primitive;")
+                        ctx.cFile.appendLine("$fieldAccess.content.primitive.IntValue = 0;")
+                    }
+                    is BsgType.Primitive -> {} // No need to initialize.
                 }
             }
         }

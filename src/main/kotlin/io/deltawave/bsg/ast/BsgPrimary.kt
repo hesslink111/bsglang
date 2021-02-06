@@ -32,8 +32,7 @@ sealed class BsgPrimary {
             } else {
                 // "this" access.
                 val (thisLifetime, thisType) = scope.getLifetime("this") ?: error("'this' must always be in scope.")
-                val (thisVar, _) = scope.getVarForLifetime(thisLifetime)
-                methodOrFieldAccessToC(ctx, scope, VarLifetime(thisVar, thisLifetime), thisType as BsgType.Class, identifier)
+                methodOrFieldAccessToC(ctx, scope, VarLifetime("this", thisLifetime), thisType as BsgType.Class, identifier)
             }
         }
 

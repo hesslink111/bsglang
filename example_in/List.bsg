@@ -21,21 +21,29 @@ class List {
         }
 
         c "((struct BSG_Any*) this->arr)[this->size] = value;";
-        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
-        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+
+        c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
+        c "value.content.instance->baseInstance->baseClass->retain(value.content.instance->baseInstance);";
+        c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
+        c "value.content.method.this->baseInstance->baseClass->retain(value.content.method.this->baseInstance);";
         c "}";
 
         size = size + 1;
     }
 
     set(index: Int, value: Any): Void {
-        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
-        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+        c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
+        c "value.content.instance->baseInstance->baseClass->retain(value.content.instance->baseInstance);";
+        c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
+        c "value.content.method.this->baseInstance->baseClass->retain(value.content.method.this->baseInstance);";
         c "}";
 
         c "struct BSG_Any prevVal = ((struct BSG_Any*)this->arr)[index];";
-        c "if(!prevVal.isPrimitive && prevVal.instanceOrPrimitive.instance) {";
-        c "prevVal.instanceOrPrimitive.instance->baseInstance->baseClass->release(prevVal.instanceOrPrimitive.instance->baseInstance);";
+
+        c "if(prevVal.type == BSG_Any_ContentType__Instance && prevVal.content.instance) {";
+        c "prevVal.content.instance->baseInstance->baseClass->release(prevVal.content.instance->baseInstance);";
+        c "} else if(prevVal.type == BSG_Any_ContentType__Method && prevVal.content.method.this) {";
+        c "prevVal.content.method.this->baseInstance->baseClass->release(prevVal.content.method.this->baseInstance);";
         c "}";
 
         c "((struct BSG_Any*)this->arr)[index] = value;";
@@ -44,18 +52,26 @@ class List {
     get(index: Int): Any {
         var value: Any;
         c "value = ((struct BSG_Any*)this->arr)[index];";
-        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
-        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->retain(value.instanceOrPrimitive.instance->baseInstance);";
+
+        c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
+        c "value.content.instance->baseInstance->baseClass->retain(value.content.instance->baseInstance);";
+        c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
+        c "value.content.method.this->baseInstance->baseClass->retain(value.content.method.this->baseInstance);";
         c "}";
+
         return value;
     }
 
     remove(index: Int): Void {
         var value: Any;
         c "value = ((struct BSG_Any*)this->arr)[index];";
-        c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
-        c "value.instanceOrPrimitive.instance->baseInstance->baseClass->release(value.instanceOrPrimitive.instance->baseInstance);";
+
+        c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
+        c "value.content.instance->baseInstance->baseClass->release(value.content.instance->baseInstance);";
+        c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
+        c "value.content.method.this->baseInstance->baseClass->release(value.content.method.this->baseInstance);";
         c "}";
+
         var numToCopy: Int = size - index;
         c "memcpy(((struct BSG_Any*)this->arr) + index, ((struct BSG_Any*)this->arr) + index + 1, numToCopy * sizeof(struct BSG_Any));";
         size = size - 1;
@@ -69,12 +85,16 @@ class List {
     releaseAll(): Void {
         var i: Int = 0;
         while(i < size) {
-            i = i + 1;
             var value: Any;
             c "value = ((struct BSG_Any*)this->arr)[i];";
-            c "if(!value.isPrimitive && value.instanceOrPrimitive.instance) {";
-            c "value.instanceOrPrimitive.instance->baseInstance->baseClass->release(value.instanceOrPrimitive.instance->baseInstance);";
+
+            c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
+            c "value.content.instance->baseInstance->baseClass->release(value.content.instance->baseInstance);";
+            c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
+            c "value.content.method.this->baseInstance->baseClass->release(value.content.method.this->baseInstance);";
             c "}";
+
+            i = i + 1;
         }
     }
 

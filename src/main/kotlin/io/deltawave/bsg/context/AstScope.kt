@@ -4,12 +4,17 @@ import io.deltawave.bsg.ast.type.BsgType
 
 interface Scope {
     fun getVarMeta(varName: String): VarMetadata
+    fun getLifetime(varName: String): Pair<Lifetime, BsgType>?
 }
 
 class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>): Scope {
     private val globalVars = globalVarList.associateBy { it.varName }
     override fun getVarMeta(varName: String): VarMetadata.LocalOrGlobal {
         return globalVars[varName] ?: error("Could not find var in scope: $varName")
+    }
+
+    override fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
+        return null
     }
 }
 
@@ -27,6 +32,10 @@ class ClassScope(private val globalScope: GlobalScope, private val classMetadata
             methodScope.addLocalVarMeta(name, type, fieldOf = null)
         }
         return methodScope
+    }
+
+    override fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
+        return null
     }
 }
 
@@ -54,8 +63,8 @@ class BlockScope(private val parentScope: Scope, val thisVarType: BsgType.Class)
         lifetimesByVar[varName] = Pair(lifetime, type)
     }
 
-    fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
-        return lifetimesByVar[varName]
+    override fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
+        return lifetimesByVar[varName] ?: parentScope.getLifetime(varName)
     }
 
     fun getAllLifetimesInBlock(): List<Lifetime> {

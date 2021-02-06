@@ -24,10 +24,22 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Cat = {
 	.retain = &BSG_BaseMethod__Cat_retain,
 	.release = &BSG_BaseMethod__Cat_release,
 };
+struct BSG_Instance__String* BSG_Method__Cat_Animal_talk(struct BSG_Instance__Animal* __0) {
+	struct BSG_Instance__Cat* this = (struct BSG_Instance__Cat*)__0->baseInstance->baseClass->cast(__0->baseInstance, BSG_Type__Cat);
+	struct BSG_Instance__String* __1 = BSG_Constructor__String();
+	__1->baseInstance->baseClass->retain(__1->baseInstance);
+	char* __2 = "Meow!";
+	__1->cStr = (BSG_Opaque) malloc(6 * sizeof(char));
+	strcpy((char*)__1->cStr, __2);
+	if(this) {
+		this->baseInstance->baseClass->release(this->baseInstance);
+	}
+	return __1;
+}
 struct BSG_Class__Cat BSG_ClassSingleton__Cat_Cat = {
 };
 struct BSG_Class__Animal BSG_ClassSingleton__Cat_Animal = {
-	.talk = &BSG_Method__Animal_Animal_talk,
+	.talk = &BSG_Method__Cat_Animal_talk,
 };
 struct BSG_Instance__Cat* BSG_Constructor__Cat() {
 	struct BSG_BaseInstance__Cat* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Cat));

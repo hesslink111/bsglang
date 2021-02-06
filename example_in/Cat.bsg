@@ -1,5 +1,9 @@
 import Animal;
 import String;
+import IO;
 
 class Cat: Animal {
+    talk(): String {
+        return "Meow!";
+    }
 }

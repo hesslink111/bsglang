@@ -29,7 +29,7 @@ sealed class BsgType {
         override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
             return when(toType) {
                 Any -> error("Cast from Any to Any not supported.")
-                is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content->instance->baseInstance, BSG_Type__${toType.name});"
+                is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content.instance->baseInstance, BSG_Type__${toType.name});"
                 is Primitive -> "${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;"
                 is Method -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;"
             }
@@ -62,7 +62,7 @@ sealed class BsgType {
                 Any -> """
                     ${toType.getCType()} $toVar;
                     $toVar.type = BSG_Any_ContentType__Instance;
-                    $toVar.content.instance = $fromVar;
+                    $toVar.content.instance = (struct BSG_AnyInstance*) $fromVar;
                 """.trimIndent()
                 is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});"
                 is Primitive -> error("Cannot cast from Class to Primitive.")
