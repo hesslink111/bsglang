@@ -1,5 +1,4 @@
 #include "HelloWorld.h"
-const BSG_AnyType BSG_Type__HelloWorld = 0l;
 struct BSG_AnyInstance* BSG_BaseMethod__HelloWorld_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
 	struct BSG_BaseInstance__HelloWorld* b = (struct BSG_BaseInstance__HelloWorld*)base;
 	switch(type) {
@@ -23,7 +22,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld = {
 	.retain = &BSG_BaseMethod__HelloWorld_retain,
 	.release = &BSG_BaseMethod__HelloWorld_release,
 };
-BSG_Void BSG_Method__HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
+BSG_Void BSG_Method__HelloWorld_HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
 	struct BSG_Instance__IO* __0;
 	__0 = IO;
 	if(__0) {
@@ -54,7 +53,7 @@ BSG_Void BSG_Method__HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
 	return;
 }
 struct BSG_Class__HelloWorld BSG_ClassSingleton__HelloWorld_HelloWorld = {
-	.main = &BSG_Method__HelloWorld_main,
+	.main = &BSG_Method__HelloWorld_HelloWorld_main,
 };
 struct BSG_Instance__HelloWorld* BSG_Constructor__HelloWorld() {
 	struct BSG_BaseInstance__HelloWorld* baseInstance = malloc(sizeof(struct BSG_BaseInstance__HelloWorld));

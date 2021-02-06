@@ -2,7 +2,7 @@
 #define BSG_H__String
 #include "bsg_preamble.h"
 #include <string.h>
-#define BSG_Type__String 5l
+#define BSG_Type__String 1l
 struct BSG_Instance__String {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__String* class;

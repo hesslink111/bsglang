@@ -63,14 +63,28 @@ struct BSG_AnyInstance {
     BSG_AnyClass class;
 };
 
-union BSG_InstanceOrPrimitive {
-    union BSG_AnyPrimitive primitive;
+typedef void* BSG_AnyMethod;
+
+struct BSG_AnyMethodFatPtr {
+    struct BSG_AnyInstance this;
+    BSG_AnyMethod method;
+};
+
+union BSG_Any_Content {
     struct BSG_AnyInstance* instance;
+    struct BSG_AnyMethodFatPtr method;
+    union BSG_AnyPrimitive primitive;
+};
+
+enum BSG_Any_ContentType {
+    BSG_Any_ContentType__Instance = 0,
+    BSG_Any_ContentType__Method = 1,
+    BSG_Any_ContentType__Primitive = 2,
 };
 
 struct BSG_Any {
-    BSG_Bool isPrimitive;
-    union BSG_InstanceOrPrimitive instanceOrPrimitive;
+    enum BSG_Any_ContentType type;
+    union BSG_Any_Content content;
 };
 
 #endif

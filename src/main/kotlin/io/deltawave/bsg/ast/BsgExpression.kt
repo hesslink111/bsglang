@@ -11,33 +11,8 @@ sealed class BsgExpression {
             val expType = exp.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
 
-            if(expType is BsgType.Class && toType is BsgType.Class) {
-                // Class cast.
-                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar->baseInstance->baseClass->cast($expVar->baseInstance, BSG_Type__${toType.name});")
-            } else if(expType is BsgType.Class && toType is BsgType.Any) {
-                // Class to Any.
-                ctx.cFile.appendLine("struct BSG_Any $resultVar;")
-                ctx.cFile.appendLine("$resultVar.isPrimitive = 0;")
-                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.instance = (struct BSG_AnyInstance*) $expVar;")
-            } else if(expType is BsgType.Method) {
-                error("Method casting not yet supported.")
-            } else if(expType is BsgType.Primitive && toType is BsgType.Any) {
-                // Primitive to Any.
-                ctx.cFile.appendLine("struct BSG_Any $resultVar;")
-                ctx.cFile.appendLine("$resultVar.isPrimitive = 1;")
-                ctx.cFile.appendLine("$resultVar.instanceOrPrimitive.primitive.${expType.name}Value = $expVar;")
-            } else if(expType is BsgType.Primitive && toType is BsgType.Primitive) {
-                // Primitive to Primitive
-                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar;")
-            } else if(expType is BsgType.Any && toType is BsgType.Primitive) {
-                // Any to Primitive
-                ctx.cFile.appendLine("${toType.getCType()} $resultVar = $expVar.instanceOrPrimitive.primitive.${toType.name}Value;")
-            } else if(expType is BsgType.Any && toType is BsgType.Class) {
-                // Any to Class
-                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar.instanceOrPrimitive.instance;")
-            } else {
-                error("Cast not supported: from $expType to $toType")
-            }
+            ctx.cFile.appendLineNotBlank(expType.getCCast(expVar, toType, resultVar))
+
             return VarLifetime(resultVar, expLifetime)
         }
 

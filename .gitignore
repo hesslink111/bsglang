@@ -194,3 +194,6 @@ gradle-app.setting
 
 # Other stuff that for some reason isn't in here by default (Thanks Obama)
 .idea
+
+# Generated stuff
+example_out/main

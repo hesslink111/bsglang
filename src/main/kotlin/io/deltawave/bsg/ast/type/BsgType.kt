@@ -8,18 +8,31 @@ sealed class BsgType {
 
         override fun getCRetain(varName: String): String {
             return """
-                if(!$varName.isPrimitive && $varName.instanceOrPrimitive.instance) {
-                    $varName.instanceOrPrimitive.instance->baseInstance->baseClass->retain($varName.instanceOrPrimitive.instance->baseInstance);
+                if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {
+                    $varName.content.instance->baseInstance->baseClass->retain($varName.content.instance->baseInstance);
+                } else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {
+                    $varName.content.method.this->baseInstance->baseClass->retain($varName.content.method.this->baseInstance);
                 }
             """.trimIndent()
         }
 
         override fun getCRelease(varName: String): String {
             return """
-                if(!$varName.isPrimitive && $varName.instanceOrPrimitive.instance) {
-                    $varName.instanceOrPrimitive.instance->baseInstance->baseClass->release($varName.instanceOrPrimitive.instance->baseInstance);
+                if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {
+                    $varName.content.instance->baseInstance->baseClass->release($varName.content.instance->baseInstance);
+                } else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {
+                    $varName.content.method.this->baseInstance->baseClass->release($varName.content.method.this->baseInstance);
                 }
             """.trimIndent()
+        }
+
+        override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
+            return when(toType) {
+                Any -> error("Cast from Any to Any not supported.")
+                is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content->instance->baseInstance, BSG_Type__${toType.name});"
+                is Primitive -> "${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;"
+                is Method -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;"
+            }
         }
     }
 
@@ -43,6 +56,19 @@ sealed class BsgType {
                 }
             """.trimIndent()
         }
+
+        override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
+            return when(toType) {
+                Any -> """
+                    ${toType.getCType()} $toVar;
+                    $toVar.type = BSG_Any_ContentType__Instance;
+                    $toVar.content.instance = $fromVar;
+                """.trimIndent()
+                is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});"
+                is Primitive -> error("Cannot cast from Class to Primitive.")
+                is Method -> error("Cannot cast from Class to Method.")
+            }
+        }
     }
 
     data class Primitive(val name: String): BsgType() {
@@ -56,6 +82,19 @@ sealed class BsgType {
 
         override fun getCRelease(varName: String): String {
             return ""
+        }
+
+        override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
+            return when(toType) {
+                Any -> """
+                    ${toType.getCType()} $toVar;
+                    $toVar.type = BSG_Any_ContentType__Primitive;
+                    $toVar.content.primitive.${name}Value = $fromVar;
+                """.trimIndent()
+                is Class -> error("Cannot cast from Primitive to Class.")
+                is Primitive -> "${toType.getCType()} $toVar = (${getCType()}) $fromVar;"
+                is Method -> error("Cannot cast from Primitive to Method.")
+            }
         }
     }
 
@@ -88,6 +127,19 @@ sealed class BsgType {
                 }
             """.trimIndent()
         }
+
+        override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
+            return when(toType) {
+                Any -> """
+                    ${toType.getCType()} $toVar;
+                    $toVar.type = BSG_Any_ContentType__Method;
+                    $toVar.content.method = (BSG_AnyMethodFatPtr) $fromVar;
+                """.trimIndent()
+                is Class -> error("Cannot cast from Method to Class.")
+                is Primitive -> error("Cannot cast from Method to Primitive.")
+                is Method -> error("Cannot cast from Method to Method.")
+            }
+        }
     }
 
     // May return a typedeffed type. Typedef must have been emitted earlier.
@@ -108,4 +160,5 @@ sealed class BsgType {
 
     abstract fun getCRetain(varName: String): String
     abstract fun getCRelease(varName: String): String
+    abstract fun getCCast(fromVar: String, toType: BsgType, toVar: String): String
 }

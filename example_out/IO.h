@@ -3,7 +3,7 @@
 #include "bsg_preamble.h"
 #include <stdio.h>
 #include "String.h"
-#define BSG_Type__IO 4l
+#define BSG_Type__IO 2l
 struct BSG_Instance__IO {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__IO* class;
