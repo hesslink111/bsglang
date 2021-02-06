@@ -1,3 +1,2 @@
-#include "MainClass.h"
+#include "HelloWorld.h"
 #include "IO.h"
-#include "StringExtensions.h"

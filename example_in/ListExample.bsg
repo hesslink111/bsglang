@@ -3,11 +3,9 @@ import List;
 import StringExtensions;
 
 [Singleton]
-class MainClass {
+class ListExample {
     [Main]
     main(): Void {
-        IO.println("Hello, world!");
-
         var l: List = new List();
 
         var i: Int = 0;
