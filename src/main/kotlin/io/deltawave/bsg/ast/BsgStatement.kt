@@ -2,6 +2,7 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
+import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgStatement {
     data class If(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
@@ -15,7 +16,7 @@ sealed class BsgStatement {
 
             statements.forEach { it.toC(ctx, subScope) }
 
-            releaseLifetimes(ctx, subScope, subScope.getAllLifetimes())
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
             ctx.cFile.appendLine("}") // End if
         }
     }
@@ -35,7 +36,7 @@ sealed class BsgStatement {
 
             statements.forEach { it.toC(ctx, subScope) }
 
-            releaseLifetimes(ctx, subScope, subScope.getAllLifetimes())
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
             ctx.cFile.appendLine("}") // End while
         }
     }
@@ -56,8 +57,8 @@ sealed class BsgStatement {
             when (lValueMeta) {
                 is LValueMetadata.Field -> { // Only retain/release if assigning to field.
                     val rValueType = rValue.getType(ctx, scope)
-                    ctx.cFile.appendLine(rValueType.getCRetain(rValueVar))
-                    ctx.cFile.appendLine(rValueType.getCRelease("(*${lValueMeta.varName})"))
+                    ctx.cFile.appendLineNotBlank(rValueType.getCRetain(rValueVar))
+                    ctx.cFile.appendLineNotBlank(rValueType.getCRelease("(*${lValueMeta.varName})"))
                 }
                 is LValueMetadata.Local -> { // Local variable assignment.
                     // Replace var's current lifetime with new lifetime.
@@ -81,7 +82,7 @@ sealed class BsgStatement {
     data class Return(val expression: BsgExpression): BsgStatement() {
         override fun toC(ctx: AstContext, scope: BlockScope) {
             val (expVar, expLifetime) = expression.toC(ctx, scope)
-            releaseLifetimes(ctx, scope, scope.getAllLifetimes() - listOfNotNull(expLifetime))
+            releaseLifetimes(ctx, scope, scope.getAllLifetimesInScope() - listOfNotNull(expLifetime))
             ctx.cFile.appendLine("return $expVar;")
         }
     }
@@ -90,13 +91,13 @@ sealed class BsgStatement {
         lifetimes
                 .map { scope.getVarForLifetime(it) }
                 .forEach { (varName, varType) ->
-                    ctx.cFile.appendLine(varType.getCRelease(varName))
+                    ctx.cFile.appendLineNotBlank(varType.getCRelease(varName))
                 }
     }
 
     object EmptyReturn: BsgStatement() {
         override fun toC(ctx: AstContext, scope: BlockScope) {
-            releaseLifetimes(ctx, scope, scope.getAllLifetimes())
+            releaseLifetimes(ctx, scope, scope.getAllLifetimesInScope())
             ctx.cFile.appendLine("return;")
         }
     }

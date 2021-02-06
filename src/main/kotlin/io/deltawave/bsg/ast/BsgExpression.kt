@@ -2,6 +2,7 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
+import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgExpression {
     data class Cast(val exp: BsgExpression, val toType: BsgType): BsgExpression() {
@@ -204,7 +205,7 @@ sealed class BsgPostfix {
             // Retain
             val resultLifetime = ctx.getUniqueLifetime()
             scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-            ctx.cFile.appendLine(resultType.getCRetain(resultVar))
+            ctx.cFile.appendLineNotBlank(resultType.getCRetain(resultVar))
 
             return VarLifetime(resultVar, resultLifetime)
         }
@@ -229,7 +230,7 @@ sealed class BsgPostfix {
             args.forEachIndexed { i, arg ->
                 val argName = argVarNames[i]
                 val argType = arg.getType(ctx, scope)
-                ctx.cFile.appendLine(argType.getCRetain(argName))
+                ctx.cFile.appendLineNotBlank(argType.getCRetain(argName))
             }
 
             val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")

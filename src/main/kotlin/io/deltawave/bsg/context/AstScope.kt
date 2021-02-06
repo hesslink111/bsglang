@@ -58,8 +58,17 @@ class BlockScope(private val parentScope: Scope, val thisVarType: BsgType.Class)
         return lifetimesByVar[varName]
     }
 
-    fun getAllLifetimes(): List<Lifetime> {
+    fun getAllLifetimesInBlock(): List<Lifetime> {
         return lifetimesByVar.values.map { (l, _) -> l }.distinct()
+    }
+
+    fun getAllLifetimesInScope(): List<Lifetime> {
+        val parentScopeLifetimes = if(parentScope is BlockScope) {
+            parentScope.getAllLifetimesInScope()
+        } else {
+            emptyList()
+        }
+        return getAllLifetimesInBlock() + parentScopeLifetimes
     }
 
     // Returns the first var. There will always be at least one
