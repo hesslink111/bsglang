@@ -1,0 +1,20 @@
+import Dog;
+import Cat;
+import Animal;
+import String;
+import IO;
+
+[Singleton]
+class Poly {
+    [Main]
+    main(): Void {
+        var dog: Dog = new Dog();
+        var cat: Cat = new Cat();
+        IO.println(getAnimalSound(dog as Animal));
+        IO.println(getAnimalSound(cat as Animal));
+    }
+
+    getAnimalSound(animal: Animal): String {
+        return animal.talk();
+    }
+}

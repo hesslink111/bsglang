@@ -12,7 +12,7 @@ data class AstMetadata(private val classes: List<BsgClass>) {
             fun BsgClass.getSuperClasses(): List<BsgClass> {
                 return this.directSuperClasses
                         .map { classesByName[it] ?: error("Could not find class $it") }
-                        .flatMap { it.getSuperClasses() }
+                        .flatMap { listOf(it) + it.getSuperClasses() }
             }
             // Searching the super-class list in reverse is equivalent to
             // searching the tree starting with the leaves.

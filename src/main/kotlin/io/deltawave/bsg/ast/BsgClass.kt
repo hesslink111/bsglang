@@ -23,8 +23,7 @@ data class BsgClass(
         hSources.forEach { it.toC(ctx) }
 
         // Type number
-        ctx.hFile.appendLine("const BSG_AnyType BSG_Type__$name;")
-        ctx.cFile.appendLine("const BSG_AnyType BSG_Type__$name = ${ctx.getNextTypeNum()}l;")
+        ctx.hFile.appendLine("#define BSG_Type__$name ${ctx.getNextTypeNum()}l")
 
         // Instance - Struct containing fields
         ctx.hFile.appendLine("struct BSG_Instance__$name {")
@@ -39,7 +38,7 @@ data class BsgClass(
         ctx.hFile.appendLine("struct BSG_BaseInstance__$name {")
         ctx.hFile.appendLine("struct BSG_AnyBaseClass* baseClass;")
         ctx.hFile.appendLine("int refCount;")
-        getSuperClassesAndSelf(ctx).forEach { cls ->
+        getSelfAndSuperClasses(ctx).forEach { cls ->
             ctx.hFile.appendLine("struct BSG_Instance__${cls.name} ${cls.name};")
         }
         ctx.hFile.appendLine("};")
@@ -65,7 +64,7 @@ data class BsgClass(
         ctx.cFile.appendLine("struct BSG_AnyInstance* BSG_BaseMethod__${name}_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {")
         ctx.cFile.appendLine("struct BSG_BaseInstance__$name* b = (struct BSG_BaseInstance__$name*)base;")
         ctx.cFile.appendLine("switch(type) {")
-        getSuperClassesAndSelf(ctx).forEach { cls ->
+        getSelfAndSuperClasses(ctx).forEach { cls ->
             ctx.cFile.appendLine("case BSG_Type__${cls.name}:")
             ctx.cFile.appendLine("return (struct BSG_AnyInstance*)&b->${cls.name};")
         }
@@ -90,27 +89,14 @@ data class BsgClass(
             ctx.cFile.appendLine("this->class->deinit(this);")
             ctx.cFile.appendLine("base->refCount--;") // End hack.
         }
-        getSuperClassesAndSelf(ctx).forEach { cls ->
+        getSelfAndSuperClasses(ctx).forEach { cls ->
             cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
-                val fieldAccess = "b->${cls.name}.${field.varName}"
+                val fieldVar = "b->${cls.name}.${field.varName}"
                 // Release fields.
-                if(field.type is BsgType.Class) {
-                    ctx.cFile.appendLine("if($fieldAccess) {")
-                    ctx.cFile.appendLine("$fieldAccess->baseInstance->baseClass->release($fieldAccess->baseInstance);")
-                    ctx.cFile.appendLine("}")
-                } else if(field.type is BsgType.Method) {
-                    ctx.cFile.appendLine("if($fieldAccess.this) {")
-                    ctx.cFile.appendLine("$fieldAccess.this->baseInstance->baseClass->release($fieldAccess.this->baseInstance);")
-                    ctx.cFile.appendLine("}")
-                } else if(field.type is BsgType.Any) {
-                    ctx.cFile.appendLine("if(!$fieldAccess.isPrimitive && $fieldAccess.instanceOrPrimitive.instance) {")
-                    ctx.cFile.appendLine("$fieldAccess.instanceOrPrimitive.instance->baseInstance->baseClass->release($fieldAccess.instanceOrPrimitive.instance->baseInstance);")
-                    ctx.cFile.appendLine("}")
-                }
-
+                field.type.getCRelease(fieldVar)
             }
-            ctx.cFile.appendLine("free(base);")
         }
+        ctx.cFile.appendLine("free(base);")
         ctx.cFile.appendLine("}")
         ctx.cFile.appendLine("}")
 
@@ -133,27 +119,33 @@ data class BsgClass(
                 .map { (argName, type) -> "${type.getCType()} $argName" }
             val args = (listOf(thisArg) + otherArgs).joinToString(",")
 
-            ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(methodMeta)}($args);")
-            ctx.cFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(methodMeta)}($args) {")
+            ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(name, methodMeta)}($args);")
+            ctx.cFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(name, methodMeta)}($args) {")
             if(methodMeta.methodOf.name != name) { // Add cast.
-                ctx.cFile.appendLine("struct BSG_Instance__$name* this = (struct BSG_Instance__$name*)$thisName->baseClass->cast($thisName->baseClass, BSG_Type__$name);")
+                ctx.cFile.appendLine("struct BSG_Instance__$name* this = (struct BSG_Instance__$name*)$thisName->baseInstance->baseClass->cast($thisName->baseInstance, BSG_Type__$name);")
             }
             method.toC(ctx, classScope.methodScope(methodMeta))
             ctx.cFile.appendLine("}")
 
-            // Fat pointer
-            ctx.hFile.appendLine("struct BSG_MethodFatPtr__${methodMeta.methodOf.name}_${methodMeta.varName} {")
-            ctx.hFile.appendLine("${methodMeta.methodOf.getCType()} this;")
-            ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} (*method)($args);")
-            ctx.hFile.appendLine("};")
+            // Fat pointer -- Only need to declare in file for declaring class.
+            if(methodMeta.methodOf.name == name) {
+                ctx.hFile.appendLine("struct BSG_MethodFatPtr__${methodMeta.methodOf.name}_${methodMeta.varName} {")
+                ctx.hFile.appendLine("${methodMeta.methodOf.getCType()} this;")
+                ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} (*method)($args);")
+                ctx.hFile.appendLine("};")
+            }
         }
 
         // ClassSingletons - Implementation of Classes (all implemented) with method pointers set.
-        getSuperClassesAndSelf(ctx).forEach { superCls ->
+        getSelfAndSuperClasses(ctx).forEach { superCls ->
             ctx.hFile.appendLine("extern struct BSG_Class__${superCls.name} BSG_ClassSingleton__${name}_${superCls.name};")
             ctx.cFile.appendLine("struct BSG_Class__${superCls.name} BSG_ClassSingleton__${name}_${superCls.name} = {")
             superCls.methods.values.filter { it.methodOf.name == superCls.name }.forEach { m ->
-                ctx.cFile.appendLine(".${m.varName} = &${getCMethodName(m)},")
+                // Find nearest overriding class.
+                val oClass = getSelfAndSuperClasses(ctx)
+                        .mapNotNull { c -> c.methods[m.varName]?.let { c } }
+                        .first()
+                ctx.cFile.appendLine(".${m.varName} = &${getCMethodName(oClass.name, m)},")
             }
             ctx.cFile.appendLine("};")
         }
@@ -162,7 +154,7 @@ data class BsgClass(
         ctx.hFile.appendLine("extern struct BSG_Instance__$name* BSG_Constructor__$name();")
         ctx.cFile.appendLine("struct BSG_Instance__$name* BSG_Constructor__$name() {")
         ctx.cFile.appendLine("struct BSG_BaseInstance__$name* baseInstance = malloc(sizeof(struct BSG_BaseInstance__$name));")
-        getSuperClassesAndSelf(ctx).forEach { cls ->
+        getSelfAndSuperClasses(ctx).forEach { cls ->
             ctx.cFile.appendLine("baseInstance->${cls.name} = (struct BSG_Instance__${cls.name}) {")
             ctx.cFile.appendLine(".baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,")
             ctx.cFile.appendLine(".class = &BSG_ClassSingleton__${name}_${cls.name},")
@@ -170,7 +162,7 @@ data class BsgClass(
         }
         ctx.cFile.appendLine("baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__$name;")
         // Initialize class and method fields to null.
-        getSuperClassesAndSelf(ctx).forEach { cls ->
+        getSelfAndSuperClasses(ctx).forEach { cls ->
             cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
                 val fieldAccess = "baseInstance->${cls.name}.${field.varName}"
                 // Initialize fields to null.
@@ -218,18 +210,14 @@ data class BsgClass(
         ctx.hFile.appendLine("#endif")
     }
 
-    private fun getSuperClassesAndSelf(ctx: ClassContext): List<ClassMetadata> {
-        return ctx.astMetadata.getClass(name).superTypes.map {
+    private fun getSelfAndSuperClasses(ctx: ClassContext): List<ClassMetadata> {
+        return listOf(ctx.astMetadata.getClass(name)) + ctx.astMetadata.getClass(name).superTypes.map {
             it as BsgType.Class
             ctx.astMetadata.getClass(it.name)
-        } + listOf(ctx.astMetadata.getClass(name))
+        }
     }
 
-    private fun getCMethodName(methodMeta: VarMetadata.Method): String {
-        return if(methodMeta.methodOf.name != name) {
-            "BSG_Method__${name}_${methodMeta.methodOf.name}_${methodMeta.varName}"
-        } else {
-            "BSG_Method__${name}_${methodMeta.varName}"
-        }
+    private fun getCMethodName(baseClassName: String, methodMeta: VarMetadata.Method): String {
+        return "BSG_Method__${baseClassName}_${methodMeta.methodOf.name}_${methodMeta.varName}"
     }
 }

@@ -1,5 +1,4 @@
 #include "IO.h"
-const BSG_AnyType BSG_Type__IO = 2l;
 struct BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
 	struct BSG_BaseInstance__IO* b = (struct BSG_BaseInstance__IO*)base;
 	switch(type) {
@@ -23,7 +22,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__IO = {
 	.retain = &BSG_BaseMethod__IO_retain,
 	.release = &BSG_BaseMethod__IO_release,
 };
-BSG_Void BSG_Method__IO_println(struct BSG_Instance__IO* this,struct BSG_Instance__String* message) {
+BSG_Void BSG_Method__IO_IO_println(struct BSG_Instance__IO* this,struct BSG_Instance__String* message) {
 	puts(message->cStr);
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
@@ -34,7 +33,7 @@ BSG_Void BSG_Method__IO_println(struct BSG_Instance__IO* this,struct BSG_Instanc
 	return;
 }
 struct BSG_Class__IO BSG_ClassSingleton__IO_IO = {
-	.println = &BSG_Method__IO_println,
+	.println = &BSG_Method__IO_IO_println,
 };
 struct BSG_Instance__IO* BSG_Constructor__IO() {
 	struct BSG_BaseInstance__IO* baseInstance = malloc(sizeof(struct BSG_BaseInstance__IO));

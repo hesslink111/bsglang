@@ -1,2 +1,2 @@
-#include "HelloWorld.h"
+#include "Poly.h"
 #include "IO.h"

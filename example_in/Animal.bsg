@@ -1,0 +1,7 @@
+import String;
+
+class Animal {
+    talk(): String {
+        return "";
+    }
+}

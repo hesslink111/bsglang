@@ -1,11 +1,11 @@
 #include "main.h"
 int main() {
-	HelloWorld = BSG_Constructor__HelloWorld();
-	HelloWorld->baseInstance->baseClass->retain(HelloWorld->baseInstance);
+	Poly = BSG_Constructor__Poly();
+	Poly->baseInstance->baseClass->retain(Poly->baseInstance);
 	IO = BSG_Constructor__IO();
 	IO->baseInstance->baseClass->retain(IO->baseInstance);
-	HelloWorld->baseInstance->baseClass->retain(HelloWorld->baseInstance);
-	HelloWorld->class->main(HelloWorld);
-	HelloWorld->baseInstance->baseClass->release(HelloWorld->baseInstance);
+	Poly->baseInstance->baseClass->retain(Poly->baseInstance);
+	Poly->class->main(Poly);
+	Poly->baseInstance->baseClass->release(Poly->baseInstance);
 	IO->baseInstance->baseClass->release(IO->baseInstance);
 }

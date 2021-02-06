@@ -1,0 +1,8 @@
+import Animal;
+import String;
+
+class Dog: Animal {
+    talk(): String {
+        return "Woof!";
+    }
+}

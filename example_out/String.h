@@ -2,7 +2,7 @@
 #define BSG_H__String
 #include "bsg_preamble.h"
 #include <string.h>
-const BSG_AnyType BSG_Type__String;
+#define BSG_Type__String 5l
 struct BSG_Instance__String {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__String* class;
@@ -21,7 +21,7 @@ struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* 
 void BSG_BaseMethod__String_retain(struct BSG_AnyBaseInstance* base);
 void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__String;
-BSG_Void BSG_Method__String_deinit(struct BSG_Instance__String* this);
+BSG_Void BSG_Method__String_String_deinit(struct BSG_Instance__String* this);
 struct BSG_MethodFatPtr__String_deinit {
 	struct BSG_Instance__String* this;
 	BSG_Void (*method)(struct BSG_Instance__String* this);

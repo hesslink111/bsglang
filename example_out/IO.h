@@ -3,7 +3,7 @@
 #include "bsg_preamble.h"
 #include <stdio.h>
 #include "String.h"
-const BSG_AnyType BSG_Type__IO;
+#define BSG_Type__IO 4l
 struct BSG_Instance__IO {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__IO* class;
@@ -20,7 +20,7 @@ struct BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base
 void BSG_BaseMethod__IO_retain(struct BSG_AnyBaseInstance* base);
 void BSG_BaseMethod__IO_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__IO;
-BSG_Void BSG_Method__IO_println(struct BSG_Instance__IO* this,struct BSG_Instance__String* message);
+BSG_Void BSG_Method__IO_IO_println(struct BSG_Instance__IO* this,struct BSG_Instance__String* message);
 struct BSG_MethodFatPtr__IO_println {
 	struct BSG_Instance__IO* this;
 	BSG_Void (*method)(struct BSG_Instance__IO* this,struct BSG_Instance__String* message);

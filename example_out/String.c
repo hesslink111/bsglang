@@ -1,5 +1,4 @@
 #include "String.h"
-const BSG_AnyType BSG_Type__String = 1l;
 struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
 	struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
 	switch(type) {
@@ -27,7 +26,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__String = {
 	.retain = &BSG_BaseMethod__String_retain,
 	.release = &BSG_BaseMethod__String_release,
 };
-BSG_Void BSG_Method__String_deinit(struct BSG_Instance__String* this) {
+BSG_Void BSG_Method__String_String_deinit(struct BSG_Instance__String* this) {
 	free(this->cStr);
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
@@ -35,7 +34,7 @@ BSG_Void BSG_Method__String_deinit(struct BSG_Instance__String* this) {
 	return;
 }
 struct BSG_Class__String BSG_ClassSingleton__String_String = {
-	.deinit = &BSG_Method__String_deinit,
+	.deinit = &BSG_Method__String_String_deinit,
 };
 struct BSG_Instance__String* BSG_Constructor__String() {
 	struct BSG_BaseInstance__String* baseInstance = malloc(sizeof(struct BSG_BaseInstance__String));
