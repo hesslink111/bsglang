@@ -13,7 +13,7 @@ sealed class BsgExpression {
 
             if(expType is BsgType.Class && toType is BsgType.Class) {
                 // Class cast.
-                ctx.cFile.appendLine("${toType.getCType()} $resultVar = $expVar->baseInstance->baseClass->cast($expVar->baseInstance, BSG_Type__${toType.name});")
+                ctx.cFile.appendLine("${toType.getCType()} $resultVar = (${toType.getCType()}) $expVar->baseInstance->baseClass->cast($expVar->baseInstance, BSG_Type__${toType.name});")
             } else if(expType is BsgType.Class && toType is BsgType.Any) {
                 // Class to Any.
                 ctx.cFile.appendLine("struct BSG_Any $resultVar;")
@@ -169,45 +169,47 @@ data class BsgPostfixExpression(
     }
 }
 
-fun methodOrFieldAccessToC(ctx: AstContext, cls: ClassMetadata, instanceVar: String, identifier: String): String {
+fun methodOrFieldAccessToC(ctx: AstContext, scope: BlockScope, instanceVarLifetime: VarLifetime, instanceType: BsgType.Class, identifier: String): VarLifetime {
+    val (instanceVar, instanceLifetime) = instanceVarLifetime
+    val instanceMeta = ctx.astMetadata.getClass(instanceType.name)
     val resultVarName = ctx.getUniqueVarName()
-    when (identifier) {
-        in cls.methods -> {
-            val method = cls.methods[identifier]!!
+
+    return when (identifier) {
+        in instanceMeta.methods -> {
+            val method = instanceMeta.methods[identifier]!!
             method.type as BsgType.Method
             ctx.cFile.appendLine("struct BSG_MethodFatPtr__${method.methodOf.name}_${method.varName} $resultVarName;")
-            if(method.methodOf != cls.type) {
+            if(method.methodOf != instanceMeta.type) {
                 ctx.cFile.appendLine("$resultVarName.this = $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
             } else {
                 ctx.cFile.appendLine("$resultVarName.this = $instanceVar;")
             }
             ctx.cFile.appendLine("$resultVarName.method = $instanceVar->class->$identifier;")
+
+            // Methods are already retained ("this" is already retained)
+            VarLifetime(resultVarName, instanceLifetime)
         }
-        in cls.fields -> {
-            val field = cls.fields[identifier]!!
+        in instanceMeta.fields -> {
+            val field = instanceMeta.fields[identifier]!!
             ctx.cFile.appendLine("${field.type.getCType()} $resultVarName = $instanceVar->$identifier;")
+
+            // Retain
+            ctx.cFile.appendLineNotBlank(field.type.getCRetain(resultVarName))
+            val resultLifetime = ctx.getUniqueLifetime()
+            scope.storeLifetimeAssociation(resultVarName, resultLifetime, field.type)
+
+            VarLifetime(resultVarName, resultLifetime)
         }
-        else -> error("No field or method in ${cls.type} named $identifier")
+        else -> error("No field or method in ${instanceMeta.type} named $identifier")
     }
-    return resultVarName
 }
 
 sealed class BsgPostfix {
     data class Dot(val identifier: String): BsgPostfix() {
         override fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
-            val (expVar, _) = exp.toC(ctx, scope)
-            val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
-
-            val cls = ctx.astMetadata.getClass(expType.name)
-            val resultVar = methodOrFieldAccessToC(ctx, cls, expVar, identifier)
-            val resultType = getType(ctx, scope, exp)
-
-            // Retain
-            val resultLifetime = ctx.getUniqueLifetime()
-            scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-            ctx.cFile.appendLineNotBlank(resultType.getCRetain(resultVar))
-
-            return VarLifetime(resultVar, resultLifetime)
+            val expVarLifetime = exp.toC(ctx, scope)
+            val expType = exp.getType(ctx, scope) as BsgType.Class
+            return methodOrFieldAccessToC(ctx, scope, expVarLifetime, expType, identifier)
         }
 
         override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {

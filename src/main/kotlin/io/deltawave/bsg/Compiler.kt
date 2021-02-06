@@ -23,7 +23,7 @@ object Compiler {
         // Create scope.
         val globalScope = GlobalScope(parsedFiles.map { it.cls }.flatMap {
             if("Singleton" in it.attributes) {
-                listOf(VarMetadata.LocalOrGlobal(it.name, BsgType.Class(it.name)))
+                listOf(VarMetadata.LocalOrGlobal(it.name, BsgType.Class(it.name), isGlobal=true))
             } else {
                 emptyList()
             }

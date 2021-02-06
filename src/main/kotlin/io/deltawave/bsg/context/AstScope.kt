@@ -22,9 +22,9 @@ class ClassScope(private val globalScope: GlobalScope, private val classMetadata
 
     fun methodScope(methodMeta: VarMetadata.Method): BlockScope {
         val methodScope = BlockScope(parentScope = this, thisVarType = classMetadata.type)
-        methodScope.addVarMeta("this", classMetadata.type, fieldOf = null)
+        methodScope.addLocalVarMeta("this", classMetadata.type, fieldOf = null)
         methodMeta.args.forEach { (name, type) ->
-            methodScope.addVarMeta(name, type, fieldOf = null)
+            methodScope.addLocalVarMeta(name, type, fieldOf = null)
         }
         return methodScope
     }
@@ -38,11 +38,11 @@ class BlockScope(private val parentScope: Scope, val thisVarType: BsgType.Class)
         return currentScope[varName] ?: parentScope.getVarMeta(varName)
     }
 
-    fun addVarMeta(varName: String, type: BsgType, fieldOf: BsgType.Class?) {
+    fun addLocalVarMeta(varName: String, type: BsgType, fieldOf: BsgType.Class?) {
         currentScope[varName] = if(fieldOf != null) {
             VarMetadata.Field(varName, type, fieldOf)
         } else {
-            VarMetadata.LocalOrGlobal(varName, type)
+            VarMetadata.LocalOrGlobal(varName, type, isGlobal=false)
         }
     }
 

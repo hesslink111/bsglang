@@ -5,33 +5,35 @@ import io.deltawave.bsg.context.AstContext
 import io.deltawave.bsg.context.BlockScope
 import io.deltawave.bsg.context.VarLifetime
 import io.deltawave.bsg.context.VarMetadata
+import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgPrimary {
     data class Var(val identifier: String): BsgPrimary() {
         override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
             val varMeta = scope.getVarMeta(identifier)
-            return if(varMeta is VarMetadata.Field) {
-                val thisType = ctx.astMetadata.getClass(varMeta.fieldOf.name)
-                val resultVar = methodOrFieldAccessToC(ctx, thisType, "this", identifier)
-                // Check the type of the field. The field can store a method also.
-                if(varMeta.type is BsgType.Class || varMeta.type is BsgType.Method || varMeta.type is BsgType.Any) {
+            return if(varMeta is VarMetadata.LocalOrGlobal) {
+                if(varMeta.isGlobal) {
+                    // Global variable, does not have lifetime.
+                    val resultVarName = ctx.getUniqueVarName()
+                    ctx.cFile.appendLine("${varMeta.type.getCType()} $resultVarName;")
+                    ctx.cFile.appendLine("$resultVarName = $identifier;")
+
+                    // Retain
+                    ctx.cFile.appendLineNotBlank(varMeta.type.getCRetain(resultVarName))
                     val resultLifetime = ctx.getUniqueLifetime()
-                    scope.storeLifetimeAssociation(resultVar, resultLifetime, varMeta.type)
-                    VarLifetime(resultVar, resultLifetime)
+                    scope.storeLifetimeAssociation(resultVarName, resultLifetime, varMeta.type)
+
+                    VarLifetime(resultVarName, resultLifetime)
                 } else {
-                    VarLifetime(resultVar, null)
+                    // Local variable, already has lifetime.
+                    val (resultLifetime, _) = scope.getLifetime(identifier) ?: Pair(null, null)
+                    VarLifetime(identifier, resultLifetime)
                 }
-            } else if(varMeta is VarMetadata.Method) {
-                val thisType = ctx.astMetadata.getClass(varMeta.methodOf.name)
-                val resultVar = methodOrFieldAccessToC(ctx, thisType, "this", identifier)
-                val (resultLifetime, _) = scope.getLifetime("this") ?: error("'this' must have a lifetime.")
-                VarLifetime(resultVar, resultLifetime)
-                // Don't have to retain lifetime of "this", already retained.
-                // Do have to retrieve lifetime for this.
             } else {
-                // local field, already has lifetime.
-                val (resultLifetime, _) = scope.getLifetime(identifier) ?: Pair(null, null)
-                VarLifetime(identifier, resultLifetime)
+                // "this" access.
+                val (thisLifetime, thisType) = scope.getLifetime("this") ?: error("'this' must always be in scope.")
+                val (thisVar, _) = scope.getVarForLifetime(thisLifetime)
+                methodOrFieldAccessToC(ctx, scope, VarLifetime(thisVar, thisLifetime), thisType as BsgType.Class, identifier)
             }
         }
 

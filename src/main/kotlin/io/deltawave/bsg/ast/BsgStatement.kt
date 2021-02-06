@@ -75,7 +75,7 @@ sealed class BsgStatement {
     data class Declaration(val field: BsgField): BsgStatement() {
         override fun toC(ctx: AstContext, scope: BlockScope) {
             ctx.cFile.appendLine("${field.type.getCType()} ${field.name};")
-            scope.addVarMeta(field.name, field.type, fieldOf = null)
+            scope.addLocalVarMeta(field.name, field.type, fieldOf = null)
         }
     }
 

@@ -24,30 +24,32 @@ struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld = {
 	.release = &BSG_BaseMethod__HelloWorld_release,
 };
 BSG_Void BSG_Method__HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
-	struct BSG_MethodFatPtr__IO_println __0;
-	__0.this = IO;
-	__0.method = IO->class->println;
-	if(__0.this) {
-		__0.this->baseInstance->baseClass->retain(__0.this->baseInstance);
+	struct BSG_Instance__IO* __0;
+	__0 = IO;
+	if(__0) {
+		__0->baseInstance->baseClass->retain(__0->baseInstance);
 	}
-	struct BSG_Instance__String* __1 = BSG_Constructor__String();
-	__1->baseInstance->baseClass->retain(__1->baseInstance);
-	char* __2 = "Hello, world!";
-	__1->cStr = (BSG_Opaque) malloc(14 * sizeof(char));
-	strcpy((char*)__1->cStr, __2);
-	__0.this->baseInstance->baseClass->retain(__0.this->baseInstance);
-	if(__1) {
-		__1->baseInstance->baseClass->retain(__1->baseInstance);
+	struct BSG_MethodFatPtr__IO_println __1;
+	__1.this = __0;
+	__1.method = __0->class->println;
+	struct BSG_Instance__String* __2 = BSG_Constructor__String();
+	__2->baseInstance->baseClass->retain(__2->baseInstance);
+	char* __3 = "Hello, world!";
+	__2->cStr = (BSG_Opaque) malloc(14 * sizeof(char));
+	strcpy((char*)__2->cStr, __3);
+	__1.this->baseInstance->baseClass->retain(__1.this->baseInstance);
+	if(__2) {
+		__2->baseInstance->baseClass->retain(__2->baseInstance);
 	}
-	__0.method(__0.this,__1);
+	__1.method(__1.this,__2);
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
-	if(__0.this) {
-		__0.this->baseInstance->baseClass->release(__0.this->baseInstance);
+	if(__0) {
+		__0->baseInstance->baseClass->release(__0->baseInstance);
 	}
-	if(__1) {
-		__1->baseInstance->baseClass->release(__1->baseInstance);
+	if(__2) {
+		__2->baseInstance->baseClass->release(__2->baseInstance);
 	}
 	return;
 }

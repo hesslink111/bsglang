@@ -11,5 +11,5 @@ sealed class VarMetadata(val varName: String, val type: BsgType) {
             val attributes: Set<String>
     ): VarMetadata(varName, type)
     class Field(varName: String, type: BsgType, val fieldOf: BsgType.Class): VarMetadata(varName, type)
-    class LocalOrGlobal(varName: String, type: BsgType): VarMetadata(varName, type)
+    class LocalOrGlobal(varName: String, type: BsgType, val isGlobal: Boolean): VarMetadata(varName, type)
 }
