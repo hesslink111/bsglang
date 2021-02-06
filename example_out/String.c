@@ -1,5 +1,5 @@
 #include "String.h"
-const BSG_AnyType BSG_Type__String = 0l;
+const BSG_AnyType BSG_Type__String = 1l;
 struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
 	struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
 	switch(type) {

@@ -1,10 +1,7 @@
 package io.deltawave.bsg
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.context.AstContext
-import io.deltawave.bsg.context.AstMetadata
-import io.deltawave.bsg.context.GlobalScope
-import io.deltawave.bsg.context.VarMetadata
+import io.deltawave.bsg.context.*
 import io.deltawave.bsg.parser.BsgParser
 import io.deltawave.bsg.util.appendLineNotBlank
 
@@ -33,13 +30,15 @@ object Compiler {
         val outputFiles = mutableMapOf<String, String>()
 
         // Compile each file.
+        val globalContext = GlobalContext()
         val astMeta = AstMetadata(parsedFiles.map { it.cls })
         val mainHFileBuilder = StringBuilder()
         val mainCFileInitBuilder = StringBuilder()
         val mainCFileMainBuilder = StringBuilder()
         val mainCFileDeinitBuilder = StringBuilder()
         parsedFiles.forEach { bsgFile ->
-            val ctx = AstContext(
+            val ctx = ClassContext(
+                    globalContext = globalContext,
                     hFile = StringBuilder(),
                     cFile = StringBuilder(),
                     mainHFile = mainHFileBuilder,

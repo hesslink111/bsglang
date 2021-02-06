@@ -1,5 +1,5 @@
 #include "IO.h"
-const BSG_AnyType BSG_Type__IO = 0l;
+const BSG_AnyType BSG_Type__IO = 2l;
 struct BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
 	struct BSG_BaseInstance__IO* b = (struct BSG_BaseInstance__IO*)base;
 	switch(type) {

@@ -6,7 +6,7 @@ import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgStatement {
     data class If(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             val (conditionVarName, _) = condition.toC(ctx, scope)
             val conditionType = condition.getType(ctx, scope)
             assert(conditionType is BsgType.Primitive && conditionType.name == "Bool")
@@ -22,7 +22,7 @@ sealed class BsgStatement {
     }
 
     data class While(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             ctx.cFile.appendLine("while(true) {") // Begin while
             val subScope = scope.subScope()
 
@@ -42,13 +42,13 @@ sealed class BsgStatement {
     }
 
     data class Expression(val exp: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             exp.toC(ctx, scope)
         }
     }
 
     data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             assert(lValue.getType(ctx, scope) == rValue.getType(ctx, scope))
 
             val lValueMeta = lValue.toC(ctx, scope)
@@ -73,27 +73,27 @@ sealed class BsgStatement {
         }
     }
     data class Declaration(val field: BsgField): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             ctx.cFile.appendLine("${field.type.getCType()} ${field.name};")
             scope.addLocalVarMeta(field.name, field.type, fieldOf = null)
         }
     }
 
     data class MultipleStatements(val statements: List<BsgStatement>): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             statements.forEach { it.toC(ctx, scope) }
         }
     }
 
     data class Return(val expression: BsgExpression): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             val (expVar, expLifetime) = expression.toC(ctx, scope)
             releaseLifetimes(ctx, scope, scope.getAllLifetimesInScope() - listOfNotNull(expLifetime))
             ctx.cFile.appendLine("return $expVar;")
         }
     }
 
-    fun releaseLifetimes(ctx: AstContext, scope: BlockScope, lifetimes: List<Lifetime>) {
+    fun releaseLifetimes(ctx: ClassContext, scope: BlockScope, lifetimes: List<Lifetime>) {
         lifetimes
                 .map { scope.getVarForLifetime(it) }
                 .forEach { (varName, varType) ->
@@ -102,33 +102,33 @@ sealed class BsgStatement {
     }
 
     object EmptyReturn: BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             releaseLifetimes(ctx, scope, scope.getAllLifetimesInScope())
             ctx.cFile.appendLine("return;")
         }
     }
 
     class CSource(val c: String): BsgStatement() {
-        override fun toC(ctx: AstContext, scope: BlockScope) {
+        override fun toC(ctx: ClassContext, scope: BlockScope) {
             ctx.cFile.appendLine(c)
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: BlockScope)
+    abstract fun toC(ctx: ClassContext, scope: BlockScope)
 }
 
 sealed class BsgHeaderStatement {
     class HSource(val c: String): BsgHeaderStatement() {
-        override fun toC(ctx: AstContext) {
+        override fun toC(ctx: ClassContext) {
             ctx.hFile.appendLine(c)
         }
     }
 
     class Import(val name: String): BsgHeaderStatement() {
-        override fun toC(ctx: AstContext) {
+        override fun toC(ctx: ClassContext) {
             ctx.hFile.appendLine("#include \"$name.h\"")
         }
     }
 
-    abstract fun toC(ctx: AstContext)
+    abstract fun toC(ctx: ClassContext)
 }

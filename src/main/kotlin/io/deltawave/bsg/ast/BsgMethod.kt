@@ -1,7 +1,7 @@
 package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.context.AstContext
+import io.deltawave.bsg.context.ClassContext
 import io.deltawave.bsg.context.BlockScope
 
 data class BsgMethod(
@@ -11,7 +11,7 @@ data class BsgMethod(
         val body: BsgMethodBody,
         val attributes: Set<String>
 ) {
-    fun toC(ctx: AstContext, scope: BlockScope) {
+    fun toC(ctx: ClassContext, scope: BlockScope) {
         // Add all class/method args to lifetimes.
         scope.storeLifetimeAssociation("this", ctx.getUniqueLifetime(), scope.getThisType())
         arguments.filter { (_, argType) -> argType is BsgType.Class || argType is BsgType.Method || argType is BsgType.Any }

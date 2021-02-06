@@ -6,7 +6,7 @@ import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgExpression {
     data class Cast(val exp: BsgExpression, val toType: BsgType): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (expVar, expLifetime) = exp.toC(ctx, scope)
             val expType = exp.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
@@ -41,13 +41,13 @@ sealed class BsgExpression {
             return VarLifetime(resultVar, expLifetime)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return toType
         }
     }
 
     data class Comparison(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
@@ -55,14 +55,14 @@ sealed class BsgExpression {
             return VarLifetime(u, null) // Only used for primitives.
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
             return e1.getType(ctx, scope)
         }
     }
 
     data class Add(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
@@ -70,14 +70,14 @@ sealed class BsgExpression {
             return VarLifetime(u, null) // Only used for primitives.
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
             return e1.getType(ctx, scope)
         }
     }
 
     data class Mul(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
@@ -85,36 +85,36 @@ sealed class BsgExpression {
             return VarLifetime(u, null) // Only used for primitives.
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
             return e1.getType(ctx, scope)
         }
     }
 
     data class Parenthetical(val exp: BsgExpression): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             return exp.toC(ctx, scope)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType = exp.getType(ctx, scope)
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType = exp.getType(ctx, scope)
     }
 
     data class Primary(val primary: BsgPrimary): BsgExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             return primary.toC(ctx, scope)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope) = primary.getType(ctx, scope)
+        override fun getType(ctx: ClassContext, scope: BlockScope) = primary.getType(ctx, scope)
     }
 
     // Writes to c file and returns variable name.
-    abstract fun toC(ctx: AstContext, scope: BlockScope): VarLifetime
-    abstract fun getType(ctx: AstContext, scope: BlockScope): BsgType
+    abstract fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime
+    abstract fun getType(ctx: ClassContext, scope: BlockScope): BsgType
 }
 
 sealed class BsgLValueExpression {
     data class Access(val term: BsgExpression, val identifier: String): BsgLValueExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata {
+        override fun toC(ctx: ClassContext, scope: BlockScope): LValueMetadata {
             val (termVar, _) = term.toC(ctx, scope) // Don't care what the lifetime was.
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
@@ -123,7 +123,7 @@ sealed class BsgLValueExpression {
             return LValueMetadata.Field(resultVar)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             val termType = term.getType(ctx, scope) as? BsgType.Class ?: error("Cannot perform field access on non-class type.")
             val fieldMeta = ctx.astMetadata.getClass(termType.name).fields[identifier] ?: error("Cannot find field $identifier in type $termType.")
             return fieldMeta.type
@@ -131,7 +131,7 @@ sealed class BsgLValueExpression {
     }
 
     data class Var(val identifier: String): BsgLValueExpression() {
-        override fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata {
+        override fun toC(ctx: ClassContext, scope: BlockScope): LValueMetadata {
             val varMeta = scope.getVarMeta(identifier)
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
@@ -147,29 +147,29 @@ sealed class BsgLValueExpression {
             return LValueMetadata.Local(resultVar, identifier)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return scope.getVarMeta(identifier).type
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: BlockScope): LValueMetadata
-    abstract fun getType(ctx: AstContext, scope: BlockScope): BsgType
+    abstract fun toC(ctx: ClassContext, scope: BlockScope): LValueMetadata
+    abstract fun getType(ctx: ClassContext, scope: BlockScope): BsgType
 }
 
 data class BsgPostfixExpression(
     val exp: BsgExpression,
     val postfix: BsgPostfix
 ): BsgExpression() {
-    override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+    override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
         return postfix.toC(ctx, scope, exp)
     }
 
-    override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+    override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
         return postfix.getType(ctx, scope, exp)
     }
 }
 
-fun methodOrFieldAccessToC(ctx: AstContext, scope: BlockScope, instanceVarLifetime: VarLifetime, instanceType: BsgType.Class, identifier: String): VarLifetime {
+fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLifetime: VarLifetime, instanceType: BsgType.Class, identifier: String): VarLifetime {
     val (instanceVar, instanceLifetime) = instanceVarLifetime
     val instanceMeta = ctx.astMetadata.getClass(instanceType.name)
     val resultVarName = ctx.getUniqueVarName()
@@ -206,13 +206,13 @@ fun methodOrFieldAccessToC(ctx: AstContext, scope: BlockScope, instanceVarLifeti
 
 sealed class BsgPostfix {
     data class Dot(val identifier: String): BsgPostfix() {
-        override fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val expVarLifetime = exp.toC(ctx, scope)
             val expType = exp.getType(ctx, scope) as BsgType.Class
             return methodOrFieldAccessToC(ctx, scope, expVarLifetime, expType, identifier)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType {
             val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
             return ctx.astMetadata.getClass(expType.name).let {
                 it.methods[identifier]?.type ?: it.fields[identifier]?.type ?: error("No field or method in $expType named $identifier")
@@ -222,7 +222,7 @@ sealed class BsgPostfix {
 
     // Need to have the object whose method is being called.
     data class Call(val args: List<BsgExpression>): BsgPostfix() {
-        override fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val (expVar, _) = exp.toC(ctx, scope) // Method Fat Pointer
 
             val argVarNames = args.map { it.toC(ctx, scope).varName }
@@ -252,12 +252,12 @@ sealed class BsgPostfix {
             }
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType {
             val expType = exp.getType(ctx, scope) as? BsgType.Method ?: error("Can only perform call on method type.")
             return expType.returnType
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: BlockScope, exp: BsgExpression): VarLifetime
-    abstract fun getType(ctx: AstContext, scope: BlockScope, exp: BsgExpression): BsgType
+    abstract fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime
+    abstract fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType
 }

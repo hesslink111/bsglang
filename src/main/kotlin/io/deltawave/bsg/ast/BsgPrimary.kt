@@ -1,7 +1,7 @@
 package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.context.AstContext
+import io.deltawave.bsg.context.ClassContext
 import io.deltawave.bsg.context.BlockScope
 import io.deltawave.bsg.context.VarLifetime
 import io.deltawave.bsg.context.VarMetadata
@@ -9,7 +9,7 @@ import io.deltawave.bsg.util.appendLineNotBlank
 
 sealed class BsgPrimary {
     data class Var(val identifier: String): BsgPrimary() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val varMeta = scope.getVarMeta(identifier)
             return if(varMeta is VarMetadata.LocalOrGlobal) {
                 if(varMeta.isGlobal) {
@@ -37,13 +37,13 @@ sealed class BsgPrimary {
             }
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return scope.getVarMeta(identifier).type
         }
     }
 
     data class Construction(val className: String): BsgPrimary() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
             ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__$className();")
             ctx.cFile.appendLine("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
@@ -52,13 +52,13 @@ sealed class BsgPrimary {
             return VarLifetime(resultName, resultLifetime)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return BsgType.Class(className)
         }
     }
 
     data class StringLiteral(val stringContents: String): BsgPrimary() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
             val strVar = ctx.getUniqueVarName()
             ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__String();")
@@ -71,35 +71,35 @@ sealed class BsgPrimary {
             return VarLifetime(resultName, resultLifetime)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return BsgType.Class("String")
         }
     }
 
     data class FloatLiteral(val float: String): BsgPrimary() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
             ctx.cFile.appendLine("BSG_Float $resultName = $float;")
             return VarLifetime(resultName, null)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return BsgType.Primitive("Float")
         }
     }
 
     data class IntLiteral(val int: String): BsgPrimary() {
-        override fun toC(ctx: AstContext, scope: BlockScope): VarLifetime {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
             ctx.cFile.appendLine("BSG_Int $resultName = $int;")
             return VarLifetime(resultName, null)
         }
 
-        override fun getType(ctx: AstContext, scope: BlockScope): BsgType {
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
             return BsgType.Primitive("Int")
         }
     }
 
-    abstract fun toC(ctx: AstContext, scope: BlockScope): VarLifetime
-    abstract fun getType(ctx: AstContext, scope: BlockScope): BsgType
+    abstract fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime
+    abstract fun getType(ctx: ClassContext, scope: BlockScope): BsgType
 }

@@ -9,7 +9,7 @@ data class BsgClass(
     val body: BsgClassBody,
     val attributes: Set<String>
 ) {
-    fun toC(ctx: AstContext, globalScope: GlobalScope, hSources: List<BsgHeaderStatement>) {
+    fun toC(ctx: ClassContext, globalScope: GlobalScope, hSources: List<BsgHeaderStatement>) {
         val classMeta = ctx.astMetadata.getClass(name)
         val classScope = ClassScope(globalScope, classMeta)
 
@@ -218,7 +218,7 @@ data class BsgClass(
         ctx.hFile.appendLine("#endif")
     }
 
-    private fun getSuperClassesAndSelf(ctx: AstContext): List<ClassMetadata> {
+    private fun getSuperClassesAndSelf(ctx: ClassContext): List<ClassMetadata> {
         return ctx.astMetadata.getClass(name).superTypes.map {
             it as BsgType.Class
             ctx.astMetadata.getClass(it.name)
