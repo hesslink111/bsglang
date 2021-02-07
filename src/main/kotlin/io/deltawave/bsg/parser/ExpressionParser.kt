@@ -11,7 +11,7 @@ object ExpressionParser {
     fun parenthetical(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
         Tokens.openParen.followedBy(Tokens.ws),
         exp.followedBy(Tokens.ws).followedBy(Tokens.closeParen)
-    ) { _, exp -> BsgExpression.Parenthetical(exp) }
+    ) { _, e -> BsgExpression.Parenthetical(e) }
 
     fun term(exp: Parser<BsgExpression>): Parser<BsgExpression> = or(
         parenthetical(exp),
@@ -22,7 +22,7 @@ object ExpressionParser {
             term(exp).followedBy(Tokens.ws),
             PostfixParser.postfix(exp).many()
     ) { term, accesses -> if(accesses.isEmpty()) term else {
-        accesses.fold(term) { term, postfix -> BsgPostfixExpression(term, postfix) }
+        accesses.fold(term) { t, postfix -> BsgPostfixExpression(t, postfix) }
     } }
 
     fun cast(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
@@ -41,9 +41,9 @@ object ExpressionParser {
         cast(exp).followedBy(Tokens.ws),
         sequence(
             Tokens.ws,
-            or(Tokens.mul, Tokens.div).source().followedBy(Tokens.ws),
+            or(Tokens.mul, Tokens.div, Tokens.rem).source().followedBy(Tokens.ws),
             cast(exp),
-        ) { _, op, exp -> Pair(op, exp) }
+        ) { _, op, e -> Pair(op, e) }
             .asOptional()
     ) { ca, addExp ->
         if(addExp.isPresent)
@@ -59,7 +59,7 @@ object ExpressionParser {
             Tokens.ws,
             or(Tokens.plus, Tokens.minus).source().followedBy(Tokens.ws),
             mul(exp)
-        ) { _, op, exp -> Pair(op, exp) }
+        ) { _, op, e -> Pair(op, e) }
             .asOptional()
     ) { mul, addExp ->
         if(addExp.isPresent)
@@ -68,19 +68,60 @@ object ExpressionParser {
             mul
     }
 
+    fun instanceOf(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+            add(exp).followedBy(Tokens.ws),
+            sequence(
+                    Tokens.ws
+                            .followedBy(Tokens.isKeyword)
+                            .followedBy(Tokens.ws),
+                    TypeParser.type
+            ) { _, t -> t }
+                    .asOptional()
+    ) { a, instExp -> instExp.map<BsgExpression>{ t -> BsgExpression.InstanceOf(a, t) }.orElseGet { a } }
+
     fun comparison(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
-        add(exp).followedBy(Tokens.ws),
+        instanceOf(exp).followedBy(Tokens.ws),
         sequence(
             Tokens.ws,
-            or(Tokens.gt, Tokens.gte, Tokens.eqeq, Tokens.lt, Tokens.lte).source().followedBy(Tokens.ws),
-            add(exp)
+            or(Tokens.gte, Tokens.gt, Tokens.lte, Tokens.lt).source().followedBy(Tokens.ws),
+            instanceOf(exp)
         ) { _, op, e -> Pair(op, e) }
             .asOptional()
     ) { a, compExp -> compExp.map<BsgExpression>{ (op, e) -> BsgExpression.Comparison(a, op, e) }.orElseGet { a } }
 
+    fun equality(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+            comparison(exp).followedBy(Tokens.ws),
+            sequence(
+                    Tokens.ws,
+                    Tokens.equality.source().followedBy(Tokens.ws),
+                    comparison(exp)
+            ) { _, op, e -> Pair(op, e) }
+                    .asOptional()
+    ) { a, eqExp -> eqExp.map<BsgExpression>{ (op, e) -> BsgExpression.Equality(a, op, e) }.orElseGet { a } }
+
+    fun logicalAnd(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+            equality(exp).followedBy(Tokens.ws),
+            sequence(
+                    Tokens.ws,
+                    Tokens.logicalAnd.source().followedBy(Tokens.ws),
+                    equality(exp)
+            ) { _, op, e -> Pair(op, e) }
+                    .asOptional()
+    ) { a, logicExp -> logicExp.map<BsgExpression>{ (op, e) -> BsgExpression.LogicalOperation(a, op, e) }.orElseGet { a } }
+
+    fun logicalOr(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+            logicalAnd(exp).followedBy(Tokens.ws),
+            sequence(
+                    Tokens.ws,
+                    Tokens.logicalOr.source().followedBy(Tokens.ws),
+                    logicalAnd(exp)
+            ) { _, op, e -> Pair(op, e) }
+                    .asOptional()
+    ) { a, logicExp -> logicExp.map<BsgExpression>{ (op, e) -> BsgExpression.LogicalOperation(a, op, e) }.orElseGet { a } }
+
     val expression: Parser<BsgExpression> by lazy {
         val expRef = Parser.newReference<BsgExpression>()
-        val exp = comparison(expRef.lazy())
+        val exp = logicalOr(expRef.lazy())
         expRef.set(exp)
         exp
     }

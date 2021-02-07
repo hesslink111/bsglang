@@ -17,6 +17,7 @@ object Tokens {
     val whileKeyword: Parser<Void> = Scanners.string("while")
     val ifKeyword: Parser<Void> = Scanners.string("if")
     val asKeyword: Parser<Void> = Scanners.string("as")
+    val isKeyword: Parser<Void> = Scanners.string("is")
 
     val varKeyword: Parser<Var> = Scanners.string("var").map { Var }
 
@@ -56,14 +57,20 @@ object Tokens {
     val minus: Parser<Void> = Scanners.string("-")
     val mul: Parser<Void> = Scanners.string("*")
     val div: Parser<Void> = Scanners.string("/")
+    val rem: Parser<Void> = Scanners.string("%")
 
     val gt: Parser<Void> = Scanners.string(">")
     val gte: Parser<Void> = Scanners.string(">=")
-    val eqeq: Parser<Void> = Scanners.string("==")
     val lt: Parser<Void> = Scanners.string("<")
     val lte: Parser<Void> = Scanners.string("<=")
 
+    val equality: Parser<Void> = Scanners.string("==")
+
+    val logicalAnd: Parser<Void> = Scanners.string("&&")
+    val logicalOr: Parser<Void> = Scanners.string("||")
+
     val identifier: Parser<String> = Scanners.IDENTIFIER
+    val boolLiteral: Parser<String> = or(Scanners.string("false"), Scanners.string("true")).source()
     val integerLiteral: Parser<String> = Scanners.INTEGER
     val floatLiteral: Parser<String> = Scanners.INTEGER.followedBy(dot).followedBy(Scanners.INTEGER)
     val stringLiteral: Parser<String> = or(Scanners.DOUBLE_QUOTE_STRING, Scanners.SINGLE_QUOTE_STRING)

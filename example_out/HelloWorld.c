@@ -7,6 +7,14 @@ struct BSG_AnyInstance* BSG_BaseMethod__HelloWorld_cast(struct BSG_AnyBaseInstan
 	}
 	return NULL;
 }
+BSG_Bool BSG_BaseMethod__HelloWorld_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+	struct BSG_BaseInstance__HelloWorld* b = (struct BSG_BaseInstance__HelloWorld*)base;
+	switch(type) {
+	case BSG_Type__HelloWorld:
+		return true;
+	}
+	return false;
+}
 void BSG_BaseMethod__HelloWorld_retain(struct BSG_AnyBaseInstance* base) {
 	base->refCount++;
 }
@@ -19,36 +27,37 @@ void BSG_BaseMethod__HelloWorld_release(struct BSG_AnyBaseInstance* base) {
 }
 struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld = {
 	.cast = &BSG_BaseMethod__HelloWorld_cast,
+	.canCast = &BSG_BaseMethod__HelloWorld_canCast,
 	.retain = &BSG_BaseMethod__HelloWorld_retain,
 	.release = &BSG_BaseMethod__HelloWorld_release,
 };
 BSG_Void BSG_Method__HelloWorld_HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
-	struct BSG_Instance__IO* __0;
-	__0 = IO;
-	if(__0) {
-		__0->baseInstance->baseClass->retain(__0->baseInstance);
+	struct BSG_Instance__IO* _tmp_0;
+	_tmp_0 = IO;
+	if(_tmp_0) {
+		_tmp_0->baseInstance->baseClass->retain(_tmp_0->baseInstance);
 	}
-	struct BSG_MethodFatPtr__IO_println __1;
-	__1.this = __0;
-	__1.method = __0->class->println;
-	struct BSG_Instance__String* __2 = BSG_Constructor__String();
-	__2->baseInstance->baseClass->retain(__2->baseInstance);
-	char* __3 = "Hello, world!";
-	__2->cStr = (BSG_Opaque) malloc(14 * sizeof(char));
-	strcpy((char*)__2->cStr, __3);
-	__1.this->baseInstance->baseClass->retain(__1.this->baseInstance);
-	if(__2) {
-		__2->baseInstance->baseClass->retain(__2->baseInstance);
+	struct BSG_MethodFatPtr__IO_println _tmp_1;
+	_tmp_1.this = _tmp_0;
+	_tmp_1.method = _tmp_0->class->println;
+	struct BSG_Instance__String* _tmp_2 = BSG_Constructor__String();
+	_tmp_2->baseInstance->baseClass->retain(_tmp_2->baseInstance);
+	_tmp_2->cStr = "Hello, world!";
+	_tmp_2->length = 13;
+	_tmp_2->isLiteral = true;
+	_tmp_1.this->baseInstance->baseClass->retain(_tmp_1.this->baseInstance);
+	if(_tmp_2) {
+		_tmp_2->baseInstance->baseClass->retain(_tmp_2->baseInstance);
 	}
-	__1.method(__1.this,__2);
+	_tmp_1.method(_tmp_1.this,_tmp_2);
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
-	if(__0) {
-		__0->baseInstance->baseClass->release(__0->baseInstance);
+	if(_tmp_0) {
+		_tmp_0->baseInstance->baseClass->release(_tmp_0->baseInstance);
 	}
-	if(__2) {
-		__2->baseInstance->baseClass->release(__2->baseInstance);
+	if(_tmp_2) {
+		_tmp_2->baseInstance->baseClass->release(_tmp_2->baseInstance);
 	}
 	return;
 }

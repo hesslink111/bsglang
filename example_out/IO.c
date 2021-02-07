@@ -7,6 +7,14 @@ struct BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base
 	}
 	return NULL;
 }
+BSG_Bool BSG_BaseMethod__IO_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+	struct BSG_BaseInstance__IO* b = (struct BSG_BaseInstance__IO*)base;
+	switch(type) {
+	case BSG_Type__IO:
+		return true;
+	}
+	return false;
+}
 void BSG_BaseMethod__IO_retain(struct BSG_AnyBaseInstance* base) {
 	base->refCount++;
 }
@@ -19,6 +27,7 @@ void BSG_BaseMethod__IO_release(struct BSG_AnyBaseInstance* base) {
 }
 struct BSG_BaseClass BSG_BaseClassSingleton__IO = {
 	.cast = &BSG_BaseMethod__IO_cast,
+	.canCast = &BSG_BaseMethod__IO_canCast,
 	.retain = &BSG_BaseMethod__IO_retain,
 	.release = &BSG_BaseMethod__IO_release,
 };

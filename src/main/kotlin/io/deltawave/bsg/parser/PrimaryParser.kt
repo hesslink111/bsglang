@@ -6,6 +6,7 @@ import org.jparsec.Parsers
 import org.jparsec.Parsers.or
 
 object PrimaryParser {
+    val boolLiteral: Parser<BsgPrimary> = Tokens.boolLiteral.map { BsgPrimary.BoolLiteral(it) }
     val identifier: Parser<BsgPrimary> = Tokens.identifier.map { BsgPrimary.Var(it) }
     val floatLiteral: Parser<BsgPrimary> = Tokens.floatLiteral.map { BsgPrimary.FloatLiteral(it) }
     val intLiteral: Parser<BsgPrimary> = Tokens.integerLiteral.map { BsgPrimary.IntLiteral(it) }
@@ -21,6 +22,7 @@ object PrimaryParser {
 
     val primary: Parser<BsgPrimary> = or(
         construction,
+        boolLiteral,
         identifier,
         stringLiteral,
         floatLiteral,

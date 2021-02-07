@@ -1,6 +1,6 @@
 import IO;
 import List;
-import StringExtensions;
+import StringEx;
 import Cat;
 import Dog;
 import Animal;

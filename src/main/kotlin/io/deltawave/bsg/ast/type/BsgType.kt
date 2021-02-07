@@ -34,6 +34,15 @@ sealed class BsgType {
                 is Method -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;"
             }
         }
+
+        override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
+            return when(isType) {
+                Any -> "BSG_Bool $toVar = true;"
+                is Class -> "BSG_Bool $toVar = $fromVar.type == BSG_Any_ContentType__Instance && $fromVar.content.instance->baseInstance->baseClass->canCast($fromVar.content.instance->baseInstance, BSG_Type__${isType.name});"
+                is Primitive -> error("'Any is PrimitiveType' is not yet supported.")
+                is Method -> error("'Any is MethodType' is not yet supported.")
+            }
+        }
     }
 
     data class Class(val name: String): BsgType() {
@@ -69,6 +78,15 @@ sealed class BsgType {
                 is Method -> error("Cannot cast from Class to Method.")
             }
         }
+
+        override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
+            return when(isType) {
+                Any -> "BSG_Bool $toVar = true;"
+                is Class -> "BSG_Bool $toVar = $fromVar->baseInstance->baseClass->canCast($fromVar->baseInstance, BSG_Type__${isType.name});"
+                is Primitive -> error("Class type can never be a primitive.")
+                is Method -> error("Class type can never be a method.")
+            }
+        }
     }
 
     data class Primitive(val name: String): BsgType() {
@@ -94,6 +112,15 @@ sealed class BsgType {
                 is Class -> error("Cannot cast from Primitive to Class.")
                 is Primitive -> "${toType.getCType()} $toVar = (${getCType()}) $fromVar;"
                 is Method -> error("Cannot cast from Primitive to Method.")
+            }
+        }
+
+        override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
+            return when(isType) {
+                Any -> "BSG_Bool $toVar = true;"
+                is Class -> error("Primitive type can never be a class.")
+                is Primitive -> error("'PrimitiveType is PrimitiveType' is not yet supported.")
+                is Method -> error("Primitive type can never be a method.")
             }
         }
     }
@@ -140,6 +167,15 @@ sealed class BsgType {
                 is Method -> error("Cannot cast from Method to Method.")
             }
         }
+
+        override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
+            return when(isType) {
+                Any -> "BSG_Bool $toVar = true;"
+                is Class -> error("Method type can never be a class.")
+                is Primitive -> error("Method type can never be a primitive.")
+                is Method -> error("'MethodType is MethodType' is not yet supported.")
+            }
+        }
     }
 
     // May return a typedeffed type. Typedef must have been emitted earlier.
@@ -161,4 +197,5 @@ sealed class BsgType {
     abstract fun getCRetain(varName: String): String
     abstract fun getCRelease(varName: String): String
     abstract fun getCCast(fromVar: String, toType: BsgType, toVar: String): String
+    abstract fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String
 }

@@ -1,0 +1,9 @@
+class Hashable {
+    hashCode(): Int {
+        return 0;
+    }
+
+    equals(other: Hashable): Bool {
+        return true;
+    }
+}

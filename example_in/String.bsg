@@ -1,10 +1,61 @@
 h "#include <string.h>";
+import Hashable;
 
-class String {
-    var length: Int;
+class String: Hashable {
     var cStr: Opaque;
+    var length: Int;
+    var isLiteral: Bool;
+
+    init(): Void {
+        c 'this->cStr = "";';
+        length = 0;
+        isLiteral = true;
+    }
+
+    hashCode(): Int {
+        var h: Int = 0;
+        var i: Int = 0;
+        while(i < length) {
+            var intValue: Int;
+            c "intValue = (int)((char*)this->cStr)[i];";
+            h = 31 * h + intValue;
+            i = i + 1;
+        }
+        return h;
+    }
+
+    equals(other: Hashable): Bool {
+        if((other is String) == false) {
+            return false;
+        }
+
+        var otherString: String = other as String;
+        if((length == otherString.length) == false) {
+            return false;
+        }
+
+        var i: Int = 0;
+        var eq: Bool = true;
+        while(i < length && eq) {
+            c "eq = (int)((char*)this->cStr)[i] == (int)((char*)otherString->cStr)[i];";
+            i = i + 1;
+        }
+        return eq;
+    }
+
+    plus(otherString: String): String {
+        var newString: String = new String();
+        newString.length = length + otherString.length;
+        newString.isLiteral = false;
+        c 'newString->cStr = malloc((newString->length + 1) * sizeof(char));';
+        c 'strcpy(newString->cStr, this->cStr);';
+        c 'strcat(newString->cStr, otherString->cStr);';
+        return newString;
+    }
 
     deinit(): Void {
-        c "free(this->cStr);";
+        if(isLiteral == false) {
+            c "free(this->cStr);";
+        }
     }
 }

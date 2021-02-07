@@ -1,6 +1,6 @@
 h "#include <string.h>";
 import IO;
-import StringExtensions;
+import StringEx;
 
 class List {
     var arr: Opaque;
@@ -15,7 +15,7 @@ class List {
 
     add(value: Any): Void {
         if(this.size + 1 > this.capacity) {
-            var newCapacity: Int = this.capacity + this.capacity / 2;
+            var newCapacity: Int = ((this.capacity * 3) / 2);
             c "this->arr = realloc(this->arr, newCapacity * sizeof(struct BSG_Any));";
             capacity = newCapacity;
         }
@@ -32,6 +32,11 @@ class List {
     }
 
     set(index: Int, value: Any): Void {
+        if(index < 0 || index >= size) {
+            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
+            c "exit(0);";
+        }
+
         c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
         c "value.content.instance->baseInstance->baseClass->retain(value.content.instance->baseInstance);";
         c "} else if(value.type == BSG_Any_ContentType__Method && value.content.method.this) {";
@@ -50,6 +55,11 @@ class List {
     }
 
     get(index: Int): Any {
+        if(index < 0 || index >= size) {
+            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
+            c "exit(0);";
+        }
+
         var value: Any;
         c "value = ((struct BSG_Any*)this->arr)[index];";
 
@@ -63,6 +73,11 @@ class List {
     }
 
     remove(index: Int): Void {
+        if(index < 0 || index >= size) {
+            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
+            c "exit(0);";
+        }
+
         var value: Any;
         c "value = ((struct BSG_Any*)this->arr)[index];";
 

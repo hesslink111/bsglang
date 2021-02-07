@@ -1,0 +1,47 @@
+h "#include <stdio.h>";
+h "#include <string.h>";
+import String;
+
+[Singleton]
+class StringEx {
+    var t: String;
+    var f: String;
+
+    init(): Void {
+        t = new String();
+        c 'this->t->cStr = "true";';
+        t.length = 4;
+        t.isLiteral = true;
+
+        f = new String();
+        c 'this->f->cStr = "false";';
+        f.length = 5;
+        t.isLiteral = true;
+    }
+
+    ofInt(i: Int): String {
+        var str: String = new String();
+        c "str->cStr = malloc(128);";
+        c 'snprintf(str->cStr, 128, "%d", i);';
+        c 'str->length = (BSG_Int) strlen(str->cStr);';
+        str.isLiteral = false;
+        return str;
+    }
+
+    ofBool(b: Bool): String {
+        var str: String = new String();
+        if(b) {
+            return t;
+        }
+        return f;
+    }
+
+    ofOpaque(i: Opaque): String {
+        var str: String = new String();
+        c "str->cStr = malloc(128);";
+        c 'snprintf(str->cStr, 128, "%p", i);';
+        c 'str->length = (BSG_Int) strlen(str->cStr);';
+        str.isLiteral = false;
+        return str;
+    }
+}

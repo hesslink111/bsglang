@@ -2,7 +2,7 @@
 
 Example usage:
 ```
-java -jar BsgCompiler.jar -i example_in/HelloWorld.bsg example_in/String.bsg example_in/IO.bsg -iod example_out -fio true
+java -jar BsgCompiler.jar -i example_in/HelloWorld.bsg example_in/String.bsg example_in/Hashable.bsg example_in/IO.bsg -iod example_out -fio true
 ```
 
 Example output - see `example_out` folder.

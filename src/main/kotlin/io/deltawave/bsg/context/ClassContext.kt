@@ -16,7 +16,7 @@ class ClassContext(
     fun getNextTypeNum() = globalContext.getNextTypeNum()
 
     fun getUniqueVarName(): String {
-        return "__${nextVarNum++}"
+        return "_tmp_${nextVarNum++}"
     }
 
     fun getUniqueLifetime(): Lifetime {

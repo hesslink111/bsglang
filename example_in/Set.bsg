@@ -1,0 +1,25 @@
+import Map;
+
+class Set {
+    var map: Map;
+
+    init(): Void {
+        map = new Map();
+    }
+
+    add(value: Hashable): Void {
+        map.put(value, value as Any);
+    }
+
+    contains(value: Hashable): Bool {
+        return map.containsKey(value);
+    }
+
+    remove(value: Hashable): Void {
+        map.remove(value);
+    }
+
+    clear(): Void {
+        map.clear();
+    }
+}

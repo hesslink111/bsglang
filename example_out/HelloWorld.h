@@ -16,6 +16,7 @@ struct BSG_Class__HelloWorld {
 	BSG_Void (*main)(struct BSG_Instance__HelloWorld*);
 };
 struct BSG_AnyInstance* BSG_BaseMethod__HelloWorld_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+BSG_Bool BSG_BaseMethod__HelloWorld_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
 void BSG_BaseMethod__HelloWorld_retain(struct BSG_AnyBaseInstance* base);
 void BSG_BaseMethod__HelloWorld_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld;

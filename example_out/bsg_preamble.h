@@ -52,6 +52,7 @@ struct BSG_AnyBaseInstance {
 
 struct BSG_BaseClass {
     struct BSG_AnyInstance* (*cast)(struct BSG_AnyBaseInstance*,BSG_AnyType);
+    BSG_Bool (*canCast)(struct BSG_AnyBaseInstance*,BSG_AnyType);
     void (*retain)(struct BSG_AnyBaseInstance*);
     void (*release)(struct BSG_AnyBaseInstance*);
 };

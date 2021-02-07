@@ -1,0 +1,6 @@
+import Hashable;
+
+class MapEntry {
+    var key: Hashable;
+    var value: Any;
+}

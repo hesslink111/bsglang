@@ -2,6 +2,7 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
+import io.deltawave.bsg.util.appendLineNotBlank
 
 data class BsgClass(
     val name: String,
@@ -71,6 +72,18 @@ data class BsgClass(
         ctx.cFile.appendLine("}")
         ctx.cFile.appendLine("return NULL;")
         ctx.cFile.appendLine("}")
+        // CanCast
+        ctx.hFile.appendLine("BSG_Bool BSG_BaseMethod__${name}_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);")
+        ctx.cFile.appendLine("BSG_Bool BSG_BaseMethod__${name}_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {")
+        ctx.cFile.appendLine("struct BSG_BaseInstance__$name* b = (struct BSG_BaseInstance__$name*)base;")
+        ctx.cFile.appendLine("switch(type) {")
+        getSelfAndSuperClasses(ctx).forEach { cls ->
+            ctx.cFile.appendLine("case BSG_Type__${cls.name}:")
+            ctx.cFile.appendLine("return true;")
+        }
+        ctx.cFile.appendLine("}")
+        ctx.cFile.appendLine("return false;")
+        ctx.cFile.appendLine("}")
         // Retain
         ctx.hFile.appendLine("void BSG_BaseMethod__${name}_retain(struct BSG_AnyBaseInstance* base);")
         ctx.cFile.appendLine("void BSG_BaseMethod__${name}_retain(struct BSG_AnyBaseInstance* base) {")
@@ -89,13 +102,13 @@ data class BsgClass(
             ctx.cFile.appendLine("this->class->deinit(this);")
             ctx.cFile.appendLine("base->refCount--;") // End hack.
         }
-        getSelfAndSuperClasses(ctx).forEach { cls ->
-            cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
-                val fieldVar = "b->${cls.name}.${field.varName}"
-                // Release fields.
-                field.type.getCRelease(fieldVar)
-            }
-        }
+        getSelfAndSuperClasses(ctx)
+                .flatMap { cls -> cls.fields.values.map { cls to it } }
+                .forEach { (cls, field) ->
+                    val fieldVar = "b->${cls.name}.${field.varName}"
+                    // Release fields.
+                    ctx.cFile.appendLineNotBlank(field.type.getCRelease(fieldVar))
+                }
         ctx.cFile.appendLine("free(base);")
         ctx.cFile.appendLine("}")
         ctx.cFile.appendLine("}")
@@ -104,6 +117,7 @@ data class BsgClass(
         ctx.hFile.appendLine("extern struct BSG_BaseClass BSG_BaseClassSingleton__$name;")
         ctx.cFile.appendLine("struct BSG_BaseClass BSG_BaseClassSingleton__$name = {")
         ctx.cFile.appendLine(".cast = &BSG_BaseMethod__${name}_cast,")
+        ctx.cFile.appendLine(".canCast = &BSG_BaseMethod__${name}_canCast,")
         ctx.cFile.appendLine(".retain = &BSG_BaseMethod__${name}_retain,")
         ctx.cFile.appendLine(".release = &BSG_BaseMethod__${name}_release,")
         ctx.cFile.appendLine("};")

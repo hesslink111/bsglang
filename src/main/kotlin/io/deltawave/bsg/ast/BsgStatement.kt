@@ -49,7 +49,8 @@ sealed class BsgStatement {
 
     data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
         override fun toC(ctx: ClassContext, scope: BlockScope) {
-            assert(lValue.getType(ctx, scope) == rValue.getType(ctx, scope))
+            val lValueType = lValue.getType(ctx, scope)
+            assert(lValueType == rValue.getType(ctx, scope))
 
             val lValueMeta = lValue.toC(ctx, scope)
             val (rValueVar, rValueLifetime) = rValue.toC(ctx, scope)
@@ -91,14 +92,6 @@ sealed class BsgStatement {
             releaseLifetimes(ctx, scope, scope.getAllLifetimesInScope() - listOfNotNull(expLifetime))
             ctx.cFile.appendLine("return $expVar;")
         }
-    }
-
-    fun releaseLifetimes(ctx: ClassContext, scope: BlockScope, lifetimes: List<Lifetime>) {
-        lifetimes
-                .map { scope.getVarForLifetime(it) }
-                .forEach { (varName, varType) ->
-                    ctx.cFile.appendLineNotBlank(varType.getCRelease(varName))
-                }
     }
 
     object EmptyReturn: BsgStatement() {

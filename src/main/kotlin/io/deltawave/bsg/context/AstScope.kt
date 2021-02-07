@@ -1,10 +1,12 @@
 package io.deltawave.bsg.context
 
 import io.deltawave.bsg.ast.type.BsgType
+import io.deltawave.bsg.util.appendLineNotBlank
 
 interface Scope {
     fun getVarMeta(varName: String): VarMetadata
     fun getLifetime(varName: String): Pair<Lifetime, BsgType>?
+    fun getVarForLifetime(lifetime: Lifetime): Pair<String, BsgType>
 }
 
 class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>): Scope {
@@ -15,6 +17,10 @@ class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>): Scope {
 
     override fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
         return null
+    }
+
+    override fun getVarForLifetime(lifetime: Lifetime): Pair<String, BsgType> {
+        error("No lifetimes exist in global scope.")
     }
 }
 
@@ -36,6 +42,10 @@ class ClassScope(private val globalScope: GlobalScope, private val classMetadata
 
     override fun getLifetime(varName: String): Pair<Lifetime, BsgType>? {
         return null
+    }
+
+    override fun getVarForLifetime(lifetime: Lifetime): Pair<String, BsgType> {
+        error("No lifetimes exist in class scope.")
     }
 }
 
@@ -82,13 +92,22 @@ class BlockScope(private val parentScope: Scope, val thisVarType: BsgType.Class)
 
     // Returns the first var. There will always be at least one
     // due to SAF.
-    fun getVarForLifetime(lifetime: Lifetime): Pair<String, BsgType> {
+    override fun getVarForLifetime(lifetime: Lifetime): Pair<String, BsgType> {
         return lifetimesByVar.entries
-                .first { (_, lt) -> lt.first == lifetime }
-                .let { (varName, lt) -> Pair(varName, lt.second) }
+                .firstOrNull { (_, lt) -> lt.first == lifetime }
+                ?.let { (varName, lt) -> Pair(varName, lt.second) }
+                ?: parentScope.getVarForLifetime(lifetime)
     }
 
     fun subScope(): BlockScope {
         return BlockScope(this, thisVarType)
     }
+}
+
+fun releaseLifetimes(ctx: ClassContext, scope: BlockScope, lifetimes: List<Lifetime>) {
+    lifetimes
+            .map { scope.getVarForLifetime(it) }
+            .forEach { (varName, varType) ->
+                ctx.cFile.appendLineNotBlank(varType.getCRelease(varName))
+            }
 }
