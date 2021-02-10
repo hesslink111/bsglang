@@ -1,7 +1,7 @@
 #ifndef BSG_H__Hashable
 #define BSG_H__Hashable
 #include "bsg_preamble.h"
-#define BSG_Type__Hashable 2l
+#define BSG_Type__Hashable 3l
 struct BSG_Instance__Hashable {
 	struct BSG_AnyBaseInstance* baseInstance;
 	struct BSG_Class__Hashable* class;

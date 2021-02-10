@@ -1,0 +1,51 @@
+import String;
+import Math;
+import StringEx;
+h "#include <string.h>";
+h "#include <stdlib.h>";
+
+class StringBuilder {
+    var cStr: Opaque;
+    var length: Int;
+    var capacity: Int;
+
+    init(): Void {
+        c 'this->cStr = malloc(11 * sizeof(char));';
+        c '((char*)this->cStr)[0] = 0;';
+        length = 0;
+        capacity = 10;
+    }
+
+    reallocate(newCapacity: Int): Void {
+        c 'this->cStr = realloc(this->cStr, newCapacity + 1);';
+        capacity = newCapacity;
+    }
+
+    append(str: String): StringBuilder {
+        if(str.length + length > capacity) {
+            reallocate(Math.max(capacity * 2, str.length + length));
+        }
+        c 'strcat(this->cStr, str->cStr);';
+        length = length + str.length;
+        return this;
+    }
+
+    appendInt(i: Int): StringBuilder {
+        append(StringEx.ofInt(i));
+        return this;
+    }
+
+    appendAny(value: Any): StringBuilder {
+        append(StringEx.ofAny(value));
+        return this;
+    }
+
+    toString(): String {
+        var str: String = new String();
+        c 'str->cStr = malloc((this->length + 1) * sizeof(char));';
+        c 'strcpy(str->cStr, this->cStr);';
+        str.length = length;
+        str.isLiteral = false;
+        return str;
+    }
+}

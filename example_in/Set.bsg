@@ -1,6 +1,8 @@
 import Map;
+import ToString;
+import StringBuilder;
 
-class Set {
+class Set: ToString {
     var map: Map;
 
     init(): Void {
@@ -21,5 +23,36 @@ class Set {
 
     clear(): Void {
         map.clear();
+    }
+
+    values(): List {
+        var entries: List = map.entries();
+        var vals: List = new List();
+
+        var i: Int = 0;
+        while(i < entries.size) {
+            vals.add((entries.get(i) as MapEntry).key as Any);
+            i = i + 1;
+        }
+
+        return vals;
+    }
+
+    toString(): String {
+        var builder: StringBuilder = new StringBuilder()
+            .append("Set(");
+        var vals: List = values();
+
+        var i: Int = 0;
+        while(i < vals.size) {
+            if(i > 0) {
+                builder.append(",");
+            }
+            builder.appendAny(vals.get(i));
+            i = i + 1;
+        }
+
+        builder.append(")");
+        return builder.toString();
     }
 }

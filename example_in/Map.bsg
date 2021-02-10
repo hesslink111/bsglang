@@ -3,8 +3,10 @@ import MapEntry;
 import Hashable;
 import IO;
 import StringEx;
+import StringBuilder;
+import ToString;
 
-class Map {
+class Map: ToString {
     var bucketList: List;
     var size: Int;
 
@@ -122,5 +124,44 @@ class Map {
 
     clear(): Void {
         init();
+    }
+
+    entries(): List {
+        var list: List = new List();
+
+        var i: Int = 0;
+        while(i < bucketList.size) {
+            var j: Int = 0;
+            var bucket: List = bucketList.get(i) as List;
+            while(j < bucket.size) {
+                list.add(bucket.get(j));
+                j = j + 1;
+            }
+            i = i + 1;
+        }
+
+        return list;
+    }
+
+    toString(): String {
+        var builder: StringBuilder = new StringBuilder();
+        builder.append("Map(");
+
+        var entryList: List = entries();
+        var i: Int = 0;
+        while(i < entryList.size) {
+            var entry: MapEntry = entryList.get(i) as MapEntry;
+            if(i > 0) {
+                builder.append(",");
+            }
+            builder.appendAny(entry.key as Any);
+            builder.append("=");
+            builder.appendAny(entry.value);
+            i = i + 1;
+        }
+
+        builder.append(")");
+
+        return builder.toString();
     }
 }

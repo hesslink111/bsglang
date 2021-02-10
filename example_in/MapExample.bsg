@@ -23,6 +23,8 @@ class MapExample {
         map.put("Sup dude" as Hashable, new Dog() as Any);
         map.put("What's crackin" as Hashable, new Dog() as Any);
 
+        IO.println((map as ToString).toString());
+
         map.remove("Sup" as Hashable);
         map.remove("Sup dude" as Hashable);
 
@@ -50,5 +52,7 @@ class MapExample {
         IO.println("Removed ears, set contains ears: ".plus(StringEx.ofBool(set.contains("ears" as Hashable))));
         IO.println("Set contains eyes: ".plus(StringEx.ofBool(set.contains("eyes" as Hashable))));
         IO.println("Set contains foot: ".plus(StringEx.ofBool(set.contains("foot" as Hashable))));
+
+        IO.println((set as ToString).toString());
     }
 }

@@ -1,0 +1,18 @@
+import StringBuilder;
+import IO;
+
+[Singleton]
+class StringBuilderExample {
+    [Main]
+    main(): Void {
+        var builder: StringBuilder = new StringBuilder();
+
+        builder
+            .append("Hello")
+            .append(", ")
+            .append("world!")
+            .appendInt(11);
+
+        IO.println(builder.toString());
+    }
+}

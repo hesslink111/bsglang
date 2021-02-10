@@ -20,7 +20,7 @@ object ExpressionParser {
 
     fun access(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
             term(exp).followedBy(Tokens.ws),
-            PostfixParser.postfix(exp).many()
+            PostfixParser.postfix(exp).followedBy(Tokens.ws).many()
     ) { term, accesses -> if(accesses.isEmpty()) term else {
         accesses.fold(term) { t, postfix -> BsgPostfixExpression(t, postfix) }
     } }

@@ -29,6 +29,7 @@ class CompilerTest {
             struct BSG_Class__Empty {
             };
             struct BSG_AnyInstance* BSG_BaseMethod__Empty_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+            BSG_Bool BSG_BaseMethod__Empty_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
             void BSG_BaseMethod__Empty_retain(struct BSG_AnyBaseInstance* base);
             void BSG_BaseMethod__Empty_release(struct BSG_AnyBaseInstance* base);
             extern struct BSG_BaseClass BSG_BaseClassSingleton__Empty;
@@ -47,6 +48,14 @@ class CompilerTest {
             }
             return NULL;
             }
+            BSG_Bool BSG_BaseMethod__Empty_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+            struct BSG_BaseInstance__Empty* b = (struct BSG_BaseInstance__Empty*)base;
+            switch(type) {
+            case BSG_Type__Empty:
+            return true;
+            }
+            return false;
+            }
             void BSG_BaseMethod__Empty_retain(struct BSG_AnyBaseInstance* base) {
             base->refCount++;
             }
@@ -59,6 +68,7 @@ class CompilerTest {
             }
             struct BSG_BaseClass BSG_BaseClassSingleton__Empty = {
             .cast = &BSG_BaseMethod__Empty_cast,
+            .canCast = &BSG_BaseMethod__Empty_canCast,
             .retain = &BSG_BaseMethod__Empty_retain,
             .release = &BSG_BaseMethod__Empty_release,
             };
@@ -178,6 +188,7 @@ class CompilerTest {
                     BSG_Int (*talk)(struct BSG_Instance__Animal*);
                     };
                     struct BSG_AnyInstance* BSG_BaseMethod__Animal_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+                    BSG_Bool BSG_BaseMethod__Animal_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     void BSG_BaseMethod__Animal_retain(struct BSG_AnyBaseInstance* base);
                     void BSG_BaseMethod__Animal_release(struct BSG_AnyBaseInstance* base);
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Animal;
@@ -201,6 +212,14 @@ class CompilerTest {
                     }
                     return NULL;
                     }
+                    BSG_Bool BSG_BaseMethod__Animal_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+                    struct BSG_BaseInstance__Animal* b = (struct BSG_BaseInstance__Animal*)base;
+                    switch(type) {
+                    case BSG_Type__Animal:
+                    return true;
+                    }
+                    return false;
+                    }
                     void BSG_BaseMethod__Animal_retain(struct BSG_AnyBaseInstance* base) {
                     base->refCount++;
                     }
@@ -213,15 +232,16 @@ class CompilerTest {
                     }
                     struct BSG_BaseClass BSG_BaseClassSingleton__Animal = {
                     .cast = &BSG_BaseMethod__Animal_cast,
+                    .canCast = &BSG_BaseMethod__Animal_canCast,
                     .retain = &BSG_BaseMethod__Animal_retain,
                     .release = &BSG_BaseMethod__Animal_release,
                     };
                     BSG_Int BSG_Method__Animal_Animal_talk(struct BSG_Instance__Animal* this) {
-                    BSG_Int __0 = 0;
+                    BSG_Int _tmp_0 = 0;
                     if(this) {
                         this->baseInstance->baseClass->release(this->baseInstance);
                     }
-                    return __0;
+                    return _tmp_0;
                     }
                     struct BSG_Class__Animal BSG_ClassSingleton__Animal_Animal = {
                     .talk = &BSG_Method__Animal_Animal_talk,
@@ -254,6 +274,7 @@ class CompilerTest {
                     struct BSG_Class__Cat {
                     };
                     struct BSG_AnyInstance* BSG_BaseMethod__Cat_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+                    BSG_Bool BSG_BaseMethod__Cat_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     void BSG_BaseMethod__Cat_retain(struct BSG_AnyBaseInstance* base);
                     void BSG_BaseMethod__Cat_release(struct BSG_AnyBaseInstance* base);
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Cat;
@@ -272,6 +293,14 @@ class CompilerTest {
                     }
                     return NULL;
                     }
+                    BSG_Bool BSG_BaseMethod__Cat_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+                    struct BSG_BaseInstance__Cat* b = (struct BSG_BaseInstance__Cat*)base;
+                    switch(type) {
+                    case BSG_Type__Cat:
+                    return true;
+                    }
+                    return false;
+                    }
                     void BSG_BaseMethod__Cat_retain(struct BSG_AnyBaseInstance* base) {
                     base->refCount++;
                     }
@@ -284,6 +313,7 @@ class CompilerTest {
                     }
                     struct BSG_BaseClass BSG_BaseClassSingleton__Cat = {
                     .cast = &BSG_BaseMethod__Cat_cast,
+                    .canCast = &BSG_BaseMethod__Cat_canCast,
                     .retain = &BSG_BaseMethod__Cat_retain,
                     .release = &BSG_BaseMethod__Cat_release,
                     };
@@ -318,6 +348,7 @@ class CompilerTest {
                     BSG_Int (*talk)(struct BSG_Instance__Dog*);
                     };
                     struct BSG_AnyInstance* BSG_BaseMethod__Dog_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+                    BSG_Bool BSG_BaseMethod__Dog_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     void BSG_BaseMethod__Dog_retain(struct BSG_AnyBaseInstance* base);
                     void BSG_BaseMethod__Dog_release(struct BSG_AnyBaseInstance* base);
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Dog;
@@ -341,6 +372,14 @@ class CompilerTest {
                     }
                     return NULL;
                     }
+                    BSG_Bool BSG_BaseMethod__Dog_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+                    struct BSG_BaseInstance__Dog* b = (struct BSG_BaseInstance__Dog*)base;
+                    switch(type) {
+                    case BSG_Type__Dog:
+                    return true;
+                    }
+                    return false;
+                    }
                     void BSG_BaseMethod__Dog_retain(struct BSG_AnyBaseInstance* base) {
                     base->refCount++;
                     }
@@ -353,15 +392,16 @@ class CompilerTest {
                     }
                     struct BSG_BaseClass BSG_BaseClassSingleton__Dog = {
                     .cast = &BSG_BaseMethod__Dog_cast,
+                    .canCast = &BSG_BaseMethod__Dog_canCast,
                     .retain = &BSG_BaseMethod__Dog_retain,
                     .release = &BSG_BaseMethod__Dog_release,
                     };
                     BSG_Int BSG_Method__Dog_Dog_talk(struct BSG_Instance__Dog* this) {
-                    BSG_Int __0 = 1;
+                    BSG_Int _tmp_0 = 1;
                     if(this) {
                         this->baseInstance->baseClass->release(this->baseInstance);
                     }
-                    return __0;
+                    return _tmp_0;
                     }
                     struct BSG_Class__Dog BSG_ClassSingleton__Dog_Dog = {
                     .talk = &BSG_Method__Dog_Dog_talk,

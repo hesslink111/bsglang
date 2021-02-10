@@ -1,9 +1,14 @@
 import Animal;
 import String;
 import IO;
+import ToString;
 
-class Dog: Animal {
+class Dog: Animal, ToString {
     talk(): String {
         return "Woof!";
+    }
+
+    toString(): String {
+        return "Dog()";
     }
 }

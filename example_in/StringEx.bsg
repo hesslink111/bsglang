@@ -1,6 +1,7 @@
 h "#include <stdio.h>";
 h "#include <string.h>";
 import String;
+import ToString;
 
 [Singleton]
 class StringEx {
@@ -21,8 +22,8 @@ class StringEx {
 
     ofInt(i: Int): String {
         var str: String = new String();
-        c "str->cStr = malloc(128);";
-        c 'snprintf(str->cStr, 128, "%d", i);';
+        c "str->cStr = malloc(32);";
+        c 'snprintf(str->cStr, 32, "%d", i);';
         c 'str->length = (BSG_Int) strlen(str->cStr);';
         str.isLiteral = false;
         return str;
@@ -38,10 +39,20 @@ class StringEx {
 
     ofOpaque(i: Opaque): String {
         var str: String = new String();
-        c "str->cStr = malloc(128);";
-        c 'snprintf(str->cStr, 128, "%p", i);';
+        c "str->cStr = malloc(32);";
+        c 'snprintf(str->cStr, 32, "%p", i);';
         c 'str->length = (BSG_Int) strlen(str->cStr);';
         str.isLiteral = false;
         return str;
+    }
+
+    ofAny(value: Any): String {
+        if(value is String) {
+            return value as String;
+        }
+        if(value is ToString) {
+            return (value as ToString).toString();
+        }
+        return "Any";
     }
 }
