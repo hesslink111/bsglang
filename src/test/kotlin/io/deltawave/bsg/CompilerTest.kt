@@ -85,8 +85,8 @@ class CompilerTest {
             }
         """.trimIndent() + "\n"
 
-        assertEquals(expectedEmptyH, Compiler.compile(inputFiles)["Empty.h"])
-        assertEquals(expectedEmptyC, Compiler.compile(inputFiles)["Empty.c"])
+        assertEquals(expectedEmptyH, Compiler.compile(listOf("Empty.bsg"), inputFiles)["Empty.h"])
+        assertEquals(expectedEmptyC, Compiler.compile(listOf("Empty.bsg"), inputFiles)["Empty.c"])
     }
 
     @Test
@@ -111,8 +111,8 @@ class CompilerTest {
             }
         """.trimIndent() + "\n"
 
-        assertEquals(expectedMainH, Compiler.compile(inputFiles)["main.h"])
-        assertEquals(expectedMainC, Compiler.compile(inputFiles)["main.c"])
+        assertEquals(expectedMainH, Compiler.compile(listOf("Empty.bsg"), inputFiles)["main.h"])
+        assertEquals(expectedMainC, Compiler.compile(listOf("Empty.bsg"), inputFiles)["main.c"])
     }
 
     @Test
@@ -127,7 +127,7 @@ class CompilerTest {
                     }
                 """.trimIndent()
         )
-        val dThenAOutput = Compiler.compile(dThenAInput)
+        val dThenAOutput = Compiler.compile(listOf("DThenA.bsg"), dThenAInput)
 
         val dAndAInput = mapOf(
                 "DAndA.bsg" to """
@@ -138,7 +138,7 @@ class CompilerTest {
                     }
                 """.trimIndent()
         )
-        val dAndAOutput = Compiler.compile(dAndAInput)
+        val dAndAOutput = Compiler.compile(listOf("DAndA.bsg"), dAndAInput)
 
         assertEquals(dThenAOutput["DThenA.h"], dAndAOutput["DAndA.h"])
         assertEquals(dThenAOutput["DThenA.c"], dAndAOutput["DThenA.c"])
@@ -167,7 +167,7 @@ class CompilerTest {
                     }
                 """.trimIndent()
         )
-        val polyOutput = Compiler.compile(polyInput)
+        val polyOutput = Compiler.compile(listOf("Animal.bsg", "Cat.bsg", "Dog.bsg"), polyInput)
 
         val expectedPolyOutput = mapOf(
                 "Animal.h" to """

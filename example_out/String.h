@@ -3,24 +3,24 @@
 #include "bsg_preamble.h"
 #include <string.h>
 #include "Hashable.h"
-#define BSG_Type__String 1l
+#define BSG_Type__String 2l
 struct BSG_Instance__String {
-	struct BSG_AnyBaseInstance* baseInstance;
-	struct BSG_Class__String* class;
-	BSG_Opaque cStr;
-	BSG_Int length;
-	BSG_Bool isLiteral;
+struct BSG_AnyBaseInstance* baseInstance;
+struct BSG_Class__String* class;
+BSG_Opaque cStr;
+BSG_Int length;
+BSG_Bool isLiteral;
 };
 struct BSG_BaseInstance__String {
-	struct BSG_AnyBaseClass* baseClass;
-	int refCount;
-	struct BSG_Instance__String String;
-	struct BSG_Instance__Hashable Hashable;
+struct BSG_AnyBaseClass* baseClass;
+int refCount;
+struct BSG_Instance__String String;
+struct BSG_Instance__Hashable Hashable;
 };
 struct BSG_Class__String {
-	BSG_Void (*init)(struct BSG_Instance__String*);
-	struct BSG_Instance__String* (*plus)(struct BSG_Instance__String*,struct BSG_Instance__String*);
-	BSG_Void (*deinit)(struct BSG_Instance__String*);
+BSG_Void (*init)(struct BSG_Instance__String*);
+struct BSG_Instance__String* (*plus)(struct BSG_Instance__String*,struct BSG_Instance__String*);
+BSG_Void (*deinit)(struct BSG_Instance__String*);
 };
 struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
 BSG_Bool BSG_BaseMethod__String_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
@@ -29,20 +29,20 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__String;
 BSG_Void BSG_Method__String_String_init(struct BSG_Instance__String* this);
 struct BSG_MethodFatPtr__String_init {
-	struct BSG_Instance__String* this;
-	BSG_Void (*method)(struct BSG_Instance__String* this);
+struct BSG_Instance__String* this;
+BSG_Void (*method)(struct BSG_Instance__String* this);
 };
 BSG_Int BSG_Method__String_Hashable_hashCode(struct BSG_Instance__Hashable* _tmp_4);
 BSG_Bool BSG_Method__String_Hashable_equals(struct BSG_Instance__Hashable* _tmp_18,struct BSG_Instance__Hashable* other);
 struct BSG_Instance__String* BSG_Method__String_String_plus(struct BSG_Instance__String* this,struct BSG_Instance__String* otherString);
 struct BSG_MethodFatPtr__String_plus {
-	struct BSG_Instance__String* this;
-	struct BSG_Instance__String* (*method)(struct BSG_Instance__String* this,struct BSG_Instance__String* otherString);
+struct BSG_Instance__String* this;
+struct BSG_Instance__String* (*method)(struct BSG_Instance__String* this,struct BSG_Instance__String* otherString);
 };
 BSG_Void BSG_Method__String_String_deinit(struct BSG_Instance__String* this);
 struct BSG_MethodFatPtr__String_deinit {
-	struct BSG_Instance__String* this;
-	BSG_Void (*method)(struct BSG_Instance__String* this);
+struct BSG_Instance__String* this;
+BSG_Void (*method)(struct BSG_Instance__String* this);
 };
 extern struct BSG_Class__String BSG_ClassSingleton__String_String;
 extern struct BSG_Class__Hashable BSG_ClassSingleton__String_Hashable;

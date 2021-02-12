@@ -5,7 +5,7 @@ import String;
 import IO;
 
 [Singleton]
-class Poly {
+class PolyExample {
     [Main]
     main(): Void {
         var dog: Dog = new Dog();

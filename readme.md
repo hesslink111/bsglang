@@ -2,10 +2,10 @@
 
 Example usage:
 ```
-java -jar BsgCompiler.jar -i example_in/HelloWorld.bsg example_in/String.bsg example_in/Hashable.bsg example_in/IO.bsg -iod example_out -fio true
+java -jar BsgCompiler.jar -i example_in/HelloWorld.bsg -iod example_out -fio -m
 ```
 
-Example output - see `example_out` folder.
+Intermediary output - see `example_out` folder.
 
 Language sample:
 ```
@@ -22,5 +22,6 @@ class HelloWorld {
 
 Output:
 ```
+$ ./example_out/main
 Hello, world!
 ```

@@ -1,6 +1,6 @@
 This folder contains some example output.
 
-Compile with `gcc main.c HelloWorld.c IO.c String.c Hashable.c -o main`.
+Compile with `make`.
 
 Run with `./main`
 
