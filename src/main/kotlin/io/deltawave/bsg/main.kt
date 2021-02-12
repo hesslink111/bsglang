@@ -59,7 +59,7 @@ fun main(args: Array<String>) {
         outputFile.writeText(contents)
 
         // Format.
-        if((outputFile.endsWith(".c") || outputFile.endsWith(".h"))
+        if((outputFile.name.endsWith(".c") || outputFile.name.endsWith(".h"))
                 && argNamespace.getBoolean("format_intermediary_out")) {
             Uncrustify.uncrustify(outputFile.absolutePath)
         }
