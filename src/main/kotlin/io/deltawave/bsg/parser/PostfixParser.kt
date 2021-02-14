@@ -19,7 +19,7 @@ object PostfixParser {
         sequence(
             Tokens.comma.followedBy(Tokens.ws),
             exp.followedBy(Tokens.ws)
-        ) { _, exp -> exp }.many()
+        ) { _, e -> e }.many()
     ) { e1, es -> listOf(e1) + es }
         .asOptional()
         .map { it.orNull() ?: emptyList() }

@@ -1,9 +1,11 @@
-class Hashable {
+import Equatable;
+
+class Hashable: Equatable {
     hashCode(): Int {
         return 0;
     }
 
-    equals(other: Hashable): Bool {
+    equals(other: Equatable): Bool {
         return true;
     }
 }

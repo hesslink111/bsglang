@@ -27,7 +27,9 @@ data class BsgClass(
         ctx.hFile.appendLine("#define BSG_Type__$name ${ctx.getNextTypeNum()}l")
 
         // Instance - Struct containing fields
-        ctx.hFile.appendLineNotBlank(ctx.astMetadata.getClass(name).type.getCDefinition(ctx.astMetadata))
+        ctx.astMetadata.getClass(name).type.getCDefinitions(ctx.astMetadata).forEach {
+            ctx.hFile.appendLineNotBlank(it)
+        }
 
         // BaseInstance - Struct containing sub-object instances, including self.
         ctx.hFile.appendLine("struct BSG_BaseInstance__$name {")
@@ -39,10 +41,12 @@ data class BsgClass(
         ctx.hFile.appendLine("};")
 
         // Method definitions
-        body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }.forEach {
-            val def = it.getType(ctx, classMeta.type).getCDefinition(ctx.astMetadata)
-            ctx.hFile.appendLineNotBlank(ctx.dedupMethodDef(def))
-        }
+        body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }
+                .flatMap { it.getType(ctx, classMeta.type).getCDefinitions(ctx.astMetadata) }
+                .distinct()
+                .forEach { methodDef ->
+                    ctx.hFile.appendLineNotBlank(methodDef)
+                }
 
         // Class - Struct containing pointers to non-overridden methods.
         ctx.hFile.appendLine("struct BSG_Class__$name {")

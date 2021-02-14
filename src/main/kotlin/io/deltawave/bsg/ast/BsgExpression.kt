@@ -87,13 +87,43 @@ sealed class BsgExpression {
         }
     }
 
+    data class Pipeline(val e1: BsgExpression, val e2: BsgExpression): BsgExpression() {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
+            val (e1Var, e1Lifetime) = e1.toC(ctx, scope)
+            val e1Type = e1.getType(ctx, scope)
+
+            val subScope = scope.subScope()
+            subScope.addLocalVarMeta("it", e1Type, fieldOf = null)
+
+            val resultVar = ctx.getUniqueVarName()
+            val resultType = e2.getType(ctx, subScope)
+
+            ctx.cFile.appendLine("${resultType.getCType()} $resultVar;")
+            ctx.cFile.appendLine("{")
+            ctx.cFile.appendLine("${e1Type.getCType()} it = $e1Var;")
+            val (e2Var, e2Lifetime) = e2.toC(ctx, subScope)
+            ctx.cFile.appendLine("$resultVar = $e2Var;")
+
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
+            ctx.cFile.appendLine("}")
+
+            return VarLifetime(resultVar, e2Lifetime)
+        }
+
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
+            val subScope = scope.subScope()
+            subScope.addLocalVarMeta("it", e1.getType(ctx, scope), fieldOf = null)
+            return e2.getType(ctx, subScope)
+        }
+    }
+
     data class Comparison(val e1: BsgExpression, val op: String, val e2: BsgExpression): BsgExpression() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
             ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
-            return VarLifetime(u, null) // Only used for primitives.
+            return VarLifetime(u, null)
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {

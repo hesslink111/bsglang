@@ -65,9 +65,12 @@ object Tokens {
     val lte: Parser<Void> = Scanners.string("<=")
 
     val equality: Parser<Void> = Scanners.string("==")
+    val inequality: Parser<Void> = Scanners.string("!=")
 
     val logicalAnd: Parser<Void> = Scanners.string("&&")
     val logicalOr: Parser<Void> = Scanners.string("||")
+
+    val pipeline: Parser<Void> = Scanners.string("|>")
 
     val identifier: Parser<String> = Scanners.IDENTIFIER
     val boolLiteral: Parser<String> = or(Scanners.string("false"), Scanners.string("true")).source()

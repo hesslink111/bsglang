@@ -1,0 +1,5 @@
+class Equatable {
+    equals(other: Equatable): Bool {
+        return false;
+    }
+}

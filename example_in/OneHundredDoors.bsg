@@ -18,7 +18,7 @@ class OneHundredDoors {
         while(i <= 100) {
             var j: Int = i;
             while(j <= 100) {
-                list.set(j - 1, not(list.get(j - 1) as Bool) as Any);
+                list.set(j - 1, (list.get(j - 1) as Bool != true) as Any);
                 j = j + i;
             }
             i = i + 1;
@@ -31,12 +31,5 @@ class OneHundredDoors {
         if(status as Bool) {
             IO.println("Door ".plus(StringEx.ofInt(i + 1)).plus(" is open."));
         }
-    }
-
-    not(b: Bool): Bool {
-        if(b) {
-            return false;
-        }
-        return true;
     }
 }

@@ -79,21 +79,31 @@ object ExpressionParser {
                     .asOptional()
     ) { a, instExp -> instExp.map<BsgExpression>{ t -> BsgExpression.InstanceOf(a, t) }.orElseGet { a } }
 
-    fun comparison(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+    fun pipeline(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
         instanceOf(exp).followedBy(Tokens.ws),
         sequence(
             Tokens.ws,
+            Tokens.pipeline.followedBy(Tokens.ws),
+            exp
+        ) { _, _, e -> e }
+                .asOptional()
+    ) { ins, p -> p.map<BsgExpression>{ e -> BsgExpression.Pipeline(ins, e) }.orElseGet { ins } }
+
+    fun comparison(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
+        pipeline(exp).followedBy(Tokens.ws),
+        sequence(
+            Tokens.ws,
             or(Tokens.gte, Tokens.gt, Tokens.lte, Tokens.lt).source().followedBy(Tokens.ws),
-            instanceOf(exp)
+                pipeline(exp)
         ) { _, op, e -> Pair(op, e) }
             .asOptional()
-    ) { a, compExp -> compExp.map<BsgExpression>{ (op, e) -> BsgExpression.Comparison(a, op, e) }.orElseGet { a } }
+    ) { p, compExp -> compExp.map<BsgExpression>{ (op, e) -> BsgExpression.Comparison(p, op, e) }.orElseGet { p } }
 
     fun equality(exp: Parser<BsgExpression>): Parser<BsgExpression> = sequence(
             comparison(exp).followedBy(Tokens.ws),
             sequence(
                     Tokens.ws,
-                    Tokens.equality.source().followedBy(Tokens.ws),
+                    or(Tokens.equality, Tokens.inequality).source().followedBy(Tokens.ws),
                     comparison(exp)
             ) { _, op, e -> Pair(op, e) }
                     .asOptional()

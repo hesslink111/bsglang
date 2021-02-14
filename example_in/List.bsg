@@ -2,8 +2,11 @@ h '#include <string.h>';
 import IO;
 import StringEx;
 import System;
+import ToString;
+import String;
+import StringBuilder;
 
-class List {
+class List: ToString {
     var arr: Opaque;
     var size: Int;
     var capacity: Int;
@@ -128,6 +131,20 @@ class List {
             f(i, get(i));
             i = i + 1;
         }
+    }
+
+    toString(): String {
+        var builder: StringBuilder = new StringBuilder().append("List(");
+        var i: Int = 0;
+        while(i < size) {
+            if(i > 0) {
+                builder.append(",");
+            }
+            builder.append(StringEx.ofAny(get(i)));
+            i = i + 1;
+        }
+        builder.append(")");
+        return builder.toString();
     }
 
     deinit(): Void {

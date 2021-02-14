@@ -4,6 +4,8 @@ import StringEx;
 import Cat;
 import Dog;
 import Animal;
+import Equatable;
+import ListEx;
 
 [Singleton]
 class ListExample {
@@ -37,5 +39,32 @@ class ListExample {
             IO.println((l.get(i) as Animal).talk());
             i = i + 1;
         }
+
+        var catStringsList: List = new List();
+        catStringsList.add("Cat" as Any);
+        catStringsList.add("Dog" as Any);
+        catStringsList.add("Dog" as Any);
+        catStringsList.add("Cat" as Any);
+        catStringsList.add("Cat" as Any);
+        IO.println("Cat strings list: ".plus(StringEx.ofAny(catStringsList as Any)));
+        var numCats: Int = catStringsList
+            |> ListEx.map(it, stringToAnimal)
+            |> ListEx.fold(it, 0 as Any, countCats)
+            |> it as Int;
+        IO.println("Number of cats: ".plus(StringEx.ofInt(numCats)));
+    }
+
+    stringToAnimal(value: Any): Any {
+        if(value is Equatable && (value as Equatable).equals("Cat" as Equatable)) {
+            return new Cat() as Any;
+        }
+        return new Dog() as Any;
+    }
+
+    countCats(acc: Any, value: Any): Any {
+        if((value is Cat)) {
+            return ((acc as Int) + 1) as Any;
+        }
+        return acc;
     }
 }

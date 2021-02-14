@@ -6,6 +6,8 @@ struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* 
 		return (struct BSG_AnyInstance*)&b->String;
 	case BSG_Type__Hashable:
 		return (struct BSG_AnyInstance*)&b->Hashable;
+	case BSG_Type__Equatable:
+		return (struct BSG_AnyInstance*)&b->Equatable;
 	}
 	return NULL;
 }
@@ -15,6 +17,8 @@ BSG_Bool BSG_BaseMethod__String_canCast(struct BSG_AnyBaseInstance* base, BSG_An
 	case BSG_Type__String:
 		return true;
 	case BSG_Type__Hashable:
+		return true;
+	case BSG_Type__Equatable:
 		return true;
 	}
 	return false;
@@ -92,7 +96,7 @@ BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5) {
 	}
 	return h;
 }
-BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__Hashable other) {
+BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__Equatable other) {
 	BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_19->baseInstance->baseClass->cast(_tmp_19->baseInstance, BSG_Type__String);
 	BSG_Bool _tmp_20 = other->baseInstance->baseClass->canCast(other->baseInstance, BSG_Type__String);
 	BSG_Bool _tmp_21 = false;
@@ -211,6 +215,8 @@ struct BSG_Class__String BSG_ClassSingleton__String_String = {
 };
 struct BSG_Class__Hashable BSG_ClassSingleton__String_Hashable = {
 	.hashCode = &BSG_Method__String·hashCode,
+};
+struct BSG_Class__Equatable BSG_ClassSingleton__String_Equatable = {
 	.equals = &BSG_Method__String·equals,
 };
 struct BSG_Instance__String* BSG_Constructor__String() {
@@ -222,6 +228,10 @@ struct BSG_Instance__String* BSG_Constructor__String() {
 	baseInstance->Hashable = (struct BSG_Instance__Hashable) {
 		.baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
 		.class = &BSG_ClassSingleton__String_Hashable,
+	};
+	baseInstance->Equatable = (struct BSG_Instance__Equatable) {
+		.baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
+		.class = &BSG_ClassSingleton__String_Equatable,
 	};
 	baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__String;
 	baseInstance->refCount += 2;

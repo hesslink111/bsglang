@@ -4,8 +4,8 @@ import io.deltawave.bsg.context.AstMetadata
 
 sealed class BsgType {
     object Any: BsgType() {
-        override fun getCDefinition(astMetadata: AstMetadata): String {
-            return ""
+        override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
+            return emptyList()
         }
 
         override fun getCTypeInternal(): String {
@@ -52,7 +52,7 @@ sealed class BsgType {
     }
 
     data class Class(val name: String): BsgType() {
-        override fun getCDefinition(astMetadata: AstMetadata): String {
+        override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
             val builder = StringBuilder()
             builder.appendLine("struct BSG_Instance__$name {")
             builder.appendLine("struct BSG_AnyBaseInstance* baseInstance;")
@@ -62,7 +62,7 @@ sealed class BsgType {
             }
             builder.appendLine("};")
             builder.appendLine("typedef struct BSG_Instance__$name* BSG_InstancePtr__$name;")
-            return builder.toString()
+            return listOf(builder.toString())
         }
 
         override fun getCTypeInternal(): String {
@@ -109,8 +109,8 @@ sealed class BsgType {
     }
 
     data class Primitive(val name: String): BsgType() {
-        override fun getCDefinition(astMetadata: AstMetadata): String {
-            return ""
+        override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
+            return emptyList()
         }
 
         override fun getCTypeInternal(): String {
@@ -164,8 +164,8 @@ sealed class BsgType {
             return "BSG_MethodDef__｢${args().joinToString("·")}｣￫${returnType.getCType()}"
         }
 
-        override fun getCDefinition(astMetadata: AstMetadata): String {
-            return """
+        override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
+            return argTypes.filterIsInstance<Method>().flatMap { it.getCDefinitions(astMetadata) } + listOf("""
                 #ifndef ${getDName()}
                 #define ${getDName()}
                 typedef ${returnType.getCType()} (*${getFName()})(${argsWithThis().joinToString(",")});
@@ -175,7 +175,7 @@ sealed class BsgType {
                 } ${getMName()};
                 typedef struct ${getMName()} ${getMName()};
                 #endif
-            """.trimIndent()
+            """.trimIndent())
         }
 
         override fun getCTypeInternal(): String {
@@ -235,7 +235,7 @@ sealed class BsgType {
         }
     }
 
-    abstract fun getCDefinition(astMetadata: AstMetadata): String
+    abstract fun getCDefinitions(astMetadata: AstMetadata): List<String>
     abstract fun getCTypeInternal(): String
     abstract fun getCRetain(varName: String): String
     abstract fun getCRelease(varName: String): String

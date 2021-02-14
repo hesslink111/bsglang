@@ -1,0 +1,24 @@
+import List;
+
+[Singleton]
+class ListEx {
+    map(list: List, mapper: (Any)->Any): List {
+        var newList: List = new List();
+        var i: Int = 0;
+        while(i < list.size) {
+            newList.add(mapper(list.get(i)));
+            i = i + 1;
+        }
+        return newList;
+    }
+
+    fold(list: List, initial: Any, operation: (Any, Any)->Any): Any {
+        var acc: Any = initial;
+        var i: Int = 0;
+        while(i < list.size) {
+            acc = operation(acc, list.get(i));
+            i = i + 1;
+        }
+        return acc;
+    }
+}

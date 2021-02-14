@@ -12,7 +12,6 @@ class ClassContext(
 ) {
     private var nextVarNum: Int = 0
     private var nextLifetime: Int = 0
-    private val methodDefs = mutableSetOf<String>()
 
     fun getNextTypeNum() = globalContext.getNextTypeNum()
 
@@ -22,13 +21,5 @@ class ClassContext(
 
     fun getUniqueLifetime(): Lifetime {
         return Lifetime(nextLifetime++)
-    }
-
-    fun dedupMethodDef(def: String): String {
-        return if(methodDefs.add(def)) {
-            def
-        } else {
-            ""
-        }
     }
 }

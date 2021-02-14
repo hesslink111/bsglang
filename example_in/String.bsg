@@ -24,7 +24,7 @@ class String: Hashable {
         return h;
     }
 
-    equals(other: Hashable): Bool {
+    equals(other: Equatable): Bool {
         if((other is String) == false) {
             return false;
         }
