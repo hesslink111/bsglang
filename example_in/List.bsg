@@ -114,6 +114,22 @@ class List {
         }
     }
 
+    forEach(f: (Any)->Void): Void {
+        var i: Int = 0;
+        while(i < size) {
+            f(get(i));
+            i = i + 1;
+        }
+    }
+
+    forEachIndexed(f: (Int,Any)->Void): Void {
+        var i: Int = 0;
+        while(i < size) {
+            f(i, get(i));
+            i = i + 1;
+        }
+    }
+
     deinit(): Void {
         releaseAll();
         c "free(this->arr);";

@@ -78,8 +78,6 @@ union BSG_Any_Content {
     union BSG_AnyPrimitive primitive;
 };
 
-//｢a·b·c｣￫d
-
 enum BSG_Any_ContentType {
     BSG_Any_ContentType__Instance = 0,
     BSG_Any_ContentType__Method = 1,

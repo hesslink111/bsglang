@@ -1,0 +1,42 @@
+import List;
+import IO;
+import String;
+import StringEx;
+
+[Singleton]
+class OneHundredDoors {
+    [Main]
+    main(): Void {
+        var list: List = new List();
+        var i: Int = 1;
+        while(i <= 100) {
+            list.add(false as Any);
+            i = i + 1;
+        }
+
+        i = 1;
+        while(i <= 100) {
+            var j: Int = i;
+            while(j <= 100) {
+                list.set(j - 1, not(list.get(j - 1) as Bool) as Any);
+                j = j + i;
+            }
+            i = i + 1;
+        }
+
+        list.forEachIndexed(maybePrintDoorStatus);
+    }
+
+    maybePrintDoorStatus(i: Int, status: Any): Void {
+        if(status as Bool) {
+            IO.println("Door ".plus(StringEx.ofInt(i + 1)).plus(" is open."));
+        }
+    }
+
+    not(b: Bool): Bool {
+        if(b) {
+            return false;
+        }
+        return true;
+    }
+}
