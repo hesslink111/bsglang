@@ -1,9 +1,15 @@
 package io.deltawave.bsg.ast.type
 
+import io.deltawave.bsg.context.AstMetadata
+
 sealed class BsgType {
     object Any: BsgType() {
+        override fun getCDefinition(astMetadata: AstMetadata): String {
+            return ""
+        }
+
         override fun getCTypeInternal(): String {
-            return "struct BSG_Any"
+            return "BSG_Any"
         }
 
         override fun getCRetain(varName: String): String {
@@ -46,8 +52,21 @@ sealed class BsgType {
     }
 
     data class Class(val name: String): BsgType() {
+        override fun getCDefinition(astMetadata: AstMetadata): String {
+            val builder = StringBuilder()
+            builder.appendLine("struct BSG_Instance__$name {")
+            builder.appendLine("struct BSG_AnyBaseInstance* baseInstance;")
+            builder.appendLine("struct BSG_Class__${name}* class;")
+            astMetadata.getClass(name).fields.forEach { (fieldName, fieldMeta) ->
+                builder.appendLine("${fieldMeta.type.getCType()} $fieldName;");
+            }
+            builder.appendLine("};")
+            builder.appendLine("typedef struct BSG_Instance__$name* BSG_InstancePtr__$name;")
+            return builder.toString()
+        }
+
         override fun getCTypeInternal(): String {
-            return "struct BSG_Instance__$name*"
+            return "BSG_InstancePtr__$name"
         }
 
         override fun getCRetain(varName: String): String {
@@ -71,7 +90,7 @@ sealed class BsgType {
                 Any -> """
                     ${toType.getCType()} $toVar;
                     $toVar.type = BSG_Any_ContentType__Instance;
-                    $toVar.content.instance = (struct BSG_AnyInstance*) $fromVar;
+                    $toVar.content.instance = (BSG_AnyInstancePtr) $fromVar;
                 """.trimIndent()
                 is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});"
                 is Primitive -> error("Cannot cast from Class to Primitive.")
@@ -90,6 +109,10 @@ sealed class BsgType {
     }
 
     data class Primitive(val name: String): BsgType() {
+        override fun getCDefinition(astMetadata: AstMetadata): String {
+            return ""
+        }
+
         override fun getCTypeInternal(): String {
             return "BSG_$name"
         }
@@ -126,17 +149,37 @@ sealed class BsgType {
     }
 
     data class Method(val argTypes: List<BsgType>, val returnType: BsgType): BsgType() {
-        var typeName: String? = null
+        private fun args() = argTypes.map { it.getCType() }
+        private fun argsWithThis() = listOf("BSG_AnyInstancePtr") + args()
 
-        fun getCTypedef(typeName: String): String {
-            val args = argTypes
-                    .mapIndexed { i, argType -> "${argType.getCType()} typedef_$i" }
-                    .joinToString(",")
-            return "typedef ${returnType.getCType()} (*$typeName)($args);"
+        fun getFName(): String {
+            return "BSG_Function__｢${argsWithThis().joinToString("·")}｣￫${returnType.getCType()}"
+        }
+
+        private fun getMName(): String {
+            return "BSG_MethodFatPtr__｢${args().joinToString("·")}｣￫${returnType.getCType()}"
+        }
+
+        private fun getDName(): String {
+            return "BSG_MethodDef__｢${args().joinToString("·")}｣￫${returnType.getCType()}"
+        }
+
+        override fun getCDefinition(astMetadata: AstMetadata): String {
+            return """
+                #ifndef ${getDName()}
+                #define ${getDName()}
+                typedef ${returnType.getCType()} (*${getFName()})(${argsWithThis().joinToString(",")});
+                typedef struct ${getMName()} {
+                    BSG_AnyInstancePtr this;
+                    ${getFName()} method;
+                } ${getMName()};
+                typedef struct ${getMName()} ${getMName()};
+                #endif
+            """.trimIndent()
         }
 
         override fun getCTypeInternal(): String {
-            return typeName ?: error("Must have emitted typedef already.")
+            return getMName()
         }
 
         override fun getCRetain(varName: String): String {
@@ -192,8 +235,8 @@ sealed class BsgType {
         }
     }
 
+    abstract fun getCDefinition(astMetadata: AstMetadata): String
     abstract fun getCTypeInternal(): String
-
     abstract fun getCRetain(varName: String): String
     abstract fun getCRelease(varName: String): String
     abstract fun getCCast(fromVar: String, toType: BsgType, toVar: String): String

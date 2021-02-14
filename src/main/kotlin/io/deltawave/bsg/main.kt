@@ -69,6 +69,7 @@ fun main(args: Array<String>) {
     if(argNamespace.getBoolean("make")) {
         ProcessBuilder("make")
                 .directory(outputDir)
+                .inheritIO()
                 .start()
                 .waitFor()
     }

@@ -1,6 +1,7 @@
-h "#include <string.h>";
+h '#include <string.h>';
 import IO;
 import StringEx;
+import System;
 
 class List {
     var arr: Opaque;
@@ -33,8 +34,8 @@ class List {
 
     set(index: Int, value: Any): Void {
         if(index < 0 || index >= size) {
-            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
-            c "exit(0);";
+            System.error("Index out of bounds: i: ".plus(StringEx.ofInt(index))
+                .plus(", size: ").plus(StringEx.ofInt(size)));
         }
 
         c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
@@ -56,8 +57,8 @@ class List {
 
     get(index: Int): Any {
         if(index < 0 || index >= size) {
-            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
-            c "exit(0);";
+            System.error("Index out of bounds: i: ".plus(StringEx.ofInt(index))
+                .plus(", size: ").plus(StringEx.ofInt(size)));
         }
 
         var value: Any;
@@ -74,8 +75,8 @@ class List {
 
     remove(index: Int): Void {
         if(index < 0 || index >= size) {
-            c 'printf("Index out of bounds: i: %d, size: %d\n", index, this->size);';
-            c "exit(0);";
+            System.error("Index out of bounds: i: ".plus(StringEx.ofInt(index))
+                .plus(", size: ").plus(StringEx.ofInt(size)));
         }
 
         var value: Any;

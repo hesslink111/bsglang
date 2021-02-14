@@ -63,6 +63,7 @@ struct BSG_AnyInstance {
     struct BSG_AnyBaseInstance* baseInstance;
     BSG_AnyClass class;
 };
+typedef struct BSG_AnyInstance* BSG_AnyInstancePtr;
 
 typedef void* BSG_AnyMethod;
 
@@ -77,6 +78,8 @@ union BSG_Any_Content {
     union BSG_AnyPrimitive primitive;
 };
 
+//｢a·b·c｣￫d
+
 enum BSG_Any_ContentType {
     BSG_Any_ContentType__Instance = 0,
     BSG_Any_ContentType__Method = 1,
@@ -87,5 +90,6 @@ struct BSG_Any {
     enum BSG_Any_ContentType type;
     union BSG_Any_Content content;
 };
+typedef struct BSG_Any BSG_Any;
 
 #endif

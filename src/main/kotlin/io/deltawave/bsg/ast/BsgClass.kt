@@ -27,13 +27,7 @@ data class BsgClass(
         ctx.hFile.appendLine("#define BSG_Type__$name ${ctx.getNextTypeNum()}l")
 
         // Instance - Struct containing fields
-        ctx.hFile.appendLine("struct BSG_Instance__$name {")
-        ctx.hFile.appendLine("struct BSG_AnyBaseInstance* baseInstance;")
-        ctx.hFile.appendLine("struct BSG_Class__${name}* class;")
-        body.fields.forEach { field ->
-            ctx.hFile.appendLine("${field.type.getCType()} ${field.name};")
-        }
-        ctx.hFile.appendLine("};")
+        ctx.hFile.appendLineNotBlank(ctx.astMetadata.getClass(name).type.getCDefinition(ctx.astMetadata))
 
         // BaseInstance - Struct containing sub-object instances, including self.
         ctx.hFile.appendLine("struct BSG_BaseInstance__$name {")
@@ -44,6 +38,12 @@ data class BsgClass(
         }
         ctx.hFile.appendLine("};")
 
+        // Method definitions
+        body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }.forEach {
+            val def = it.getType(ctx, classMeta.type).getCDefinition(ctx.astMetadata)
+            ctx.hFile.appendLineNotBlank(ctx.dedupMethodDef(def))
+        }
+
         // Class - Struct containing pointers to non-overridden methods.
         ctx.hFile.appendLine("struct BSG_Class__$name {")
         ctx.astMetadata.getClass(name)
@@ -51,11 +51,8 @@ data class BsgClass(
                 .values
                 .filter { it.methodOf.name == name }
             .forEach { method ->
-                val returnCType = (method.type as BsgType.Method).returnType.getCType()
-                val thisArgType = "struct BSG_Instance__$name*"
-                val otherArgTypes = method.type.argTypes.map { it.getCType() }
-                val argTypes = (listOf(thisArgType) + otherArgTypes).joinToString(",")
-                ctx.hFile.appendLine("$returnCType (*${method.varName})($argTypes);")
+                method.type as BsgType.Method
+                ctx.hFile.appendLine("${method.type.getFName()} ${method.varName};")
             }
         ctx.hFile.appendLine("};")
 
@@ -99,7 +96,7 @@ data class BsgClass(
             assert(deinitMethod.arguments.isEmpty()) { "deinit method must take no arguments." }
             ctx.cFile.appendLine("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release. // TODO: No hacks.
             ctx.cFile.appendLine("struct BSG_Instance__$name* this = &b->$name;")
-            ctx.cFile.appendLine("this->class->deinit(this);")
+            ctx.cFile.appendLine("this->class->deinit((BSG_AnyInstancePtr)this);")
             ctx.cFile.appendLine("base->refCount--;") // End hack.
         }
         getSelfAndSuperClasses(ctx)
@@ -125,29 +122,7 @@ data class BsgClass(
         // Methods - Functions for each method defined. Used in ClassSingleton.
         body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }.forEach { method ->
             val methodMeta = ctx.astMetadata.getClass(name).methods[method.name]!!
-            methodMeta.type as BsgType.Method
-
-            val thisName = if(methodMeta.methodOf.name != name) ctx.getUniqueVarName() else "this"
-            val thisArg = "struct BSG_Instance__${methodMeta.methodOf.name}* $thisName"
-            val otherArgs = method.arguments
-                .map { (argName, type) -> "${type.getCType()} $argName" }
-            val args = (listOf(thisArg) + otherArgs).joinToString(",")
-
-            ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(name, methodMeta)}($args);")
-            ctx.cFile.appendLine("${methodMeta.type.returnType.getCType()} ${getCMethodName(name, methodMeta)}($args) {")
-            if(methodMeta.methodOf.name != name) { // Add cast.
-                ctx.cFile.appendLine("struct BSG_Instance__$name* this = (struct BSG_Instance__$name*)$thisName->baseInstance->baseClass->cast($thisName->baseInstance, BSG_Type__$name);")
-            }
             method.toC(ctx, classScope.methodScope(methodMeta))
-            ctx.cFile.appendLine("}")
-
-            // Fat pointer -- Only need to declare in file for declaring class.
-            if(methodMeta.methodOf.name == name) {
-                ctx.hFile.appendLine("struct BSG_MethodFatPtr__${methodMeta.methodOf.name}_${methodMeta.varName} {")
-                ctx.hFile.appendLine("${methodMeta.methodOf.getCType()} this;")
-                ctx.hFile.appendLine("${methodMeta.type.returnType.getCType()} (*method)($args);")
-                ctx.hFile.appendLine("};")
-            }
         }
 
         // ClassSingletons - Implementation of Classes (all implemented) with method pointers set.
@@ -159,7 +134,7 @@ data class BsgClass(
                 val oClass = getSelfAndSuperClasses(ctx)
                         .mapNotNull { c -> c.methods[m.varName]?.let { c } }
                         .first()
-                ctx.cFile.appendLine(".${m.varName} = &${getCMethodName(oClass.name, m)},")
+                ctx.cFile.appendLine(".${m.varName} = &BSG_Method__${oClass.name}·${m.varName},")
             }
             ctx.cFile.appendLine("};")
         }
@@ -196,7 +171,7 @@ data class BsgClass(
             assert(deinitMethod.arguments.isEmpty()) { "init method must take no arguments." }
             ctx.cFile.appendLine("baseInstance->refCount += 2;") // Hack to make sure init doesn't try to release. // TODO: No hacks.
             ctx.cFile.appendLine("struct BSG_Instance__$name* this = &baseInstance->$name;")
-            ctx.cFile.appendLine("this->class->init(this);")
+            ctx.cFile.appendLine("this->class->init((BSG_AnyInstancePtr)this);")
             ctx.cFile.appendLine("baseInstance->refCount--;") // End hack.
         }
         ctx.cFile.appendLine("return &baseInstance->$name;")
@@ -218,7 +193,7 @@ data class BsgClass(
                 ?.let { mainMethod ->
                     assert(mainMethod.arguments.isEmpty()) { "Arguments must be empty in main method." }
                     ctx.mainCFileMain.appendLine("$name->baseInstance->baseClass->retain($name->baseInstance);")
-                    ctx.mainCFileMain.appendLine("$name->class->${mainMethod.name}($name);")
+                    ctx.mainCFileMain.appendLine("$name->class->${mainMethod.name}((BSG_AnyInstancePtr)$name);")
                 }
 
         // Footer
@@ -230,9 +205,5 @@ data class BsgClass(
             it as BsgType.Class
             ctx.astMetadata.getClass(it.name)
         }
-    }
-
-    private fun getCMethodName(baseClassName: String, methodMeta: VarMetadata.Method): String {
-        return "BSG_Method__${baseClassName}_${methodMeta.methodOf.name}_${methodMeta.varName}"
     }
 }

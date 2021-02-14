@@ -21,6 +21,7 @@ class CompilerTest {
             struct BSG_AnyBaseInstance* baseInstance;
             struct BSG_Class__Empty* class;
             };
+            typedef struct BSG_Instance__Empty* BSG_InstancePtr__Empty;
             struct BSG_BaseInstance__Empty {
             struct BSG_AnyBaseClass* baseClass;
             int refCount;
@@ -179,24 +180,30 @@ class CompilerTest {
                     struct BSG_AnyBaseInstance* baseInstance;
                     struct BSG_Class__Animal* class;
                     };
+                    typedef struct BSG_Instance__Animal* BSG_InstancePtr__Animal;
                     struct BSG_BaseInstance__Animal {
                     struct BSG_AnyBaseClass* baseClass;
                     int refCount;
                     struct BSG_Instance__Animal Animal;
                     };
+                    #ifndef BSG_MethodDef__｢｣￫BSG_Int
+                    #define BSG_MethodDef__｢｣￫BSG_Int
+                    typedef BSG_Int (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int)(BSG_AnyInstancePtr);
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
+                        BSG_AnyInstancePtr this;
+                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int method;
+                    } BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    #endif
                     struct BSG_Class__Animal {
-                    BSG_Int (*talk)(struct BSG_Instance__Animal*);
+                    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int talk;
                     };
                     struct BSG_AnyInstance* BSG_BaseMethod__Animal_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     BSG_Bool BSG_BaseMethod__Animal_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     void BSG_BaseMethod__Animal_retain(struct BSG_AnyBaseInstance* base);
                     void BSG_BaseMethod__Animal_release(struct BSG_AnyBaseInstance* base);
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Animal;
-                    BSG_Int BSG_Method__Animal_Animal_talk(struct BSG_Instance__Animal* this);
-                    struct BSG_MethodFatPtr__Animal_talk {
-                    struct BSG_Instance__Animal* this;
-                    BSG_Int (*method)(struct BSG_Instance__Animal* this);
-                    };
+                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0);
                     extern struct BSG_Class__Animal BSG_ClassSingleton__Animal_Animal;
                     extern struct BSG_Instance__Animal* BSG_Constructor__Animal();
                     #endif
@@ -236,15 +243,16 @@ class CompilerTest {
                     .retain = &BSG_BaseMethod__Animal_retain,
                     .release = &BSG_BaseMethod__Animal_release,
                     };
-                    BSG_Int BSG_Method__Animal_Animal_talk(struct BSG_Instance__Animal* this) {
-                    BSG_Int _tmp_0 = 0;
+                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0) {
+                    BSG_InstancePtr__Animal this = (struct BSG_Instance__Animal*)_tmp_0;
+                    BSG_Int _tmp_1 = 0;
                     if(this) {
                         this->baseInstance->baseClass->release(this->baseInstance);
                     }
-                    return _tmp_0;
+                    return _tmp_1;
                     }
                     struct BSG_Class__Animal BSG_ClassSingleton__Animal_Animal = {
-                    .talk = &BSG_Method__Animal_Animal_talk,
+                    .talk = &BSG_Method__Animal·talk,
                     };
                     struct BSG_Instance__Animal* BSG_Constructor__Animal() {
                     struct BSG_BaseInstance__Animal* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Animal));
@@ -266,6 +274,7 @@ class CompilerTest {
                     struct BSG_AnyBaseInstance* baseInstance;
                     struct BSG_Class__Cat* class;
                     };
+                    typedef struct BSG_Instance__Cat* BSG_InstancePtr__Cat;
                     struct BSG_BaseInstance__Cat {
                     struct BSG_AnyBaseClass* baseClass;
                     int refCount;
@@ -339,24 +348,30 @@ class CompilerTest {
                     struct BSG_AnyBaseInstance* baseInstance;
                     struct BSG_Class__Dog* class;
                     };
+                    typedef struct BSG_Instance__Dog* BSG_InstancePtr__Dog;
                     struct BSG_BaseInstance__Dog {
                     struct BSG_AnyBaseClass* baseClass;
                     int refCount;
                     struct BSG_Instance__Dog Dog;
                     };
+                    #ifndef BSG_MethodDef__｢｣￫BSG_Int
+                    #define BSG_MethodDef__｢｣￫BSG_Int
+                    typedef BSG_Int (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int)(BSG_AnyInstancePtr);
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
+                        BSG_AnyInstancePtr this;
+                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int method;
+                    } BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    #endif
                     struct BSG_Class__Dog {
-                    BSG_Int (*talk)(struct BSG_Instance__Dog*);
+                    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int talk;
                     };
                     struct BSG_AnyInstance* BSG_BaseMethod__Dog_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     BSG_Bool BSG_BaseMethod__Dog_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
                     void BSG_BaseMethod__Dog_retain(struct BSG_AnyBaseInstance* base);
                     void BSG_BaseMethod__Dog_release(struct BSG_AnyBaseInstance* base);
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Dog;
-                    BSG_Int BSG_Method__Dog_Dog_talk(struct BSG_Instance__Dog* this);
-                    struct BSG_MethodFatPtr__Dog_talk {
-                    struct BSG_Instance__Dog* this;
-                    BSG_Int (*method)(struct BSG_Instance__Dog* this);
-                    };
+                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0);
                     extern struct BSG_Class__Dog BSG_ClassSingleton__Dog_Dog;
                     extern struct BSG_Instance__Dog* BSG_Constructor__Dog();
                     #endif
@@ -396,15 +411,16 @@ class CompilerTest {
                     .retain = &BSG_BaseMethod__Dog_retain,
                     .release = &BSG_BaseMethod__Dog_release,
                     };
-                    BSG_Int BSG_Method__Dog_Dog_talk(struct BSG_Instance__Dog* this) {
-                    BSG_Int _tmp_0 = 1;
+                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0) {
+                    BSG_InstancePtr__Dog this = (struct BSG_Instance__Dog*)_tmp_0;
+                    BSG_Int _tmp_1 = 1;
                     if(this) {
                         this->baseInstance->baseClass->release(this->baseInstance);
                     }
-                    return _tmp_0;
+                    return _tmp_1;
                     }
                     struct BSG_Class__Dog BSG_ClassSingleton__Dog_Dog = {
-                    .talk = &BSG_Method__Dog_Dog_talk,
+                    .talk = &BSG_Method__Dog·talk,
                     };
                     struct BSG_Instance__Dog* BSG_Constructor__Dog() {
                     struct BSG_BaseInstance__Dog* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Dog));

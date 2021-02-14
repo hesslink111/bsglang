@@ -5,6 +5,7 @@ import IO;
 import StringEx;
 import StringBuilder;
 import ToString;
+import System;
 
 class Map: ToString {
     var bucketList: List;
@@ -81,6 +82,7 @@ class Map: ToString {
         if(i < bucket.size) {
             return (bucket.get(i) as MapEntry).value;
         }
+        System.error("Key does not exist in map: ".plus(StringEx.ofAny(key as Any)));
         return 0 as Any;
     }
 
@@ -94,9 +96,8 @@ class Map: ToString {
 
         if(i < bucket.size) {
             bucket.remove(i);
+            size = size - 1;
         }
-
-        size = size - 1;
     }
 
     rehash(newCapacity: Int): Void {

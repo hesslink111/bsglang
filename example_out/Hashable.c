@@ -31,26 +31,28 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Hashable = {
 	.retain = &BSG_BaseMethod__Hashable_retain,
 	.release = &BSG_BaseMethod__Hashable_release,
 };
-BSG_Int BSG_Method__Hashable_Hashable_hashCode(struct BSG_Instance__Hashable* this) {
-	BSG_Int _tmp_0 = 0;
+BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0) {
+	BSG_InstancePtr__Hashable this = (struct BSG_Instance__Hashable*)_tmp_0;
+	BSG_Int _tmp_1 = 0;
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
-	return _tmp_0;
+	return _tmp_1;
 }
-BSG_Bool BSG_Method__Hashable_Hashable_equals(struct BSG_Instance__Hashable* this,struct BSG_Instance__Hashable* other) {
-	BSG_Bool _tmp_1 = true;
+BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstancePtr _tmp_2,BSG_InstancePtr__Hashable other) {
+	BSG_InstancePtr__Hashable this = (struct BSG_Instance__Hashable*)_tmp_2;
+	BSG_Bool _tmp_3 = true;
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
 	if(other) {
 		other->baseInstance->baseClass->release(other->baseInstance);
 	}
-	return _tmp_1;
+	return _tmp_3;
 }
 struct BSG_Class__Hashable BSG_ClassSingleton__Hashable_Hashable = {
-	.hashCode = &BSG_Method__Hashable_Hashable_hashCode,
-	.equals = &BSG_Method__Hashable_Hashable_equals,
+	.hashCode = &BSG_Method__Hashable·hashCode,
+	.equals = &BSG_Method__Hashable·equals,
 };
 struct BSG_Instance__Hashable* BSG_Constructor__Hashable() {
 	struct BSG_BaseInstance__Hashable* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Hashable));

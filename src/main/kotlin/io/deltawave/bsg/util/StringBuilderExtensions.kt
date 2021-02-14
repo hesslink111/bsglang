@@ -1,10 +1,10 @@
 package io.deltawave.bsg.util
 
 fun StringBuilder.appendLineNotBlank(string: String): StringBuilder {
-    return if(string.isNotBlank()) {
-        appendLine(string)
-    } else {
-        this
+    return when {
+        string.isBlank() -> this
+        string.endsWith('\n') -> append(string)
+        else -> appendLine(string)
     }
 }
 

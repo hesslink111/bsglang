@@ -31,38 +31,39 @@ struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld = {
 	.retain = &BSG_BaseMethod__HelloWorld_retain,
 	.release = &BSG_BaseMethod__HelloWorld_release,
 };
-BSG_Void BSG_Method__HelloWorld_HelloWorld_main(struct BSG_Instance__HelloWorld* this) {
-	struct BSG_Instance__IO* _tmp_0;
-	_tmp_0 = IO;
-	if(_tmp_0) {
-		_tmp_0->baseInstance->baseClass->retain(_tmp_0->baseInstance);
+BSG_Void BSG_Method__HelloWorld·main(BSG_AnyInstancePtr _tmp_0) {
+	BSG_InstancePtr__HelloWorld this = (struct BSG_Instance__HelloWorld*)_tmp_0;
+	BSG_InstancePtr__IO _tmp_1;
+	_tmp_1 = IO;
+	if(_tmp_1) {
+		_tmp_1->baseInstance->baseClass->retain(_tmp_1->baseInstance);
 	}
-	struct BSG_MethodFatPtr__IO_println _tmp_1;
-	_tmp_1.this = _tmp_0;
-	_tmp_1.method = _tmp_0->class->println;
-	struct BSG_Instance__String* _tmp_2 = BSG_Constructor__String();
-	_tmp_2->baseInstance->baseClass->retain(_tmp_2->baseInstance);
-	_tmp_2->cStr = "Hello, world!";
-	_tmp_2->length = 13;
-	_tmp_2->isLiteral = true;
-	_tmp_1.this->baseInstance->baseClass->retain(_tmp_1.this->baseInstance);
-	if(_tmp_2) {
-		_tmp_2->baseInstance->baseClass->retain(_tmp_2->baseInstance);
+	BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_Void _tmp_2;
+	_tmp_2.this = (BSG_AnyInstancePtr) _tmp_1;
+	_tmp_2.method = _tmp_1->class->println;
+	BSG_InstancePtr__String _tmp_3 = BSG_Constructor__String();
+	_tmp_3->baseInstance->baseClass->retain(_tmp_3->baseInstance);
+	_tmp_3->cStr = "Hello, world!";
+	_tmp_3->length = 13;
+	_tmp_3->isLiteral = true;
+	_tmp_2.this->baseInstance->baseClass->retain(_tmp_2.this->baseInstance);
+	if(_tmp_3) {
+		_tmp_3->baseInstance->baseClass->retain(_tmp_3->baseInstance);
 	}
-	_tmp_1.method(_tmp_1.this,_tmp_2);
+	_tmp_2.method(_tmp_2.this,_tmp_3);
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
-	if(_tmp_0) {
-		_tmp_0->baseInstance->baseClass->release(_tmp_0->baseInstance);
+	if(_tmp_1) {
+		_tmp_1->baseInstance->baseClass->release(_tmp_1->baseInstance);
 	}
-	if(_tmp_2) {
-		_tmp_2->baseInstance->baseClass->release(_tmp_2->baseInstance);
+	if(_tmp_3) {
+		_tmp_3->baseInstance->baseClass->release(_tmp_3->baseInstance);
 	}
 	return;
 }
 struct BSG_Class__HelloWorld BSG_ClassSingleton__HelloWorld_HelloWorld = {
-	.main = &BSG_Method__HelloWorld_HelloWorld_main,
+	.main = &BSG_Method__HelloWorld·main,
 };
 struct BSG_Instance__HelloWorld* BSG_Constructor__HelloWorld() {
 	struct BSG_BaseInstance__HelloWorld* baseInstance = malloc(sizeof(struct BSG_BaseInstance__HelloWorld));

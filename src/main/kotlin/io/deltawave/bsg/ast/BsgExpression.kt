@@ -221,12 +221,11 @@ fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLife
     return when (identifier) {
         in instanceMeta.methods -> {
             val method = instanceMeta.methods[identifier]!!
-            method.type as BsgType.Method
-            ctx.cFile.appendLine("struct BSG_MethodFatPtr__${method.methodOf.name}_${method.varName} $resultVarName;")
+            ctx.cFile.appendLine("${method.type.getCType()} $resultVarName;")
             if(method.methodOf != instanceMeta.type) {
-                ctx.cFile.appendLine("$resultVarName.this = $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
+                ctx.cFile.appendLine("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
             } else {
-                ctx.cFile.appendLine("$resultVarName.this = $instanceVar;")
+                ctx.cFile.appendLine("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar;")
             }
             ctx.cFile.appendLine("$resultVarName.method = $instanceVar->class->$identifier;")
 

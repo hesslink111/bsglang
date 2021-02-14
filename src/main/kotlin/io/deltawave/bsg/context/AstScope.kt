@@ -24,7 +24,7 @@ class GlobalScope(globalVarList: List<VarMetadata.LocalOrGlobal>): Scope {
     }
 }
 
-class ClassScope(private val globalScope: GlobalScope, private val classMetadata: ClassMetadata): Scope {
+class ClassScope(private val globalScope: GlobalScope, val classMetadata: ClassMetadata): Scope {
     override fun getVarMeta(varName: String): VarMetadata {
         return classMetadata.fields[varName]
                 ?: classMetadata.methods[varName]

@@ -28,7 +28,7 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base) {
 		struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
 		base->refCount += 2;
 		struct BSG_Instance__String* this = &b->String;
-		this->class->deinit(this);
+		this->class->deinit((BSG_AnyInstancePtr)this);
 		base->refCount--;
 		free(base);
 	}
@@ -39,121 +39,122 @@ struct BSG_BaseClass BSG_BaseClassSingleton__String = {
 	.retain = &BSG_BaseMethod__String_retain,
 	.release = &BSG_BaseMethod__String_release,
 };
-BSG_Void BSG_Method__String_String_init(struct BSG_Instance__String* this) {
+BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0) {
+	BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_0;
 	this->cStr = "";
-	BSG_Int* _tmp_0;
-	_tmp_0 = &this->length;
-	BSG_Int _tmp_1 = 0;
-	*_tmp_0 = _tmp_1;
-	BSG_Bool* _tmp_2;
-	_tmp_2 = &this->isLiteral;
-	BSG_Bool _tmp_3 = true;
-	*_tmp_2 = _tmp_3;
+	BSG_Int* _tmp_1;
+	_tmp_1 = &this->length;
+	BSG_Int _tmp_2 = 0;
+	*_tmp_1 = _tmp_2;
+	BSG_Bool* _tmp_3;
+	_tmp_3 = &this->isLiteral;
+	BSG_Bool _tmp_4 = true;
+	*_tmp_3 = _tmp_4;
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
 	return;
 }
-BSG_Int BSG_Method__String_Hashable_hashCode(struct BSG_Instance__Hashable* _tmp_4) {
-	struct BSG_Instance__String* this = (struct BSG_Instance__String*)_tmp_4->baseInstance->baseClass->cast(_tmp_4->baseInstance, BSG_Type__String);
+BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5) {
+	BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_5->baseInstance->baseClass->cast(_tmp_5->baseInstance, BSG_Type__String);
 	BSG_Int h;
-	BSG_Int* _tmp_5;
-	_tmp_5 = &h;
-	BSG_Int _tmp_6 = 0;
-	*_tmp_5 = _tmp_6;
+	BSG_Int* _tmp_6;
+	_tmp_6 = &h;
+	BSG_Int _tmp_7 = 0;
+	*_tmp_6 = _tmp_7;
 	BSG_Int i;
-	BSG_Int* _tmp_7;
-	_tmp_7 = &i;
-	BSG_Int _tmp_8 = 0;
-	*_tmp_7 = _tmp_8;
+	BSG_Int* _tmp_8;
+	_tmp_8 = &i;
+	BSG_Int _tmp_9 = 0;
+	*_tmp_8 = _tmp_9;
 	while(true) {
-		BSG_Int _tmp_9 = this->length;
-		BSG_Int _tmp_10 = i < _tmp_9;
-		if(!_tmp_10) {
+		BSG_Int _tmp_10 = this->length;
+		BSG_Int _tmp_11 = i < _tmp_10;
+		if(!_tmp_11) {
 			break;
 		}
 		BSG_Int intValue;
 		intValue = (int)((char*)this->cStr)[i];
-		BSG_Int* _tmp_11;
-		_tmp_11 = &h;
-		BSG_Int _tmp_12 = 31;
-		BSG_Int _tmp_13 = _tmp_12 * h;
-		BSG_Int _tmp_14 = _tmp_13 + intValue;
-		*_tmp_11 = _tmp_14;
-		BSG_Int* _tmp_15;
-		_tmp_15 = &i;
-		BSG_Int _tmp_16 = 1;
-		BSG_Int _tmp_17 = i + _tmp_16;
-		*_tmp_15 = _tmp_17;
+		BSG_Int* _tmp_12;
+		_tmp_12 = &h;
+		BSG_Int _tmp_13 = 31;
+		BSG_Int _tmp_14 = _tmp_13 * h;
+		BSG_Int _tmp_15 = _tmp_14 + intValue;
+		*_tmp_12 = _tmp_15;
+		BSG_Int* _tmp_16;
+		_tmp_16 = &i;
+		BSG_Int _tmp_17 = 1;
+		BSG_Int _tmp_18 = i + _tmp_17;
+		*_tmp_16 = _tmp_18;
 	}
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
 	}
 	return h;
 }
-BSG_Bool BSG_Method__String_Hashable_equals(struct BSG_Instance__Hashable* _tmp_18,struct BSG_Instance__Hashable* other) {
-	struct BSG_Instance__String* this = (struct BSG_Instance__String*)_tmp_18->baseInstance->baseClass->cast(_tmp_18->baseInstance, BSG_Type__String);
-	BSG_Bool _tmp_19 = other->baseInstance->baseClass->canCast(other->baseInstance, BSG_Type__String);
-	BSG_Bool _tmp_20 = false;
-	BSG_Bool _tmp_21 = _tmp_19 == _tmp_20;
-	if(_tmp_21) {
-		BSG_Bool _tmp_22 = false;
+BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__Hashable other) {
+	BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_19->baseInstance->baseClass->cast(_tmp_19->baseInstance, BSG_Type__String);
+	BSG_Bool _tmp_20 = other->baseInstance->baseClass->canCast(other->baseInstance, BSG_Type__String);
+	BSG_Bool _tmp_21 = false;
+	BSG_Bool _tmp_22 = _tmp_20 == _tmp_21;
+	if(_tmp_22) {
+		BSG_Bool _tmp_23 = false;
 		if(this) {
 			this->baseInstance->baseClass->release(this->baseInstance);
 		}
 		if(other) {
 			other->baseInstance->baseClass->release(other->baseInstance);
 		}
-		return _tmp_22;
+		return _tmp_23;
 	}
-	struct BSG_Instance__String* otherString;
-	struct BSG_Instance__String** _tmp_23;
-	_tmp_23 = &otherString;
-	struct BSG_Instance__String* _tmp_24 = (struct BSG_Instance__String*) other->baseInstance->baseClass->cast(other->baseInstance, BSG_Type__String);
-	*_tmp_23 = _tmp_24;
-	BSG_Int _tmp_25 = this->length;
-	BSG_Int _tmp_26 = otherString->length;
-	BSG_Bool _tmp_27 = _tmp_25 == _tmp_26;
-	BSG_Bool _tmp_28 = false;
-	BSG_Bool _tmp_29 = _tmp_27 == _tmp_28;
-	if(_tmp_29) {
-		BSG_Bool _tmp_30 = false;
+	BSG_InstancePtr__String otherString;
+	BSG_InstancePtr__String* _tmp_24;
+	_tmp_24 = &otherString;
+	BSG_InstancePtr__String _tmp_25 = (BSG_InstancePtr__String) other->baseInstance->baseClass->cast(other->baseInstance, BSG_Type__String);
+	*_tmp_24 = _tmp_25;
+	BSG_Int _tmp_26 = this->length;
+	BSG_Int _tmp_27 = otherString->length;
+	BSG_Bool _tmp_28 = _tmp_26 == _tmp_27;
+	BSG_Bool _tmp_29 = false;
+	BSG_Bool _tmp_30 = _tmp_28 == _tmp_29;
+	if(_tmp_30) {
+		BSG_Bool _tmp_31 = false;
 		if(this) {
 			this->baseInstance->baseClass->release(this->baseInstance);
 		}
 		if(other) {
 			other->baseInstance->baseClass->release(other->baseInstance);
 		}
-		return _tmp_30;
+		return _tmp_31;
 	}
 	BSG_Int i;
-	BSG_Int* _tmp_31;
-	_tmp_31 = &i;
-	BSG_Int _tmp_32 = 0;
-	*_tmp_31 = _tmp_32;
+	BSG_Int* _tmp_32;
+	_tmp_32 = &i;
+	BSG_Int _tmp_33 = 0;
+	*_tmp_32 = _tmp_33;
 	BSG_Bool eq;
-	BSG_Bool* _tmp_33;
-	_tmp_33 = &eq;
-	BSG_Bool _tmp_34 = true;
-	*_tmp_33 = _tmp_34;
+	BSG_Bool* _tmp_34;
+	_tmp_34 = &eq;
+	BSG_Bool _tmp_35 = true;
+	*_tmp_34 = _tmp_35;
 	while(true) {
-		BSG_Int _tmp_35 = this->length;
-		BSG_Int _tmp_36 = i < _tmp_35;
-		BSG_Bool _tmp_37;
-		if(_tmp_36) {
-			_tmp_37 = eq;
+		BSG_Int _tmp_36 = this->length;
+		BSG_Int _tmp_37 = i < _tmp_36;
+		BSG_Bool _tmp_38;
+		if(_tmp_37) {
+			_tmp_38 = eq;
 		} else {
-			_tmp_37 = false;
+			_tmp_38 = false;
 		}
-		if(!_tmp_37) {
+		if(!_tmp_38) {
 			break;
 		}
 		eq = (int)((char*)this->cStr)[i] == (int)((char*)otherString->cStr)[i];
-		BSG_Int* _tmp_38;
-		_tmp_38 = &i;
-		BSG_Int _tmp_39 = 1;
-		BSG_Int _tmp_40 = i + _tmp_39;
-		*_tmp_38 = _tmp_40;
+		BSG_Int* _tmp_39;
+		_tmp_39 = &i;
+		BSG_Int _tmp_40 = 1;
+		BSG_Int _tmp_41 = i + _tmp_40;
+		*_tmp_39 = _tmp_41;
 	}
 	if(this) {
 		this->baseInstance->baseClass->release(this->baseInstance);
@@ -163,21 +164,22 @@ BSG_Bool BSG_Method__String_Hashable_equals(struct BSG_Instance__Hashable* _tmp_
 	}
 	return eq;
 }
-struct BSG_Instance__String* BSG_Method__String_String_plus(struct BSG_Instance__String* this,struct BSG_Instance__String* otherString) {
-	struct BSG_Instance__String* newString;
-	struct BSG_Instance__String** _tmp_41;
-	_tmp_41 = &newString;
-	struct BSG_Instance__String* _tmp_42 = BSG_Constructor__String();
-	_tmp_42->baseInstance->baseClass->retain(_tmp_42->baseInstance);
-	*_tmp_41 = _tmp_42;
-	BSG_Int* _tmp_43 = &newString->length;
-	BSG_Int _tmp_44 = this->length;
-	BSG_Int _tmp_45 = otherString->length;
-	BSG_Int _tmp_46 = _tmp_44 + _tmp_45;
-	*_tmp_43 = _tmp_46;
-	BSG_Bool* _tmp_47 = &newString->isLiteral;
-	BSG_Bool _tmp_48 = false;
-	*_tmp_47 = _tmp_48;
+BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_InstancePtr__String otherString) {
+	BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_42;
+	BSG_InstancePtr__String newString;
+	BSG_InstancePtr__String* _tmp_43;
+	_tmp_43 = &newString;
+	BSG_InstancePtr__String _tmp_44 = BSG_Constructor__String();
+	_tmp_44->baseInstance->baseClass->retain(_tmp_44->baseInstance);
+	*_tmp_43 = _tmp_44;
+	BSG_Int* _tmp_45 = &newString->length;
+	BSG_Int _tmp_46 = this->length;
+	BSG_Int _tmp_47 = otherString->length;
+	BSG_Int _tmp_48 = _tmp_46 + _tmp_47;
+	*_tmp_45 = _tmp_48;
+	BSG_Bool* _tmp_49 = &newString->isLiteral;
+	BSG_Bool _tmp_50 = false;
+	*_tmp_49 = _tmp_50;
 	newString->cStr = malloc((newString->length + 1) * sizeof(char));
 	strcpy(newString->cStr, this->cStr);
 	strcat(newString->cStr, otherString->cStr);
@@ -189,11 +191,12 @@ struct BSG_Instance__String* BSG_Method__String_String_plus(struct BSG_Instance_
 	}
 	return newString;
 }
-BSG_Void BSG_Method__String_String_deinit(struct BSG_Instance__String* this) {
-	BSG_Bool _tmp_49 = this->isLiteral;
-	BSG_Bool _tmp_50 = false;
-	BSG_Bool _tmp_51 = _tmp_49 == _tmp_50;
-	if(_tmp_51) {
+BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51) {
+	BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_51;
+	BSG_Bool _tmp_52 = this->isLiteral;
+	BSG_Bool _tmp_53 = false;
+	BSG_Bool _tmp_54 = _tmp_52 == _tmp_53;
+	if(_tmp_54) {
 		free(this->cStr);
 	}
 	if(this) {
@@ -202,13 +205,13 @@ BSG_Void BSG_Method__String_String_deinit(struct BSG_Instance__String* this) {
 	return;
 }
 struct BSG_Class__String BSG_ClassSingleton__String_String = {
-	.init = &BSG_Method__String_String_init,
-	.plus = &BSG_Method__String_String_plus,
-	.deinit = &BSG_Method__String_String_deinit,
+	.init = &BSG_Method__String·init,
+	.plus = &BSG_Method__String·plus,
+	.deinit = &BSG_Method__String·deinit,
 };
 struct BSG_Class__Hashable BSG_ClassSingleton__String_Hashable = {
-	.hashCode = &BSG_Method__String_Hashable_hashCode,
-	.equals = &BSG_Method__String_Hashable_equals,
+	.hashCode = &BSG_Method__String·hashCode,
+	.equals = &BSG_Method__String·equals,
 };
 struct BSG_Instance__String* BSG_Constructor__String() {
 	struct BSG_BaseInstance__String* baseInstance = malloc(sizeof(struct BSG_BaseInstance__String));
@@ -223,7 +226,7 @@ struct BSG_Instance__String* BSG_Constructor__String() {
 	baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__String;
 	baseInstance->refCount += 2;
 	struct BSG_Instance__String* this = &baseInstance->String;
-	this->class->init(this);
+	this->class->init((BSG_AnyInstancePtr)this);
 	baseInstance->refCount--;
 	return &baseInstance->String;
 }

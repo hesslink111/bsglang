@@ -5,7 +5,7 @@ int main() {
 	IO = BSG_Constructor__IO();
 	IO->baseInstance->baseClass->retain(IO->baseInstance);
 	HelloWorld->baseInstance->baseClass->retain(HelloWorld->baseInstance);
-	HelloWorld->class->main(HelloWorld);
+	HelloWorld->class->main((BSG_AnyInstancePtr)HelloWorld);
 	HelloWorld->baseInstance->baseClass->release(HelloWorld->baseInstance);
 	IO->baseInstance->baseClass->release(IO->baseInstance);
 }

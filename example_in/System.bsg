@@ -1,0 +1,10 @@
+h '#include <stdlib.h>';
+import IO;
+
+[Singleton]
+class System {
+    error(message: String): Void {
+        IO.println("Error: ".plus(message));
+        c 'exit(EXIT_FAILURE);';
+    }
+}

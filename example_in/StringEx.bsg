@@ -20,27 +20,26 @@ class StringEx {
         t.isLiteral = true;
     }
 
-    ofInt(i: Int): String {
-        var str: String = new String();
-        c "str->cStr = malloc(32);";
-        c 'snprintf(str->cStr, 32, "%d", i);';
-        c 'str->length = (BSG_Int) strlen(str->cStr);';
-        str.isLiteral = false;
-        return str;
-    }
-
     ofBool(b: Bool): String {
-        var str: String = new String();
         if(b) {
             return t;
         }
         return f;
     }
 
+    ofInt(i: Int): String {
+        var str: String = new String();
+        c 'str->cStr = malloc(12);';
+        c 'snprintf(str->cStr, 12, "%d", i);';
+        c 'str->length = (BSG_Int) strlen(str->cStr);';
+        str.isLiteral = false;
+        return str;
+    }
+
     ofOpaque(i: Opaque): String {
         var str: String = new String();
-        c "str->cStr = malloc(32);";
-        c 'snprintf(str->cStr, 32, "%p", i);';
+        c "str->cStr = malloc(12);";
+        c 'snprintf(str->cStr, 12, "%p", i);';
         c 'str->length = (BSG_Int) strlen(str->cStr);';
         str.isLiteral = false;
         return str;
