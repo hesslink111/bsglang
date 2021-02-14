@@ -94,6 +94,7 @@ sealed class BsgExpression {
 
             val subScope = scope.subScope()
             subScope.addLocalVarMeta("it", e1Type, fieldOf = null)
+            e1Lifetime?.let { subScope.storeLifetimeAssociation("it", it, e1Type) }
 
             val resultVar = ctx.getUniqueVarName()
             val resultType = e2.getType(ctx, subScope)
