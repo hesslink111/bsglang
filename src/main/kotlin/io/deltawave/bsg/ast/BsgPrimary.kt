@@ -5,7 +5,7 @@ import io.deltawave.bsg.context.ClassContext
 import io.deltawave.bsg.context.BlockScope
 import io.deltawave.bsg.context.VarLifetime
 import io.deltawave.bsg.context.VarMetadata
-import io.deltawave.bsg.util.appendLineNotBlank
+import io.deltawave.bsg.util.writelnNotBlank
 
 sealed class BsgPrimary {
     data class Var(val identifier: String): BsgPrimary() {
@@ -15,11 +15,11 @@ sealed class BsgPrimary {
                 if(varMeta.isGlobal) {
                     // Global variable, does not have lifetime.
                     val resultVarName = ctx.getUniqueVarName()
-                    ctx.cFile.appendLine("${varMeta.type.getCType()} $resultVarName;")
-                    ctx.cFile.appendLine("$resultVarName = $identifier;")
+                    ctx.cMethods.writeln("${varMeta.type.getCType()} $resultVarName;")
+                    ctx.cMethods.writeln("$resultVarName = $identifier;")
 
                     // Retain
-                    ctx.cFile.appendLineNotBlank(varMeta.type.getCRetain(resultVarName))
+                    varMeta.type.writeCRetain(resultVarName, ctx.cMethods)
                     val resultLifetime = ctx.getUniqueLifetime()
                     scope.storeLifetimeAssociation(resultVarName, resultLifetime, varMeta.type)
 
@@ -44,8 +44,8 @@ sealed class BsgPrimary {
     data class Construction(val className: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__$className();")
-            ctx.cFile.appendLine("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__$className();")
+            ctx.cMethods.writeln("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
             val resultLifetime = ctx.getUniqueLifetime()
             scope.storeLifetimeAssociation(resultName, resultLifetime, getType(ctx, scope))
             return VarLifetime(resultName, resultLifetime)
@@ -59,11 +59,11 @@ sealed class BsgPrimary {
     data class StringLiteral(val stringContents: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__String();")
-            ctx.cFile.appendLine("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
-            ctx.cFile.appendLine("$resultName->cStr = \"$stringContents\";")
-            ctx.cFile.appendLine("$resultName->length = ${stringContents.length};")
-            ctx.cFile.appendLine("$resultName->isLiteral = true;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__String();")
+            ctx.cMethods.writeln("$resultName->baseInstance->baseClass->retain($resultName->baseInstance);")
+            ctx.cMethods.writeln("$resultName->cStr = \"$stringContents\";")
+            ctx.cMethods.writeln("$resultName->length = ${stringContents.length};")
+            ctx.cMethods.writeln("$resultName->isLiteral = true;")
             val resultLifetime = ctx.getUniqueLifetime()
             scope.storeLifetimeAssociation(resultName, resultLifetime, getType(ctx, scope))
             return VarLifetime(resultName, resultLifetime)
@@ -77,7 +77,7 @@ sealed class BsgPrimary {
     data class BoolLiteral(val bool: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("BSG_Bool $resultName = $bool;")
+            ctx.cMethods.writeln("BSG_Bool $resultName = $bool;")
             return VarLifetime(resultName, null)
         }
 
@@ -89,7 +89,7 @@ sealed class BsgPrimary {
     data class FloatLiteral(val float: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("BSG_Float $resultName = $float;")
+            ctx.cMethods.writeln("BSG_Float $resultName = $float;")
             return VarLifetime(resultName, null)
         }
 
@@ -101,7 +101,7 @@ sealed class BsgPrimary {
     data class IntLiteral(val int: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("BSG_Int $resultName = $int;")
+            ctx.cMethods.writeln("BSG_Int $resultName = $int;")
             return VarLifetime(resultName, null)
         }
 

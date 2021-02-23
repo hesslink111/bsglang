@@ -24,15 +24,15 @@ data class BsgMethod(
         val args = (listOf(thisArg) + otherArgs).joinToString(",")
 
         // Function declaration. - any instance as this param.
-        ctx.hFile.appendLine("${type.returnType.getCType()} BSG_Method__${baseType.name}·$name($args);")
+        ctx.hMethods.writeln("${type.returnType.getCType()} BSG_Method__${baseType.name}·$name($args);")
 
         // Function and body.
-        ctx.cFile.appendLine("${type.returnType.getCType()} BSG_Method__${baseType.name}·$name($args) {")
+        ctx.cMethods.writeln_r("${type.returnType.getCType()} BSG_Method__${baseType.name}·$name($args) {")
 
         if(baseType.name != methodOfType.name) {
-            ctx.cFile.appendLine("${baseType.getCType()} this = (${baseType.getCType()})$thisParam->baseInstance->baseClass->cast($thisParam->baseInstance, BSG_Type__${baseType.name});")
+            ctx.cMethods.writeln("${baseType.getCType()} this = (${baseType.getCType()})$thisParam->baseInstance->baseClass->cast($thisParam->baseInstance, BSG_Type__${baseType.name});")
         } else {
-            ctx.cFile.appendLine("${baseType.getCType()} this = (struct BSG_Instance__${baseType.name}*)$thisParam;")
+            ctx.cMethods.writeln("${baseType.getCType()} this = (struct BSG_Instance__${baseType.name}*)$thisParam;")
         }
 
         scope.storeLifetimeAssociation("this", ctx.getUniqueLifetime(), scope.getThisType())
@@ -42,7 +42,7 @@ data class BsgMethod(
         }
         body.toC(ctx, scope)
 
-        ctx.cFile.appendLine("}")
+        ctx.cMethods.writeln_l("}")
     }
 
     fun getType(ctx: ClassContext, thisType: BsgType.Class): BsgType.Method {

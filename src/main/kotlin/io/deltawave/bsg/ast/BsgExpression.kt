@@ -2,7 +2,7 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
-import io.deltawave.bsg.util.appendLineNotBlank
+import io.deltawave.bsg.util.writelnNotBlank
 
 sealed class BsgExpression {
     data class Cast(val exp: BsgExpression, val toType: BsgType): BsgExpression() {
@@ -11,7 +11,7 @@ sealed class BsgExpression {
             val expType = exp.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
 
-            ctx.cFile.appendLineNotBlank(expType.getCCast(expVar, toType, resultVar))
+            ctx.cMethods.writelnNotBlank(expType.getCCast(expVar, toType, resultVar))
 
             return VarLifetime(resultVar, expLifetime)
         }
@@ -27,25 +27,25 @@ sealed class BsgExpression {
             val resultVar = ctx.getUniqueVarName()
 
             // Lazily evaluate these expressions.
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $resultVar;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $resultVar;")
             if(op == "&&") {
-                ctx.cFile.appendLine("if($var1) {")
+                ctx.cMethods.writeln_r("if($var1) {")
                 val subScope = scope.subScope()
                 val (var2, _) = e2.toC(ctx, subScope)
-                ctx.cFile.appendLine("$resultVar = $var2;")
+                ctx.cMethods.writeln("$resultVar = $var2;")
                 releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
-                ctx.cFile.appendLine("} else {")
-                ctx.cFile.appendLine("$resultVar = false;")
-                ctx.cFile.appendLine("}")
+                ctx.cMethods.writeln_lr("} else {")
+                ctx.cMethods.writeln("$resultVar = false;")
+                ctx.cMethods.writeln_l("}")
             } else if(op == "||") {
-                ctx.cFile.appendLine("if($var1) {")
-                ctx.cFile.appendLine("$resultVar = true;")
-                ctx.cFile.appendLine("} else {")
+                ctx.cMethods.writeln_r("if($var1) {")
+                ctx.cMethods.writeln("$resultVar = true;")
+                ctx.cMethods.writeln_lr("} else {")
                 val subScope = scope.subScope()
                 val (var2, _) = e2.toC(ctx, subScope)
-                ctx.cFile.appendLine("$resultVar = $var2;")
+                ctx.cMethods.writeln("$resultVar = $var2;")
                 releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
-                ctx.cFile.appendLine("}")
+                ctx.cMethods.writeln_l("}")
             }
 
             return VarLifetime(resultVar, null)
@@ -61,7 +61,7 @@ sealed class BsgExpression {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
             return VarLifetime(u, null) // Only used for primitives.
         }
 
@@ -77,7 +77,7 @@ sealed class BsgExpression {
             val var1Type = e1.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
 
-            ctx.cFile.appendLineNotBlank(var1Type.getCInstanceOf(var1, t, resultVar))
+            ctx.cMethods.writelnNotBlank(var1Type.getCInstanceOf(var1, t, resultVar))
 
             return VarLifetime(resultVar, null)
         }
@@ -99,14 +99,14 @@ sealed class BsgExpression {
             val resultVar = ctx.getUniqueVarName()
             val resultType = e2.getType(ctx, subScope)
 
-            ctx.cFile.appendLine("${resultType.getCType()} $resultVar;")
-            ctx.cFile.appendLine("{")
-            ctx.cFile.appendLine("${e1Type.getCType()} it = $e1Var;")
+            ctx.cMethods.writeln("${resultType.getCType()} $resultVar;")
+            ctx.cMethods.writeln_r("{")
+            ctx.cMethods.writeln("${e1Type.getCType()} it = $e1Var;")
             val (e2Var, e2Lifetime) = e2.toC(ctx, subScope)
-            ctx.cFile.appendLine("$resultVar = $e2Var;")
+            ctx.cMethods.writeln("$resultVar = $e2Var;")
 
             releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
-            ctx.cFile.appendLine("}")
+            ctx.cMethods.writeln_l("}")
 
             return VarLifetime(resultVar, e2Lifetime)
         }
@@ -123,7 +123,7 @@ sealed class BsgExpression {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
             return VarLifetime(u, null)
         }
 
@@ -138,7 +138,7 @@ sealed class BsgExpression {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
             return VarLifetime(u, null) // Only used for primitives.
         }
 
@@ -153,7 +153,7 @@ sealed class BsgExpression {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
             val u = ctx.getUniqueVarName()
-            ctx.cFile.appendLine("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
             return VarLifetime(u, null) // Only used for primitives.
         }
 
@@ -191,7 +191,7 @@ sealed class BsgLValueExpression {
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
 
-            ctx.cFile.appendLine("${resultType.getCType()}* $resultVar = &$termVar->$identifier;") // Pointer to field.
+            ctx.cMethods.writeln("${resultType.getCType()}* $resultVar = &$termVar->$identifier;") // Pointer to field.
             return LValueMetadata.Field(resultVar)
         }
 
@@ -208,15 +208,15 @@ sealed class BsgLValueExpression {
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope)
 
-            ctx.cFile.appendLine("${resultType.getCType()}* $resultVar;")
+            ctx.cMethods.writeln("${resultType.getCType()}* $resultVar;")
             return when (varMeta) {
                 is VarMetadata.Field -> {
-                    ctx.cFile.appendLine("$resultVar = &this->$identifier;")
+                    ctx.cMethods.writeln("$resultVar = &this->$identifier;")
                     LValueMetadata.Field(resultVar)
                 }
                 is VarMetadata.Method -> error("Cannot assign to method.")
                 else -> {
-                    ctx.cFile.appendLine("$resultVar = &$identifier;")
+                    ctx.cMethods.writeln("$resultVar = &$identifier;")
                     LValueMetadata.Local(resultVar, identifier)
                 }
             }
@@ -252,23 +252,23 @@ fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLife
     return when (identifier) {
         in instanceMeta.methods -> {
             val method = instanceMeta.methods[identifier]!!
-            ctx.cFile.appendLine("${method.type.getCType()} $resultVarName;")
+            ctx.cMethods.writeln("${method.type.getCType()} $resultVarName;")
             if(method.methodOf != instanceMeta.type) {
-                ctx.cFile.appendLine("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
+                ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
             } else {
-                ctx.cFile.appendLine("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar;")
+                ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar;")
             }
-            ctx.cFile.appendLine("$resultVarName.method = $instanceVar->class->$identifier;")
+            ctx.cMethods.writeln("$resultVarName.method = $instanceVar->class->$identifier;")
 
             // Methods are already retained ("this" is already retained)
             VarLifetime(resultVarName, instanceLifetime)
         }
         in instanceMeta.fields -> {
             val field = instanceMeta.fields[identifier]!!
-            ctx.cFile.appendLine("${field.type.getCType()} $resultVarName = $instanceVar->$identifier;")
+            ctx.cMethods.writeln("${field.type.getCType()} $resultVarName = $instanceVar->$identifier;")
 
             // Retain
-            ctx.cFile.appendLineNotBlank(field.type.getCRetain(resultVarName))
+            field.type.writeCRetain(resultVarName, ctx.cMethods)
             val resultLifetime = ctx.getUniqueLifetime()
             scope.storeLifetimeAssociation(resultVarName, resultLifetime, field.type)
 
@@ -302,20 +302,20 @@ sealed class BsgPostfix {
             val argVarNames = args.map { it.toC(ctx, scope).varName }
 
             // Retain any class/method that gets passed as an argument, including this.
-            ctx.cFile.appendLine("$expVar.this->baseInstance->baseClass->retain($expVar.this->baseInstance);")
+            ctx.cMethods.writeln("$expVar.this->baseInstance->baseClass->retain($expVar.this->baseInstance);")
             args.forEachIndexed { i, arg ->
                 val argName = argVarNames[i]
                 val argType = arg.getType(ctx, scope)
-                ctx.cFile.appendLineNotBlank(argType.getCRetain(argName))
+                argType.writeCRetain(argName, ctx.cMethods)
             }
 
             val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope, exp)
             if(resultType is BsgType.Primitive && resultType.name == "Void") {
-                ctx.cFile.appendLine("$expVar.method($argVars);")
+                ctx.cMethods.writeln("$expVar.method($argVars);")
             } else {
-                ctx.cFile.appendLine("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
+                ctx.cMethods.writeln("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
             }
             return if(resultType.let { it is BsgType.Class || it is BsgType.Method || it is BsgType.Any }) {
                 val resultLifetime = ctx.getUniqueLifetime()

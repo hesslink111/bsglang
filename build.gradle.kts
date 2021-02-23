@@ -14,6 +14,7 @@ dependencies {
     testImplementation(kotlin("test-junit"))
     implementation("org.jparsec:jparsec:3.1")
     implementation("net.sourceforge.argparse4j:argparse4j:0.8.1")
+    implementation("org.ainslec:picocog:1.0.6")
 }
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "1.8"

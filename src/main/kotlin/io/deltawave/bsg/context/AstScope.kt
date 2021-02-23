@@ -1,7 +1,7 @@
 package io.deltawave.bsg.context
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.util.appendLineNotBlank
+import io.deltawave.bsg.util.writelnNotBlank
 
 interface Scope {
     fun getVarMeta(varName: String): VarMetadata
@@ -112,6 +112,6 @@ fun releaseLifetimes(ctx: ClassContext, scope: BlockScope, lifetimes: List<Lifet
     lifetimes
             .map { scope.getVarForLifetime(it) }
             .forEach { (varName, varType) ->
-                ctx.cFile.appendLineNotBlank(varType.getCRelease(varName))
+                varType.writeCRelease(varName, ctx.cMethods)
             }
 }

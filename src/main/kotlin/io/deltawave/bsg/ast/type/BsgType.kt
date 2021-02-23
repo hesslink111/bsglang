@@ -1,6 +1,7 @@
 package io.deltawave.bsg.ast.type
 
 import io.deltawave.bsg.context.AstMetadata
+import org.ainslec.picocog.PicoWriter
 
 sealed class BsgType {
     object Any: BsgType() {
@@ -12,24 +13,20 @@ sealed class BsgType {
             return "BSG_Any"
         }
 
-        override fun getCRetain(varName: String): String {
-            return """
-                if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {
-                    $varName.content.instance->baseInstance->baseClass->retain($varName.content.instance->baseInstance);
-                } else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {
-                    $varName.content.method.this->baseInstance->baseClass->retain($varName.content.method.this->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRetain(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {")
+            writer.writeln("$varName.content.instance->baseInstance->baseClass->retain($varName.content.instance->baseInstance);")
+            writer.writeln_lr("} else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {")
+            writer.writeln("$varName.content.method.this->baseInstance->baseClass->retain($varName.content.method.this->baseInstance);")
+            writer.writeln_l("}")
         }
 
-        override fun getCRelease(varName: String): String {
-            return """
-                if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {
-                    $varName.content.instance->baseInstance->baseClass->release($varName.content.instance->baseInstance);
-                } else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {
-                    $varName.content.method.this->baseInstance->baseClass->release($varName.content.method.this->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRelease(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName.type == BSG_Any_ContentType__Instance && $varName.content.instance) {")
+            writer.writeln("$varName.content.instance->baseInstance->baseClass->release($varName.content.instance->baseInstance);")
+            writer.writeln_lr("} else if($varName.type == BSG_Any_ContentType__Method && $varName.content.method.this) {")
+            writer.writeln("$varName.content.method.this->baseInstance->baseClass->release($varName.content.method.this->baseInstance);")
+            writer.writeln_l("}")
         }
 
         override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
@@ -69,20 +66,16 @@ sealed class BsgType {
             return "BSG_InstancePtr__$name"
         }
 
-        override fun getCRetain(varName: String): String {
-            return """
-                if($varName) {
-                    $varName->baseInstance->baseClass->retain($varName->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRetain(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName) {")
+            writer.writeln("$varName->baseInstance->baseClass->retain($varName->baseInstance);")
+            writer.writeln_l("}")
         }
 
-        override fun getCRelease(varName: String): String {
-            return """
-                if($varName) {
-                    $varName->baseInstance->baseClass->release($varName->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRelease(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName) {")
+            writer.writeln("$varName->baseInstance->baseClass->release($varName->baseInstance);")
+            writer.writeln_l("}")
         }
 
         override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
@@ -117,13 +110,9 @@ sealed class BsgType {
             return "BSG_$name"
         }
 
-        override fun getCRetain(varName: String): String {
-            return ""
-        }
+        override fun writeCRetain(varName: String, writer: PicoWriter) {}
 
-        override fun getCRelease(varName: String): String {
-            return ""
-        }
+        override fun writeCRelease(varName: String, writer: PicoWriter) {}
 
         override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
             return when(toType) {
@@ -182,20 +171,16 @@ sealed class BsgType {
             return getMName()
         }
 
-        override fun getCRetain(varName: String): String {
-            return """
-                if($varName.this) {
-                    $varName.this->baseInstance->baseClass->retain($varName.this->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRetain(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName.this) {")
+            writer.writeln("$varName.this->baseInstance->baseClass->retain($varName.this->baseInstance);")
+            writer.writeln_l("}")
         }
 
-        override fun getCRelease(varName: String): String {
-            return """
-                if($varName.this) {
-                    $varName.this->baseInstance->baseClass->release($varName.this->baseInstance);
-                }
-            """.trimIndent()
+        override fun writeCRelease(varName: String, writer: PicoWriter) {
+            writer.writeln_r("if($varName.this) {")
+            writer.writeln("$varName.this->baseInstance->baseClass->release($varName.this->baseInstance);")
+            writer.writeln_l("}")
         }
 
         override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
@@ -237,8 +222,8 @@ sealed class BsgType {
 
     abstract fun getCDefinitions(astMetadata: AstMetadata): List<String>
     abstract fun getCTypeInternal(): String
-    abstract fun getCRetain(varName: String): String
-    abstract fun getCRelease(varName: String): String
+    abstract fun writeCRetain(varName: String, writer: PicoWriter)
+    abstract fun writeCRelease(varName: String, writer: PicoWriter)
     abstract fun getCCast(fromVar: String, toType: BsgType, toVar: String): String
     abstract fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String
 }

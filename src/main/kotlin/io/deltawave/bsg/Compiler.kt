@@ -6,6 +6,7 @@ import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
 import io.deltawave.bsg.parser.BsgParser
 import io.deltawave.bsg.util.appendLineNotBlank
+import org.ainslec.picocog.PicoWriter
 import java.io.File
 
 object Compiler {
@@ -59,38 +60,38 @@ object Compiler {
         val globalContext = GlobalContext()
         val classes = filesCompleted.values.map { it.cls }
         val astMeta = AstMetadata(classes)
-        val mainHFileBuilder = StringBuilder()
-        val mainCFileInitBuilder = StringBuilder()
-        val mainCFileMainBuilder = StringBuilder()
-        val mainCFileDeinitBuilder = StringBuilder()
+        val mainH = PicoWriter("    ")
+        val mainHIncludes = mainH.createDeferredWriter().writeln("// Includes")
+        val mainC = PicoWriter("    ")
+            .writeln("// Includes")
+            .writeln("#include \"main.h\"")
+        val mainCMain = mainC.createDeferredWriter().writeln().writeln("// Main")
+        mainCMain.writeln_r("int main() {")
+        val mainCInit = mainCMain.createDeferredWriter()
+        val mainCBody = mainCMain.createDeferredWriter()
+        val mainCDeinit = mainCMain.createDeferredWriter()
+        mainCMain.writeln_l("}")
+
+
         filesCompleted.values.forEach { bsgFile ->
             val ctx = ClassContext(
                     globalContext = globalContext,
-                    hFile = StringBuilder(),
-                    cFile = StringBuilder(),
-                    mainHFile = mainHFileBuilder,
-                    mainCFileInit = mainCFileInitBuilder,
-                    mainCFileMain = mainCFileMainBuilder,
-                    mainCFileDeinit = mainCFileDeinitBuilder,
+                    mainHIncludes = mainHIncludes,
+                    mainCInit = mainCInit,
+                    mainCBody = mainCBody,
+                    mainCDeinit = mainCDeinit,
                     astMetadata = astMeta
             )
 
             bsgFile.toC(ctx, globalScope)
 
-            outputFiles["${bsgFile.cls.name}.h"] = ctx.hFile.toString()
-            outputFiles["${bsgFile.cls.name}.c"] = ctx.cFile.toString()
+            outputFiles["${bsgFile.cls.name}.h"] = ctx.h.toString()
+            outputFiles["${bsgFile.cls.name}.c"] = ctx.c.toString()
         }
 
         // main files.
-        outputFiles["main.h"] = mainHFileBuilder.toString()
-        outputFiles["main.c"] = StringBuilder()
-                .appendLine("#include \"main.h\"")
-                .appendLine("int main() {")
-                .appendLineNotBlank(mainCFileInitBuilder)
-                .appendLineNotBlank(mainCFileMainBuilder)
-                .appendLineNotBlank(mainCFileDeinitBuilder)
-                .appendLine("}")
-                .toString()
+        outputFiles["main.h"] = mainH.toString()
+        outputFiles["main.c"] = mainC.toString()
 
         outputFiles["Makefile"] = StringBuilder()
                 .appendLine("all: main")
