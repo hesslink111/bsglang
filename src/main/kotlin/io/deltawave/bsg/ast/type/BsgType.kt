@@ -35,6 +35,7 @@ sealed class BsgType {
                 is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content.instance->baseInstance, BSG_Type__${toType.name});"
                 is Primitive -> "${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;"
                 is Method -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;"
+                is Generic -> getCCast(fromVar, toType.rawType, toVar)
             }
         }
 
@@ -44,7 +45,12 @@ sealed class BsgType {
                 is Class -> "BSG_Bool $toVar = $fromVar.type == BSG_Any_ContentType__Instance && $fromVar.content.instance->baseInstance->baseClass->canCast($fromVar.content.instance->baseInstance, BSG_Type__${isType.name});"
                 is Primitive -> error("'Any is PrimitiveType' is not yet supported.")
                 is Method -> error("'Any is MethodType' is not yet supported.")
+                is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }
+        }
+
+        override fun specify(typeArgs: Map<String, BsgType>): BsgType {
+            return this
         }
     }
 
@@ -88,6 +94,7 @@ sealed class BsgType {
                 is Class -> "${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});"
                 is Primitive -> error("Cannot cast from Class to Primitive.")
                 is Method -> error("Cannot cast from Class to Method.")
+                is Generic -> getCCast(fromVar, toType.rawType, toVar)
             }
         }
 
@@ -97,7 +104,13 @@ sealed class BsgType {
                 is Class -> "BSG_Bool $toVar = $fromVar->baseInstance->baseClass->canCast($fromVar->baseInstance, BSG_Type__${isType.name});"
                 is Primitive -> error("Class type can never be a primitive.")
                 is Method -> error("Class type can never be a method.")
+                is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }
+        }
+
+        override fun specify(typeArgs: Map<String, BsgType>): BsgType {
+            // TODO: Map type args.
+            return this
         }
     }
 
@@ -124,6 +137,7 @@ sealed class BsgType {
                 is Class -> error("Cannot cast from Primitive to Class.")
                 is Primitive -> "${toType.getCType()} $toVar = (${getCType()}) $fromVar;"
                 is Method -> error("Cannot cast from Primitive to Method.")
+                is Generic -> getCCast(fromVar, toType.rawType, toVar)
             }
         }
 
@@ -133,7 +147,12 @@ sealed class BsgType {
                 is Class -> error("Primitive type can never be a class.")
                 is Primitive -> error("'PrimitiveType is PrimitiveType' is not yet supported.")
                 is Method -> error("Primitive type can never be a method.")
+                is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }
+        }
+
+        override fun specify(typeArgs: Map<String, BsgType>): BsgType {
+            return this
         }
     }
 
@@ -193,6 +212,7 @@ sealed class BsgType {
                 is Class -> error("Cannot cast from Method to Class.")
                 is Primitive -> error("Cannot cast from Method to Primitive.")
                 is Method -> error("Cannot cast from Method to Method.")
+                is Generic -> getCCast(fromVar, toType.rawType, toVar)
             }
         }
 
@@ -202,7 +222,42 @@ sealed class BsgType {
                 is Class -> error("Method type can never be a class.")
                 is Primitive -> error("Method type can never be a primitive.")
                 is Method -> error("'MethodType is MethodType' is not yet supported.")
+                is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }
+        }
+
+        override fun specify(typeArgs: Map<String, BsgType>): BsgType {
+            return Method(argTypes.map { it.specify(typeArgs) }, returnType.specify(typeArgs))
+        }
+    }
+
+    data class Generic(val name: String, val rawType: BsgType): BsgType() {
+        override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
+            return rawType.getCDefinitions(astMetadata)
+        }
+
+        override fun getCTypeInternal(): String {
+            return rawType.getCType()
+        }
+
+        override fun writeCRetain(varName: String, writer: PicoWriter) {
+            rawType.writeCRetain(varName, writer)
+        }
+
+        override fun writeCRelease(varName: String, writer: PicoWriter) {
+            rawType.writeCRelease(varName, writer)
+        }
+
+        override fun getCCast(fromVar: String, toType: BsgType, toVar: String): String {
+            return rawType.getCCast(fromVar, toType, toVar)
+        }
+
+        override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
+            return rawType.getCInstanceOf(fromVar, isType, toVar)
+        }
+
+        override fun specify(typeArgs: Map<String, BsgType>): BsgType {
+            return typeArgs[name] ?: error("Type arg not found for generic $name.")
         }
     }
 
@@ -226,4 +281,5 @@ sealed class BsgType {
     abstract fun writeCRelease(varName: String, writer: PicoWriter)
     abstract fun getCCast(fromVar: String, toType: BsgType, toVar: String): String
     abstract fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String
+    abstract fun specify(typeArgs: Map<String, BsgType>): BsgType
 }

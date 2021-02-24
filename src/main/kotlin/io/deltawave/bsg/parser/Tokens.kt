@@ -44,6 +44,8 @@ object Tokens {
     val closeParen: Parser<Void> = Scanners.string(")")
     val openSquare: Parser<Void> = Scanners.string("[")
     val closeSquare: Parser<Void> = Scanners.string("]")
+    val openAngle: Parser<Void> = Scanners.string("<")
+    val closeAngle: Parser<Void> = Scanners.string(">")
 
     val colon: Parser<Void> = Scanners.string(":")
     val semicolon: Parser<Void> = Scanners.string(";")

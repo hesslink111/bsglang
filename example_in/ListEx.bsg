@@ -2,7 +2,7 @@ import List;
 
 [Singleton]
 class ListEx {
-    map(list: List, mapper: (Any)->Any): List {
+    map(list: List, mapper: (<T: Any>)-><T: Any>): List {
         var newList: List = new List();
         var i: Int = 0;
         while(i < list.size) {
@@ -12,7 +12,7 @@ class ListEx {
         return newList;
     }
 
-    fold(list: List, initial: Any, operation: (Any, Any)->Any): Any {
+    fold(list: List, initial: <T: Any>, operation: (<T: Any>, <T: Any>)-><T: Any>): <T: Any> {
         var acc: Any = initial;
         var i: Int = 0;
         while(i < list.size) {

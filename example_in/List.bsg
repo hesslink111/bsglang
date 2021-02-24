@@ -17,7 +17,7 @@ class List: ToString {
         this.size = 0;
     }
 
-    add(value: Any): Void {
+    add(value: <T: Any>): Void {
         if(this.size + 1 > this.capacity) {
             var newCapacity: Int = ((this.capacity * 3) / 2);
             c "this->arr = realloc(this->arr, newCapacity * sizeof(struct BSG_Any));";
@@ -35,7 +35,7 @@ class List: ToString {
         size = size + 1;
     }
 
-    set(index: Int, value: Any): Void {
+    set(index: Int, value: <T: Any>): Void {
         if(index < 0 || index >= size) {
             System.error("Index out of bounds: i: ".plus(StringEx.ofInt(index))
                 .plus(", size: ").plus(StringEx.ofInt(size)));
@@ -58,13 +58,13 @@ class List: ToString {
         c "((struct BSG_Any*)this->arr)[index] = value;";
     }
 
-    get(index: Int): Any {
+    get(index: Int): <T: Any> {
         if(index < 0 || index >= size) {
             System.error("Index out of bounds: i: ".plus(StringEx.ofInt(index))
                 .plus(", size: ").plus(StringEx.ofInt(size)));
         }
 
-        var value: Any;
+        var value: <T: Any>;
         c "value = ((struct BSG_Any*)this->arr)[index];";
 
         c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
@@ -82,7 +82,7 @@ class List: ToString {
                 .plus(", size: ").plus(StringEx.ofInt(size)));
         }
 
-        var value: Any;
+        var value: <T: Any>;
         c "value = ((struct BSG_Any*)this->arr)[index];";
 
         c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
@@ -104,7 +104,7 @@ class List: ToString {
     releaseAll(): Void {
         var i: Int = 0;
         while(i < size) {
-            var value: Any;
+            var value: <T: Any>;
             c "value = ((struct BSG_Any*)this->arr)[i];";
 
             c "if(value.type == BSG_Any_ContentType__Instance && value.content.instance) {";
@@ -117,7 +117,7 @@ class List: ToString {
         }
     }
 
-    forEach(f: (Any)->Void): Void {
+    forEach(f: (<T: Any>)->Void): Void {
         var i: Int = 0;
         while(i < size) {
             f(get(i));
@@ -125,7 +125,7 @@ class List: ToString {
         }
     }
 
-    forEachIndexed(f: (Int,Any)->Void): Void {
+    forEachIndexed(f: (Int,<T: Any>)->Void): Void {
         var i: Int = 0;
         while(i < size) {
             f(i, get(i));

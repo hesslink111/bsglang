@@ -31,8 +31,8 @@ object TypeParser {
             sequence(
                     Tokens.comma.followedBy(Tokens.ws),
                     t.followedBy(Tokens.ws)
-            ) { _, t -> t }.many()
-    ) { t, ts -> listOf(t) + ts }
+            ) { _, type -> type }.many()
+    ) { type, ts -> listOf(type) + ts }
             .asOptional()
             .map { it.orNull() ?: emptyList() }
 
@@ -46,13 +46,24 @@ object TypeParser {
             t
     ) { _, args, _, returnType -> BsgType.Method(args, returnType) }
 
+    fun genericType(t: Parser<BsgType>): Parser<BsgType> = sequence(
+            Tokens.openAngle.followedBy(Tokens.ws),
+            Tokens.identifier
+                .followedBy(Tokens.ws)
+                .followedBy(Tokens.colon)
+                .followedBy(Tokens.ws),
+            t.followedBy(Tokens.ws)
+                .followedBy(Tokens.closeAngle)
+    ) { _, name, rawType -> BsgType.Generic(name, rawType) }
+
     val type: Parser<BsgType> by lazy {
         val tRef = Parser.newReference<BsgType>()
         val t = or(
             anyType,
             primitiveType,
             classType,
-            methodType(tRef.lazy())
+            methodType(tRef.lazy()),
+            genericType(tRef.lazy())
         )
         tRef.set(t)
         t
