@@ -1,7 +1,6 @@
 package io.deltawave.bsg.context
 
 import io.deltawave.bsg.ast.type.BsgType
-import io.deltawave.bsg.util.writelnNotBlank
 
 interface Scope {
     fun getVarMeta(varName: String): VarMetadata
@@ -32,8 +31,8 @@ class ClassScope(private val globalScope: GlobalScope, val classMetadata: ClassM
     }
 
     fun methodScope(methodMeta: VarMetadata.Method): BlockScope {
-        val methodScope = BlockScope(parentScope = this, thisVarType = classMetadata.type)
-        methodScope.addLocalVarMeta("this", classMetadata.type, fieldOf = null)
+        val methodScope = BlockScope(parentScope = this, thisVarType = classMetadata.genericType)
+        methodScope.addLocalVarMeta("this", classMetadata.genericType, fieldOf = null)
         methodMeta.args.forEach { (name, type) ->
             methodScope.addLocalVarMeta(name, type, fieldOf = null)
         }

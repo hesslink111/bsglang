@@ -66,7 +66,9 @@ sealed class BsgExpression {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
+            if(e1.getType(ctx, scope) != e2.getType(ctx, scope)) {
+                error("Equality can only be performed on values of the same type.")
+            }
             return BsgType.Primitive("Bool")
         }
     }
@@ -128,8 +130,10 @@ sealed class BsgExpression {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
-            return e1.getType(ctx, scope)
+            if(e1.getType(ctx, scope) != e2.getType(ctx, scope)) {
+                error("Comparison can only be performed on values of the same type.")
+            }
+            return BsgType.Primitive("Bool")
         }
     }
 
@@ -143,7 +147,9 @@ sealed class BsgExpression {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
+            if(e1.getType(ctx, scope) != e2.getType(ctx, scope)) {
+                error("Addition can only be performed on values of the same type.")
+            }
             return e1.getType(ctx, scope)
         }
     }
@@ -158,7 +164,9 @@ sealed class BsgExpression {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            assert(e1.getType(ctx, scope) == e2.getType(ctx, scope))
+            if(e1.getType(ctx, scope) != e2.getType(ctx, scope)) {
+                error("Multiplication can only be performed on values of the same type.")
+            }
             return e1.getType(ctx, scope)
         }
     }
@@ -253,7 +261,7 @@ fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLife
         in instanceMeta.methods -> {
             val method = instanceMeta.methods[identifier]!!
             ctx.cMethods.writeln("${method.type.getCType()} $resultVarName;")
-            if(method.methodOf != instanceMeta.type) {
+            if(method.methodOf != instanceMeta.genericType) {
                 ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
             } else {
                 ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar;")
@@ -274,7 +282,7 @@ fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLife
 
             VarLifetime(resultVarName, resultLifetime)
         }
-        else -> error("No field or method in ${instanceMeta.type} named $identifier")
+        else -> error("No field or method in ${instanceMeta.genericType} named $identifier")
     }
 }
 
@@ -298,6 +306,10 @@ sealed class BsgPostfix {
     data class Call(val args: List<BsgExpression>): BsgPostfix() {
         override fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val (expVar, _) = exp.toC(ctx, scope) // Method Fat Pointer
+            val methodType = exp.getType(ctx, scope)
+            if(methodType !is BsgType.Method || methodType.argTypes != args.map { it.getType(ctx, scope) }) {
+                error("Call can only be performed on method where arg and parameter types match.")
+            }
 
             val argVarNames = args.map { it.toC(ctx, scope).varName }
 

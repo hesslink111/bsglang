@@ -7,38 +7,37 @@ data class AstMetadata(private val classes: List<BsgClass>) {
     private val classMetadata: Map<String, ClassMetadata>
     init {
         val classesByName = classes.associateBy { it.name }
+        fun getClassByName(name: String): BsgClass {
+            return classesByName[name] ?: error("Could not find class $name")
+        }
         this.classMetadata = classesByName.mapValues { (name, cls) ->
             // Gotta find "declaring class" for all fields and methods.
-            fun BsgClass.getSuperClasses(): List<BsgClass> {
+            fun BsgClass.getSuperClasses(): List<BsgType.Class> {
                 return this.directSuperClasses
-                        .map { classesByName[it] ?: error("Could not find class $it") }
-                        .flatMap { listOf(it) + it.getSuperClasses() }
+                    .flatMap { listOf(it) + getClassByName(it.name).getSuperClasses() }
             }
             // Searching the super-class list in reverse is equivalent to
             // searching the tree starting with the leaves.
             val superClasses = cls.getSuperClasses()
-            val superClassesAndSelf = listOf(cls) + superClasses
+            val superClassesAndSelf = listOf(BsgType.Class(cls.name, emptyMap())) + superClasses
             val fieldVars = cls.body.fields.map { field ->
-                val fieldOfClass = superClassesAndSelf.reversed().first { superClass ->
-                    superClass.body.fields.any { f -> f.name == field.name }
+                val fieldOf = superClassesAndSelf.reversed().first { superClass ->
+                    getClassByName(superClass.name).body.fields.any { f -> f.name == field.name }
                 }
-                val fieldOf = BsgType.Class(fieldOfClass.name)
                 VarMetadata.Field(field.name, field.type, fieldOf = fieldOf)
             }
             val methodVars = cls.body.methods.map { method ->
-                val methodOfClass = superClassesAndSelf.reversed().first { superClass ->
-                    superClass.body.methods.any { m -> m.name == method.name }
+                val methodOf = superClassesAndSelf.reversed().first { superClass ->
+                    getClassByName(superClass.name).body.methods.any { m -> m.name == method.name }
                 }
-                val methodOf = BsgType.Class(methodOfClass.name)
                 val methodType = BsgType.Method(method.arguments.map { (_, type) -> type }, method.returnType)
                 VarMetadata.Method(method.name, methodType, methodOf = methodOf, method.arguments, method.attributes)
             }
-            val superClassTypes = superClasses.map { superClass -> BsgType.Class(superClass.name) }
             ClassMetadata(
-                    BsgType.Class(name),
+                    BsgType.Class(name, emptyMap()),
                     fieldVars.associateBy { it.varName },
                     methodVars.associateBy { it.varName },
-                    superClassTypes.toSet(),
+                    superClasses.toSet(),
                     cls.attributes
             )
         }

@@ -52,9 +52,13 @@ sealed class BsgType {
         override fun specify(typeArgs: Map<String, BsgType>): BsgType {
             return this
         }
+
+        override fun equals(other: kotlin.Any?): Boolean {
+            return other is Any || other is Generic && equals(other.rawType)
+        }
     }
 
-    data class Class(val name: String): BsgType() {
+    data class Class(val name: String, val typeArgs: Map<String, BsgType>): BsgType() {
         override fun getCDefinitions(astMetadata: AstMetadata): List<String> {
             val builder = StringBuilder()
             builder.appendLine("struct BSG_Instance__$name {")
@@ -109,8 +113,12 @@ sealed class BsgType {
         }
 
         override fun specify(typeArgs: Map<String, BsgType>): BsgType {
-            // TODO: Map type args.
-            return this
+            return Class(name, this.typeArgs.mapValues { (_, t) -> t.specify(typeArgs) })
+        }
+
+        override fun equals(other: kotlin.Any?): Boolean {
+            return other is Class && other.name == this.name && other.typeArgs == this.typeArgs ||
+                    other is Generic && equals(other.rawType)
         }
     }
 
@@ -229,6 +237,11 @@ sealed class BsgType {
         override fun specify(typeArgs: Map<String, BsgType>): BsgType {
             return Method(argTypes.map { it.specify(typeArgs) }, returnType.specify(typeArgs))
         }
+
+        override fun equals(other: kotlin.Any?): Boolean {
+            return other is Method && other.argTypes == this.argTypes && other.returnType == this.returnType ||
+                    other is Generic && equals(other.rawType)
+        }
     }
 
     data class Generic(val name: String, val rawType: BsgType): BsgType() {
@@ -258,6 +271,14 @@ sealed class BsgType {
 
         override fun specify(typeArgs: Map<String, BsgType>): BsgType {
             return typeArgs[name] ?: error("Type arg not found for generic $name.")
+        }
+
+        override fun hashCode(): Int {
+            return rawType.hashCode()
+        }
+
+        override fun equals(other: kotlin.Any?): Boolean {
+            return rawType.equals(other)
         }
     }
 

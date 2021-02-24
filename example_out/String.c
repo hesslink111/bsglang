@@ -80,7 +80,7 @@ BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5) {
     *_tmp_8 = _tmp_9;
     while(true) {
         BSG_Int _tmp_10 = this->length;
-        BSG_Int _tmp_11 = i < _tmp_10;
+        BSG_Bool _tmp_11 = i < _tmp_10;
         if(!_tmp_11) {
             break;
         }
@@ -150,7 +150,7 @@ BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__
     *_tmp_34 = _tmp_35;
     while(true) {
         BSG_Int _tmp_36 = this->length;
-        BSG_Int _tmp_37 = i < _tmp_36;
+        BSG_Bool _tmp_37 = i < _tmp_36;
         BSG_Bool _tmp_38;
         if(_tmp_37) {
             _tmp_38 = eq;

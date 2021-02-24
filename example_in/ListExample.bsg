@@ -11,7 +11,7 @@ import ListEx;
 class ListExample {
     [Main]
     main(): Void {
-        var l: List = new List();
+        var l: List<T: Animal> = new List<T: Animal>();
 
         IO.println("Add two cats:");
         var i: Int = 0;

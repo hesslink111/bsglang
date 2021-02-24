@@ -9,7 +9,9 @@ sealed class BsgStatement {
         override fun toC(ctx: ClassContext, scope: BlockScope) {
             val (conditionVarName, _) = condition.toC(ctx, scope)
             val conditionType = condition.getType(ctx, scope)
-            assert(conditionType is BsgType.Primitive && conditionType.name == "Bool")
+            if(conditionType !is BsgType.Primitive || conditionType.name != "Bool") {
+                error("If condition must be a boolean.")
+            }
 
             ctx.cMethods.writeln_r("if($conditionVarName) {") // Begin if
             val subScope = scope.subScope()
@@ -28,7 +30,9 @@ sealed class BsgStatement {
 
             val (conditionVarName, _) = condition.toC(ctx, subScope)
             val conditionType = condition.getType(ctx, subScope)
-            assert(conditionType is BsgType.Primitive && conditionType.name == "Bool")
+            if(conditionType !is BsgType.Primitive || conditionType.name != "Bool") {
+                error("While condition must be a boolean.")
+            }
 
             ctx.cMethods.writeln_r("if(!$conditionVarName) {")
             ctx.cMethods.writeln("break;")
@@ -50,14 +54,16 @@ sealed class BsgStatement {
     data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
         override fun toC(ctx: ClassContext, scope: BlockScope) {
             val lValueType = lValue.getType(ctx, scope)
-            assert(lValueType == rValue.getType(ctx, scope))
+            val rValueType = rValue.getType(ctx, scope)
+            if(lValueType != rValueType) {
+                error("L-Value and R-Value must be equal: $lValueType, $rValueType")
+            }
 
             val lValueMeta = lValue.toC(ctx, scope)
             val (rValueVar, rValueLifetime) = rValue.toC(ctx, scope)
 
             when (lValueMeta) {
                 is LValueMetadata.Field -> { // Only retain/release if assigning to field.
-                    val rValueType = rValue.getType(ctx, scope)
                     rValueType.writeCRetain(rValueVar, ctx.cMethods)
                     rValueType.writeCRelease("(*${lValueMeta.varName})", ctx.cMethods)
                 }

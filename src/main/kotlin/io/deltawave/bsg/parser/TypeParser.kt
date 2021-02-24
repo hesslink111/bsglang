@@ -24,7 +24,32 @@ object TypeParser {
         Tokens.opaque
     ).source().map { BsgType.Primitive(it) }
 
-    val classType: Parser<BsgType> = Tokens.identifier.map { BsgType.Class(it) }
+    fun typeArgs(t: Parser<BsgType>): Parser<Map<String, BsgType>> = sequence(
+        Tokens.openAngle.followedBy(Tokens.ws),
+        Tokens.identifier
+            .followedBy(Tokens.ws)
+            .followedBy(Tokens.colon)
+            .followedBy(Tokens.ws),
+        t,
+        sequence(
+            Tokens.ws
+                .followedBy(Tokens.comma)
+                .followedBy(Tokens.ws),
+            Tokens.identifier
+                .followedBy(Tokens.ws)
+                .followedBy(Tokens.colon)
+                .followedBy(Tokens.ws),
+            t,
+        ) { _, name, type -> name to type }.many().map { it.toMap() }
+            .followedBy(Tokens.ws),
+        Tokens.closeAngle.followedBy(Tokens.ws)
+    ) { _, name, type, nameTypes, _ -> mapOf(name to type) + nameTypes }
+        .optional(emptyMap())
+
+    fun classType(t: Parser<BsgType>): Parser<BsgType> = sequence(
+            Tokens.identifier.followedBy(Tokens.ws),
+            typeArgs(t)
+    ) { name, typeArgs -> BsgType.Class(name, typeArgs) }
 
     fun methodArgs(t: Parser<BsgType>): Parser<List<BsgType>> = sequence(
             t.followedBy(Tokens.ws),
@@ -61,7 +86,7 @@ object TypeParser {
         val t = or(
             anyType,
             primitiveType,
-            classType,
+            classType(tRef.lazy()),
             methodType(tRef.lazy()),
             genericType(tRef.lazy())
         )

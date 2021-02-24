@@ -1,6 +1,7 @@
 package io.deltawave.bsg.parser
 
 import io.deltawave.bsg.ast.*
+import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.util.Either
 import io.deltawave.bsg.util.either
 import org.jparsec.Parser
@@ -62,12 +63,13 @@ object BsgParser {
         Tokens.identifier.followedBy(Tokens.ws), // ClassName
         sequence(
             Tokens.colon.followedBy(Tokens.ws),
-            Tokens.identifier.followedBy(Tokens.ws),
+            TypeParser.classType(TypeParser.type),
             sequence(
                     Tokens.comma.followedBy(Tokens.ws),
-                    Tokens.identifier
+                    TypeParser.classType(TypeParser.type)
             ) { _, superClassName -> superClassName }.many()
         ) { _, superClassName, superClassNames -> listOf(superClassName) + superClassNames }
+            .map { it.map { it as BsgType.Class } }
             .followedBy(Tokens.ws)
                 .asOptional().map { it.orElseGet { emptyList() } },
         classBody

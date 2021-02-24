@@ -6,7 +6,7 @@ import io.deltawave.bsg.util.writelnNotBlank
 
 data class BsgClass(
     val name: String,
-    val directSuperClasses: List<String>,
+    val directSuperClasses: List<BsgType.Class>,
     val body: BsgClassBody,
     val attributes: Set<String>
 ) {
@@ -27,7 +27,7 @@ data class BsgClass(
         ctx.hTypeNum.writeln("#define BSG_Type__$name ${ctx.getNextTypeNum()}l")
 
         // Instance - Struct containing fields
-        ctx.astMetadata.getClass(name).type.getCDefinitions(ctx.astMetadata).forEach {
+        ctx.astMetadata.getClass(name).genericType.getCDefinitions(ctx.astMetadata).forEach {
             ctx.hInstance.writelnNotBlank(it)
         }
 
@@ -42,7 +42,7 @@ data class BsgClass(
 
         // Method definitions
         body.methods.filter { it.name in ctx.astMetadata.getClass(name).methods }
-                .flatMap { it.getType(ctx, classMeta.type).getCDefinitions(ctx.astMetadata) }
+                .flatMap { it.getType(ctx, classMeta.genericType).getCDefinitions(ctx.astMetadata) }
                 .distinct()
                 .forEach { methodDef ->
                     ctx.hMethodTypedefs.writelnNotBlank(methodDef)
@@ -103,7 +103,9 @@ data class BsgClass(
         ctx.cBaseMethods.writeln_r("if(base->refCount <= 0) {")
         ctx.cBaseMethods.writeln("struct BSG_BaseInstance__$name* b = (struct BSG_BaseInstance__$name*)base;")
         body.methods.firstOrNull { it.name == "deinit" }?.let { deinitMethod ->
-            assert(deinitMethod.arguments.isEmpty()) { "deinit method must take no arguments." }
+            if(deinitMethod.arguments.isNotEmpty()) {
+                error("deinit method must take no arguments.")
+            }
             ctx.cBaseMethods.writeln("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release. // TODO: No hacks.
             ctx.cBaseMethods.writeln("struct BSG_Instance__$name* this = &b->$name;")
             ctx.cBaseMethods.writeln("this->class->deinit((BSG_AnyInstancePtr)this);")
@@ -178,7 +180,9 @@ data class BsgClass(
         }
         // Call init method.
         body.methods.firstOrNull { it.name == "init" }?.let { deinitMethod ->
-            assert(deinitMethod.arguments.isEmpty()) { "init method must take no arguments." }
+            if(deinitMethod.arguments.isNotEmpty()) {
+                error("init method must take no arguments.")
+            }
             ctx.cConstructor.writeln("baseInstance->refCount += 2;") // Hack to make sure init doesn't try to release. // TODO: No hacks.
             ctx.cConstructor.writeln("struct BSG_Instance__$name* this = &baseInstance->$name;")
             ctx.cConstructor.writeln("this->class->init((BSG_AnyInstancePtr)this);")
@@ -201,7 +205,9 @@ data class BsgClass(
         body.takeIf { "Singleton" in attributes }
                 ?.methods?.firstOrNull { "Main" in it.attributes }
                 ?.let { mainMethod ->
-                    assert(mainMethod.arguments.isEmpty()) { "Arguments must be empty in main method." }
+                    if(mainMethod.arguments.isNotEmpty()) {
+                        error("Arguments must be empty in main method.")
+                    }
                     ctx.mainCBody.writeln("$name->baseInstance->baseClass->retain($name->baseInstance);")
                     ctx.mainCBody.writeln("$name->class->${mainMethod.name}((BSG_AnyInstancePtr)$name);")
                 }

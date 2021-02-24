@@ -41,7 +41,7 @@ sealed class BsgPrimary {
         }
     }
 
-    data class Construction(val className: String): BsgPrimary() {
+    data class Construction(val className: String, val typeArgs: Map<String, BsgType>): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()
             ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $resultName = BSG_Constructor__$className();")
@@ -52,7 +52,7 @@ sealed class BsgPrimary {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            return BsgType.Class(className)
+            return BsgType.Class(className, typeArgs)
         }
     }
 
@@ -70,7 +70,7 @@ sealed class BsgPrimary {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
-            return BsgType.Class("String")
+            return BsgType.Class("String", emptyMap())
         }
     }
 
