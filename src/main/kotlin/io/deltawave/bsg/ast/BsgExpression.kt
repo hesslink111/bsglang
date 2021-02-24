@@ -11,7 +11,7 @@ sealed class BsgExpression {
             val expType = exp.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
 
-            ctx.cMethods.writelnNotBlank(expType.getCCast(expVar, toType, resultVar))
+            expType.writeCCast(expVar, toType, resultVar, ctx)
 
             return VarLifetime(resultVar, expLifetime)
         }
