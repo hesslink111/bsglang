@@ -11,7 +11,7 @@ sealed class BsgExpression {
             val expType = exp.getType(ctx, scope)
             val resultVar = ctx.getUniqueVarName()
 
-            expType.writeCCast(expVar, toType, resultVar, ctx)
+            expType.writeCCast(expVar, toType, resultVar, ctx, ctx.cMethods, ctx.hNewMethodWriter, ctx.cNewMethodWriter)
 
             return VarLifetime(resultVar, expLifetime)
         }
@@ -321,7 +321,7 @@ sealed class BsgPostfix {
                 argType.writeCRetain(argName, ctx.cMethods)
             }
 
-            val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")
+            val argVars = (listOf("$expVar.this", "$expVar.data") + argVarNames).joinToString(",")
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope, exp)
             if(resultType is BsgType.Primitive && resultType.name == "Void") {

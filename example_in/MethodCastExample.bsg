@@ -1,0 +1,26 @@
+import List;
+import String;
+import StringBuilder;
+import IO;
+
+[Singleton]
+class MethodCastExample {
+    [Main]
+    main(): Void {
+        var list: List = new List();
+        var strAdder: (String)->Void = list.add as (String)->Void;
+        var strGetter: (Int)->String = list.get as (Int)->String;
+
+        strAdder("Hello, ");
+        strAdder("world!");
+
+        var builder: StringBuilder = new StringBuilder();
+        var i: Int = 0;
+        while(i < list.size) {
+            builder.append(strGetter(i));
+            i = i + 1;
+        }
+
+        IO.println(builder.toString());
+    }
+}

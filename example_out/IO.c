@@ -38,7 +38,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__IO = {
 };
 
 // Methods
-BSG_Void BSG_Method__IO·println(BSG_AnyInstancePtr _tmp_0,BSG_InstancePtr__String message) {
+BSG_Void BSG_Method__IO·println(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__String message) {
     BSG_InstancePtr__IO this = (struct BSG_Instance__IO*)_tmp_0;
     puts(message->cStr);
     if(this) {

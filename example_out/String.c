@@ -35,7 +35,7 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base) {
         struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
         base->refCount += 2;
         struct BSG_Instance__String* this = &b->String;
-        this->class->deinit((BSG_AnyInstancePtr)this);
+        this->class->deinit((BSG_AnyInstancePtr)this, NULL);
         base->refCount--;
         free(base);
     }
@@ -50,7 +50,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__String = {
 };
 
 // Methods
-BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0) {
+BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
     BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_0;
     this->cStr = "";
     BSG_Int* _tmp_1;
@@ -66,7 +66,7 @@ BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0) {
     }
     return;
 }
-BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5) {
+BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data) {
     BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_5->baseInstance->baseClass->cast(_tmp_5->baseInstance, BSG_Type__String);
     BSG_Int h;
     BSG_Int* _tmp_6;
@@ -103,7 +103,7 @@ BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5) {
     }
     return h;
 }
-BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_19->baseInstance->baseClass->cast(_tmp_19->baseInstance, BSG_Type__String);
     BSG_Bool _tmp_20 = other->baseInstance->baseClass->canCast(other->baseInstance, BSG_Type__String);
     BSG_Bool _tmp_21 = false;
@@ -175,7 +175,7 @@ BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__
     }
     return eq;
 }
-BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_InstancePtr__String otherString) {
+BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_Opaque data,BSG_InstancePtr__String otherString) {
     BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_42;
     BSG_InstancePtr__String newString;
     BSG_InstancePtr__String* _tmp_43;
@@ -202,7 +202,7 @@ BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_
     }
     return newString;
 }
-BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51) {
+BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51,BSG_Opaque data) {
     BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_51;
     BSG_Bool _tmp_52 = this->isLiteral;
     BSG_Bool _tmp_53 = false;
@@ -247,7 +247,7 @@ struct BSG_Instance__String* BSG_Constructor__String() {
     baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__String;
     baseInstance->refCount += 2;
     struct BSG_Instance__String* this = &baseInstance->String;
-    this->class->init((BSG_AnyInstancePtr)this);
+    this->class->init((BSG_AnyInstancePtr)this, NULL);
     baseInstance->refCount--;
     return &baseInstance->String;
 }

@@ -31,46 +31,50 @@ struct BSG_BaseInstance__String {
 // Method Typedefs
 #ifndef BSG_MethodDef__｢｣￫BSG_Void
 #define BSG_MethodDef__｢｣￫BSG_Void
-typedef BSG_Void (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Void)(BSG_AnyInstancePtr);
+typedef BSG_Void (*BSG_Function__｢｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_Opaque);
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Void {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Void method;
+    BSG_Opaque data;
+    BSG_Function__｢｣￫BSG_Void method;
 } BSG_MethodFatPtr__｢｣￫BSG_Void;
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Void BSG_MethodFatPtr__｢｣￫BSG_Void;
 #endif
 #ifndef BSG_MethodDef__｢｣￫BSG_Int
 #define BSG_MethodDef__｢｣￫BSG_Int
-typedef BSG_Int (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int)(BSG_AnyInstancePtr);
+typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque);
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int method;
+    BSG_Opaque data;
+    BSG_Function__｢｣￫BSG_Int method;
 } BSG_MethodFatPtr__｢｣￫BSG_Int;
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
 #endif
 #ifndef BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
 #define BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
-typedef BSG_Bool (*BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstancePtr,BSG_InstancePtr__Equatable);
+typedef BSG_Bool (*BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstancePtr,BSG_Opaque,BSG_InstancePtr__Equatable);
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__Equatable｣￫BSG_Bool method;
+    BSG_Opaque data;
+    BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool method;
 } BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
 #endif
 #ifndef BSG_MethodDef__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String
 #define BSG_MethodDef__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String
-typedef BSG_InstancePtr__String (*BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_InstancePtr__String)(BSG_AnyInstancePtr,BSG_InstancePtr__String);
+typedef BSG_InstancePtr__String (*BSG_Function__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String)(BSG_AnyInstancePtr,BSG_Opaque,BSG_InstancePtr__String);
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_InstancePtr__String method;
+    BSG_Opaque data;
+    BSG_Function__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String method;
 } BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String;
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String;
 #endif
 
 // Class
 struct BSG_Class__String {
-    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Void init;
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_InstancePtr__String plus;
-    BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Void deinit;
+    BSG_Function__｢｣￫BSG_Void init;
+    BSG_Function__｢BSG_InstancePtr__String｣￫BSG_InstancePtr__String plus;
+    BSG_Function__｢｣￫BSG_Void deinit;
 };
 
 // Base Methods
@@ -83,11 +87,11 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__String;
 
 // Methods
-BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0);
-BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5);
-BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_InstancePtr__Equatable other);
-BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_InstancePtr__String otherString);
-BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51);
+BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data);
+BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data);
+BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_Opaque data,BSG_InstancePtr__Equatable other);
+BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_Opaque data,BSG_InstancePtr__String otherString);
+BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51,BSG_Opaque data);
 
 // Class Singletons
 extern struct BSG_Class__String BSG_ClassSingleton__String_String;

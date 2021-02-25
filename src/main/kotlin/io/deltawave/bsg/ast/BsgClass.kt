@@ -108,7 +108,7 @@ data class BsgClass(
             }
             ctx.cBaseMethods.writeln("base->refCount += 2;") // Hack to make sure deinit doesn't try to re-release. // TODO: No hacks.
             ctx.cBaseMethods.writeln("struct BSG_Instance__$name* this = &b->$name;")
-            ctx.cBaseMethods.writeln("this->class->deinit((BSG_AnyInstancePtr)this);")
+            ctx.cBaseMethods.writeln("this->class->deinit((BSG_AnyInstancePtr)this, NULL);")
             ctx.cBaseMethods.writeln("base->refCount--;") // End hack.
         }
         getSelfAndSuperClasses(ctx)
@@ -185,7 +185,7 @@ data class BsgClass(
             }
             ctx.cConstructor.writeln("baseInstance->refCount += 2;") // Hack to make sure init doesn't try to release. // TODO: No hacks.
             ctx.cConstructor.writeln("struct BSG_Instance__$name* this = &baseInstance->$name;")
-            ctx.cConstructor.writeln("this->class->init((BSG_AnyInstancePtr)this);")
+            ctx.cConstructor.writeln("this->class->init((BSG_AnyInstancePtr)this, NULL);")
             ctx.cConstructor.writeln("baseInstance->refCount--;") // End hack.
         }
         ctx.cConstructor.writeln("return &baseInstance->$name;")
@@ -209,7 +209,7 @@ data class BsgClass(
                         error("Arguments must be empty in main method.")
                     }
                     ctx.mainCBody.writeln("$name->baseInstance->baseClass->retain($name->baseInstance);")
-                    ctx.mainCBody.writeln("$name->class->${mainMethod.name}((BSG_AnyInstancePtr)$name);")
+                    ctx.mainCBody.writeln("$name->class->${mainMethod.name}((BSG_AnyInstancePtr)$name, NULL);")
                 }
 
         // Footer

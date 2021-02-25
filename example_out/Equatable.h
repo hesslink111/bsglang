@@ -24,17 +24,18 @@ struct BSG_BaseInstance__Equatable {
 // Method Typedefs
 #ifndef BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
 #define BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
-typedef BSG_Bool (*BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstancePtr,BSG_InstancePtr__Equatable);
+typedef BSG_Bool (*BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstancePtr,BSG_Opaque,BSG_InstancePtr__Equatable);
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__Equatable｣￫BSG_Bool method;
+    BSG_Opaque data;
+    BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool method;
 } BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
 #endif
 
 // Class
 struct BSG_Class__Equatable {
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__Equatable｣￫BSG_Bool equals;
+    BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool equals;
 };
 
 // Base Methods
@@ -47,7 +48,7 @@ void BSG_BaseMethod__Equatable_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__Equatable;
 
 // Methods
-BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstancePtr _tmp_0,BSG_InstancePtr__Equatable other);
+BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__Equatable other);
 
 // Class Singletons
 extern struct BSG_Class__Equatable BSG_ClassSingleton__Equatable_Equatable;

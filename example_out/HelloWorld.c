@@ -38,7 +38,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__HelloWorld = {
 };
 
 // Methods
-BSG_Void BSG_Method__HelloWorld·main(BSG_AnyInstancePtr _tmp_0) {
+BSG_Void BSG_Method__HelloWorld·main(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
     BSG_InstancePtr__HelloWorld this = (struct BSG_Instance__HelloWorld*)_tmp_0;
     BSG_InstancePtr__IO _tmp_1;
     _tmp_1 = IO;
@@ -57,7 +57,7 @@ BSG_Void BSG_Method__HelloWorld·main(BSG_AnyInstancePtr _tmp_0) {
     if(_tmp_3) {
         _tmp_3->baseInstance->baseClass->retain(_tmp_3->baseInstance);
     }
-    _tmp_2.method(_tmp_2.this,_tmp_3);
+    _tmp_2.method(_tmp_2.this,_tmp_2.data,_tmp_3);
     if(this) {
         this->baseInstance->baseClass->release(this->baseInstance);
     }

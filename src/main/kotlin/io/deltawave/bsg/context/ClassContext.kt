@@ -24,6 +24,7 @@ class ClassContext(
     val hBaseMethods = h.createDeferredWriter().writeln().writeln("// Base Methods")
     val hBaseClassSingleton = h.createDeferredWriter().writeln().writeln("// Base Class Singleton")
     val hMethods = h.createDeferredWriter().writeln().writeln("// Methods")
+    val hNewMethodWriter = hMethods.createDeferredWriter() // Keep fresh. Only write to deferred copies. // TODO: Do this with the original hMethods and remove this.
     val hClassSingletons = h.createDeferredWriter().writeln().writeln("// Class Singletons")
     val hConstructor = h.createDeferredWriter().writeln().writeln("// Constructor")
     val hSingleton = h.createDeferredWriter().writeln().writeln("// Singleton")
@@ -34,6 +35,7 @@ class ClassContext(
     val cBaseMethods = c.createDeferredWriter().writeln().writeln("// Base Methods")
     val cBaseClassSingleton = c.createDeferredWriter().writeln().writeln("// Base Class Singleton")
     val cMethods = c.createDeferredWriter().writeln().writeln("// Methods")
+    val cNewMethodWriter = c.createDeferredWriter() // Keep fresh. Only write to deferred copies. // TODO: Do this with the original cMethods and remove this.
     val cClassSingletons = c.createDeferredWriter().writeln().writeln("// Class Singletons")
     val cConstructor = c.createDeferredWriter().writeln().writeln("// Constructor")
     val cSingleton = c.createDeferredWriter().writeln().writeln("// Singleton")

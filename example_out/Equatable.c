@@ -38,7 +38,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Equatable = {
 };
 
 // Methods
-BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstancePtr _tmp_0,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__Equatable this = (struct BSG_Instance__Equatable*)_tmp_0;
     BSG_Bool _tmp_1 = false;
     if(this) {

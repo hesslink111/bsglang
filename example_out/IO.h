@@ -26,17 +26,18 @@ struct BSG_BaseInstance__IO {
 // Method Typedefs
 #ifndef BSG_MethodDef__｢BSG_InstancePtr__String｣￫BSG_Void
 #define BSG_MethodDef__｢BSG_InstancePtr__String｣￫BSG_Void
-typedef BSG_Void (*BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_InstancePtr__String);
+typedef BSG_Void (*BSG_Function__｢BSG_InstancePtr__String｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_Opaque,BSG_InstancePtr__String);
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_Void {
     BSG_AnyInstancePtr this;
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_Void method;
+    BSG_Opaque data;
+    BSG_Function__｢BSG_InstancePtr__String｣￫BSG_Void method;
 } BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_Void;
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_Void BSG_MethodFatPtr__｢BSG_InstancePtr__String｣￫BSG_Void;
 #endif
 
 // Class
 struct BSG_Class__IO {
-    BSG_Function__｢BSG_AnyInstancePtr·BSG_InstancePtr__String｣￫BSG_Void println;
+    BSG_Function__｢BSG_InstancePtr__String｣￫BSG_Void println;
 };
 
 // Base Methods
@@ -49,7 +50,7 @@ void BSG_BaseMethod__IO_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__IO;
 
 // Methods
-BSG_Void BSG_Method__IO·println(BSG_AnyInstancePtr _tmp_0,BSG_InstancePtr__String message);
+BSG_Void BSG_Method__IO·println(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__String message);
 
 // Class Singletons
 extern struct BSG_Class__IO BSG_ClassSingleton__IO_IO;

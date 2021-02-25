@@ -42,7 +42,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Hashable = {
 };
 
 // Methods
-BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0) {
+BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
     BSG_InstancePtr__Hashable this = (struct BSG_Instance__Hashable*)_tmp_0;
     BSG_Int _tmp_1 = 0;
     if(this) {
@@ -50,7 +50,7 @@ BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0) {
     }
     return _tmp_1;
 }
-BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstancePtr _tmp_2,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstancePtr _tmp_2,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__Hashable this = (BSG_InstancePtr__Hashable)_tmp_2->baseInstance->baseClass->cast(_tmp_2->baseInstance, BSG_Type__Hashable);
     BSG_Bool _tmp_3 = true;
     if(this) {

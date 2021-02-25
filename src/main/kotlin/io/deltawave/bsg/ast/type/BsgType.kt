@@ -2,6 +2,7 @@ package io.deltawave.bsg.ast.type
 
 import io.deltawave.bsg.context.AstMetadata
 import io.deltawave.bsg.context.ClassContext
+import io.deltawave.bsg.util.writelnNotBlank
 import org.ainslec.picocog.PicoWriter
 
 sealed class BsgType {
@@ -30,13 +31,13 @@ sealed class BsgType {
             writer.writeln_l("}")
         }
 
-        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext) {
+        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter) {
             when(toType) {
-                Any -> error("Cast from Any to Any not necessary.")
-                is Class -> ctx.cMethods.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content.instance->baseInstance, BSG_Type__${toType.name});")
-                is Primitive -> ctx.cMethods.writeln("${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;")
-                is Method -> ctx.cMethods.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;")
-                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx)
+                Any -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = $fromVar;")
+                is Class -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content.instance->baseInstance, BSG_Type__${toType.name});")
+                is Primitive -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;")
+                is Method -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;")
+                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
             }
         }
 
@@ -89,17 +90,17 @@ sealed class BsgType {
             writer.writeln_l("}")
         }
 
-        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext) {
+        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter) {
             when(toType) {
                 Any -> {
-                    ctx.cMethods.writeln("${toType.getCType()} $toVar;")
-                    ctx.cMethods.writeln("$toVar.type = BSG_Any_ContentType__Instance;")
-                    ctx.cMethods.writeln("$toVar.content.instance = (BSG_AnyInstancePtr) $fromVar;")
+                    cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
+                    cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__Instance;")
+                    cCurrentMethodWriter.writeln("$toVar.content.instance = (BSG_AnyInstancePtr) $fromVar;")
                 }
-                is Class -> ctx.cMethods.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});")
+                is Class -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});")
                 is Primitive -> error("Cannot cast from Class to Primitive.")
                 is Method -> error("Cannot cast from Class to Method.")
-                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx)
+                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
             }
         }
 
@@ -136,17 +137,17 @@ sealed class BsgType {
 
         override fun writeCRelease(varName: String, writer: PicoWriter) {}
 
-        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext) {
+        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter) {
             when(toType) {
                 Any -> {
-                    ctx.cMethods.writeln("${toType.getCType()} $toVar;")
-                    ctx.cMethods.writeln("$toVar.type = BSG_Any_ContentType__Primitive;")
-                    ctx.cMethods.writeln("$toVar.content.primitive.${name}Value = $fromVar;")
+                    cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
+                    cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__Primitive;")
+                    cCurrentMethodWriter.writeln("$toVar.content.primitive.${name}Value = $fromVar;")
                 }
                 is Class -> error("Cannot cast from Primitive to Class.")
-                is Primitive -> ctx.cMethods.writeln("${toType.getCType()} $toVar = (${getCType()}) $fromVar;")
+                is Primitive -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${getCType()}) $fromVar;")
                 is Method -> error("Cannot cast from Primitive to Method.")
-                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx)
+                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
             }
         }
 
@@ -167,10 +168,10 @@ sealed class BsgType {
 
     data class Method(val argTypes: List<BsgType>, val returnType: BsgType): BsgType() {
         private fun args() = argTypes.map { it.getCType() }
-        private fun argsWithThis() = listOf("BSG_AnyInstancePtr") + args()
+        private fun argsWithThisAndData() = listOf("BSG_AnyInstancePtr", "BSG_Opaque") + args()
 
         fun getFName(): String {
-            return "BSG_Function__｢${argsWithThis().joinToString("·")}｣￫${returnType.getCType()}"
+            return "BSG_Function__｢${args().joinToString("·")}｣￫${returnType.getCType()}"
         }
 
         private fun getMName(): String {
@@ -185,9 +186,10 @@ sealed class BsgType {
             return argTypes.filterIsInstance<Method>().flatMap { it.getCDefinitions(astMetadata) } + listOf("""
                 #ifndef ${getDName()}
                 #define ${getDName()}
-                typedef ${returnType.getCType()} (*${getFName()})(${argsWithThis().joinToString(",")});
+                typedef ${returnType.getCType()} (*${getFName()})(${argsWithThisAndData().joinToString(",")});
                 typedef struct ${getMName()} {
                     BSG_AnyInstancePtr this;
+                    BSG_Opaque data;
                     ${getFName()} method;
                 } ${getMName()};
                 typedef struct ${getMName()} ${getMName()};
@@ -211,17 +213,75 @@ sealed class BsgType {
             writer.writeln_l("}")
         }
 
-        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext) {
+        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter) {
             when(toType) {
                 Any -> {
-                    ctx.cMethods.writeln("${toType.getCType()} $toVar;")
-                    ctx.cMethods.writeln("$toVar.type = BSG_Any_ContentType__Method;")
-                    ctx.cMethods.writeln("$toVar.content.method = (BSG_AnyMethodFatPtr) $fromVar;")
+                    cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
+                    cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__Method;")
+                    cCurrentMethodWriter.writeln("$toVar.content.method = (BSG_AnyMethodFatPtr) $fromVar;")
                 }
                 is Class -> error("Cannot cast from Method to Class.")
                 is Primitive -> error("Cannot cast from Method to Primitive.")
-                is Method -> error("Cannot cast from Method to Method.")
-                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx)
+                is Method -> {
+                    if(argTypes.size != toType.argTypes.size) {
+                        error("Method can only be cast to another method having the same number of parameters.")
+                    }
+
+                    // Save a space for recursive casts to be written.
+                    val hNewMethodWriterBefore = hNewMethodWriter.createDeferredWriter()
+                    val cNewMethodWriterBefore = cNewMethodWriter.createDeferredWriter()
+
+                    // Make a typedef for the toType.
+                    toType.getCDefinitions(ctx.astMetadata).forEach { ctx.hMethodTypedefs.writelnNotBlank(it) }
+
+                    // Make a declaration for the method shim.
+                    val shimName = "｢${args().joinToString("·")}｣￫${returnType.getCType()}_castTo_｢${toType.args().joinToString("·")}｣￫${toType.returnType.getCType()}"
+                    hNewMethodWriter.writeln("#ifndef BSG_MethodCastShimDef_H__$shimName")
+                    hNewMethodWriter.writeln("#define BSG_MethodCastShimDef_H__$shimName")
+                    hNewMethodWriter.writeln("${toType.returnType.getCType()} BSG_MethodCastShim__$shimName(${toType.argsWithThisAndData().joinToString(",")});")
+                    hNewMethodWriter.writeln("#endif")
+
+                    val castableArgNames = argTypes.map { ctx.getUniqueVarName() }
+                    val argNames = listOf("this", "data") + castableArgNames
+                    val cArgTypesWithNames = toType.argsWithThisAndData().mapIndexed { i, cType -> "$cType ${argNames[i]}" }.joinToString(",")
+
+                    // Make a definition for the method shim.
+                    cNewMethodWriter.writeln("#ifndef BSG_MethodCastShimDef_C__$shimName")
+                    cNewMethodWriter.writeln("#define BSG_MethodCastShimDef_C__$shimName")
+                    cNewMethodWriter.writeln_r("${toType.returnType.getCType()} BSG_MethodCastShim__$shimName($cArgTypesWithNames) {")
+                    val castedNames = castableArgNames.mapIndexed { i, argName ->
+                        // Cast args from the shim to the original to be able to call the original method.
+                        val argType = toType.argTypes[i]
+                        val argToType = argTypes[i]
+                        // Write casted arg, and any new methods needed. Return new var.
+                        val resultVar = ctx.getUniqueVarName()
+                        argType.writeCCast(argName, argToType, resultVar, ctx, cNewMethodWriter, hNewMethodWriterBefore, cNewMethodWriterBefore)
+                        resultVar
+                    }
+                    // Cast data parameter to the original function type.
+                    cNewMethodWriter.writeln("${getFName()} originalMethod = (${getFName()})data;")
+
+                    // Call the original method.
+                    val argsForOriginalMethod = (listOf("this", "NULL") + castedNames).joinToString(",")
+                    if(returnType is Primitive && returnType.name == "Void") {
+                        cNewMethodWriter.writeln("originalMethod($argsForOriginalMethod);")
+                    } else {
+                        val returnVar = ctx.getUniqueVarName()
+                        val returnVarCasted = ctx.getUniqueVarName()
+                        cNewMethodWriter.writeln("${returnType.getCType()} $returnVar = originalMethod($argsForOriginalMethod);")
+                        returnType.writeCCast(returnVar, toType.returnType, returnVarCasted, ctx, cNewMethodWriter, hNewMethodWriterBefore, cNewMethodWriterBefore)
+                        cNewMethodWriter.writeln("return $returnVarCasted;")
+                    }
+                    cNewMethodWriter.writeln_l("}")
+                    cNewMethodWriter.writeln("#endif")
+
+                    // Create a var to hold the fat pointer.
+                    cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
+                    cCurrentMethodWriter.writeln("$toVar.this = $fromVar.this;")
+                    cCurrentMethodWriter.writeln("$toVar.data = (BSG_Opaque) $fromVar.method;")
+                    cCurrentMethodWriter.writeln("$toVar.method = &BSG_MethodCastShim__$shimName;")
+                }
+                is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
             }
         }
 
@@ -262,8 +322,8 @@ sealed class BsgType {
             rawType.writeCRelease(varName, writer)
         }
 
-        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext) {
-            rawType.writeCCast(fromVar, toType, toVar, ctx)
+        override fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter) {
+            rawType.writeCCast(fromVar, toType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
         }
 
         override fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String {
@@ -283,8 +343,6 @@ sealed class BsgType {
         }
     }
 
-    // May return a typedeffed type. Typedef must have been emitted earlier.
-    // TODO: All typedefs should be emitted earlier.
     private var type: String? = null
 
     fun getCType(): String {
@@ -301,7 +359,7 @@ sealed class BsgType {
     abstract fun getCTypeInternal(): String
     abstract fun writeCRetain(varName: String, writer: PicoWriter)
     abstract fun writeCRelease(varName: String, writer: PicoWriter)
-    abstract fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext)
+    abstract fun writeCCast(fromVar: String, toType: BsgType, toVar: String, ctx: ClassContext, cCurrentMethodWriter: PicoWriter, hNewMethodWriter: PicoWriter, cNewMethodWriter: PicoWriter)
     abstract fun getCInstanceOf(fromVar: String, isType: BsgType, toVar: String): String
     abstract fun specify(typeArgs: Map<String, BsgType>): BsgType
 }

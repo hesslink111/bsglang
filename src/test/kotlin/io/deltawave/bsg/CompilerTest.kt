@@ -154,7 +154,7 @@ class CompilerTest {
                 Empty = BSG_Constructor__Empty();
                 Empty->baseInstance->baseClass->retain(Empty->baseInstance);
                 Empty->baseInstance->baseClass->retain(Empty->baseInstance);
-                Empty->class->main((BSG_AnyInstancePtr)Empty);
+                Empty->class->main((BSG_AnyInstancePtr)Empty, NULL);
                 Empty->baseInstance->baseClass->release(Empty->baseInstance);
             }
         """.trimIndent() + "\n"
@@ -245,17 +245,18 @@ class CompilerTest {
                     // Method Typedefs
                     #ifndef BSG_MethodDef__｢｣￫BSG_Int
                     #define BSG_MethodDef__｢｣￫BSG_Int
-                    typedef BSG_Int (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int)(BSG_AnyInstancePtr);
+                    typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque);
                     typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
                         BSG_AnyInstancePtr this;
-                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int method;
+                        BSG_Opaque data;
+                        BSG_Function__｢｣￫BSG_Int method;
                     } BSG_MethodFatPtr__｢｣￫BSG_Int;
                     typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
                     #endif
                     
                     // Class
                     struct BSG_Class__Animal {
-                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int talk;
+                        BSG_Function__｢｣￫BSG_Int talk;
                     };
                     
                     // Base Methods
@@ -268,7 +269,7 @@ class CompilerTest {
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Animal;
                     
                     // Methods
-                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0);
+                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data);
                     
                     // Class Singletons
                     extern struct BSG_Class__Animal BSG_ClassSingleton__Animal_Animal;
@@ -322,7 +323,7 @@ class CompilerTest {
                     };
                     
                     // Methods
-                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0) {
+                    BSG_Int BSG_Method__Animal·talk(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
                         BSG_InstancePtr__Animal this = (struct BSG_Instance__Animal*)_tmp_0;
                         BSG_Int _tmp_1 = 0;
                         if(this) {
@@ -489,17 +490,18 @@ class CompilerTest {
                     // Method Typedefs
                     #ifndef BSG_MethodDef__｢｣￫BSG_Int
                     #define BSG_MethodDef__｢｣￫BSG_Int
-                    typedef BSG_Int (*BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int)(BSG_AnyInstancePtr);
+                    typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque);
                     typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
                         BSG_AnyInstancePtr this;
-                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int method;
+                        BSG_Opaque data;
+                        BSG_Function__｢｣￫BSG_Int method;
                     } BSG_MethodFatPtr__｢｣￫BSG_Int;
                     typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
                     #endif
                     
                     // Class
                     struct BSG_Class__Dog {
-                        BSG_Function__｢BSG_AnyInstancePtr｣￫BSG_Int talk;
+                        BSG_Function__｢｣￫BSG_Int talk;
                     };
                     
                     // Base Methods
@@ -512,7 +514,7 @@ class CompilerTest {
                     extern struct BSG_BaseClass BSG_BaseClassSingleton__Dog;
                     
                     // Methods
-                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0);
+                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data);
                     
                     // Class Singletons
                     extern struct BSG_Class__Dog BSG_ClassSingleton__Dog_Dog;
@@ -566,7 +568,7 @@ class CompilerTest {
                     };
                     
                     // Methods
-                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0) {
+                    BSG_Int BSG_Method__Dog·talk(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
                         BSG_InstancePtr__Dog this = (struct BSG_Instance__Dog*)_tmp_0;
                         BSG_Int _tmp_1 = 1;
                         if(this) {
@@ -601,5 +603,334 @@ class CompilerTest {
         assertEquals(expectedPolyOutput["Cat.c"], polyOutput["Cat.c"])
         assertEquals(expectedPolyOutput["Dog.h"], polyOutput["Dog.h"])
         assertEquals(expectedPolyOutput["Dog.c"], polyOutput["Dog.c"])
+    }
+
+    @Test
+    fun methodCast() {
+        val polyInput = mapOf(
+                "MethodCast.bsg" to """
+                    class MethodCast {
+                        zeroArgNonVoid(): Any {
+                            return 0 as Any;
+                        }
+                        
+                        oneArgVoid(a: Any): Void {}
+                        
+                        oneArgNonVoid(a: Any): Any {}
+                        
+                        tester(): Void {
+                            zeroArgNonVoid as ()->Int;
+                            oneArgVoid as (Int)->Void;
+                            oneArgNonVoid as (Int)->Int;
+                        }
+                    }
+                """.trimIndent(),
+        )
+        val polyOutput = Compiler.compile(listOf("MethodCast.bsg"), polyInput)
+
+        val expectedOutput = mapOf(
+                "MethodCast.h" to """
+                    #ifndef BSG_H__MethodCast
+                    #define BSG_H__MethodCast
+
+                    // Includes
+                    #include "bsg_preamble.h"
+
+                    // Type Num
+                    #define BSG_Type__MethodCast 0l
+
+                    // Instance
+                    struct BSG_Instance__MethodCast {
+                    struct BSG_AnyBaseInstance* baseInstance;
+                    struct BSG_Class__MethodCast* class;
+                    };
+                    typedef struct BSG_Instance__MethodCast* BSG_InstancePtr__MethodCast;
+
+                    // Base Instance
+                    struct BSG_BaseInstance__MethodCast {
+                        struct BSG_AnyBaseClass* baseClass;
+                        int refCount;
+                        struct BSG_Instance__MethodCast MethodCast;
+                    };
+
+                    // Method Typedefs
+                    #ifndef BSG_MethodDef__｢｣￫BSG_Any
+                    #define BSG_MethodDef__｢｣￫BSG_Any
+                    typedef BSG_Any (*BSG_Function__｢｣￫BSG_Any)(BSG_AnyInstancePtr,BSG_Opaque);
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Any {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢｣￫BSG_Any method;
+                    } BSG_MethodFatPtr__｢｣￫BSG_Any;
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Any BSG_MethodFatPtr__｢｣￫BSG_Any;
+                    #endif
+                    #ifndef BSG_MethodDef__｢BSG_Any｣￫BSG_Void
+                    #define BSG_MethodDef__｢BSG_Any｣￫BSG_Void
+                    typedef BSG_Void (*BSG_Function__｢BSG_Any｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_Opaque,BSG_Any);
+                    typedef struct BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Void {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢BSG_Any｣￫BSG_Void method;
+                    } BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Void;
+                    typedef struct BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Void BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Void;
+                    #endif
+                    #ifndef BSG_MethodDef__｢BSG_Any｣￫BSG_Any
+                    #define BSG_MethodDef__｢BSG_Any｣￫BSG_Any
+                    typedef BSG_Any (*BSG_Function__｢BSG_Any｣￫BSG_Any)(BSG_AnyInstancePtr,BSG_Opaque,BSG_Any);
+                    typedef struct BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Any {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢BSG_Any｣￫BSG_Any method;
+                    } BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Any;
+                    typedef struct BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Any BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Any;
+                    #endif
+                    #ifndef BSG_MethodDef__｢｣￫BSG_Void
+                    #define BSG_MethodDef__｢｣￫BSG_Void
+                    typedef BSG_Void (*BSG_Function__｢｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_Opaque);
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Void {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢｣￫BSG_Void method;
+                    } BSG_MethodFatPtr__｢｣￫BSG_Void;
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Void BSG_MethodFatPtr__｢｣￫BSG_Void;
+                    #endif
+                    #ifndef BSG_MethodDef__｢｣￫BSG_Int
+                    #define BSG_MethodDef__｢｣￫BSG_Int
+                    typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque);
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢｣￫BSG_Int method;
+                    } BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
+                    #endif
+                    #ifndef BSG_MethodDef__｢BSG_Int｣￫BSG_Void
+                    #define BSG_MethodDef__｢BSG_Int｣￫BSG_Void
+                    typedef BSG_Void (*BSG_Function__｢BSG_Int｣￫BSG_Void)(BSG_AnyInstancePtr,BSG_Opaque,BSG_Int);
+                    typedef struct BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Void {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢BSG_Int｣￫BSG_Void method;
+                    } BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Void;
+                    typedef struct BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Void BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Void;
+                    #endif
+                    #ifndef BSG_MethodDef__｢BSG_Int｣￫BSG_Int
+                    #define BSG_MethodDef__｢BSG_Int｣￫BSG_Int
+                    typedef BSG_Int (*BSG_Function__｢BSG_Int｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque,BSG_Int);
+                    typedef struct BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Int {
+                        BSG_AnyInstancePtr this;
+                        BSG_Opaque data;
+                        BSG_Function__｢BSG_Int｣￫BSG_Int method;
+                    } BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Int;
+                    typedef struct BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Int BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Int;
+                    #endif
+
+                    // Class
+                    struct BSG_Class__MethodCast {
+                        BSG_Function__｢｣￫BSG_Any zeroArgNonVoid;
+                        BSG_Function__｢BSG_Any｣￫BSG_Void oneArgVoid;
+                        BSG_Function__｢BSG_Any｣￫BSG_Any oneArgNonVoid;
+                        BSG_Function__｢｣￫BSG_Void tester;
+                    };
+
+                    // Base Methods
+                    struct BSG_AnyInstance* BSG_BaseMethod__MethodCast_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+                    BSG_Bool BSG_BaseMethod__MethodCast_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+                    void BSG_BaseMethod__MethodCast_retain(struct BSG_AnyBaseInstance* base);
+                    void BSG_BaseMethod__MethodCast_release(struct BSG_AnyBaseInstance* base);
+
+                    // Base Class Singleton
+                    extern struct BSG_BaseClass BSG_BaseClassSingleton__MethodCast;
+
+                    // Methods
+                    #ifndef BSG_MethodCastShimDef_H__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int
+                    #define BSG_MethodCastShimDef_H__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int
+                    BSG_Int BSG_MethodCastShim__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int(BSG_AnyInstancePtr,BSG_Opaque);
+                    #endif
+                    #ifndef BSG_MethodCastShimDef_H__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void
+                    #define BSG_MethodCastShimDef_H__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void
+                    BSG_Void BSG_MethodCastShim__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void(BSG_AnyInstancePtr,BSG_Opaque,BSG_Int);
+                    #endif
+                    #ifndef BSG_MethodCastShimDef_H__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int
+                    #define BSG_MethodCastShimDef_H__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int
+                    BSG_Int BSG_MethodCastShim__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int(BSG_AnyInstancePtr,BSG_Opaque,BSG_Int);
+                    #endif
+                    BSG_Any BSG_Method__MethodCast·zeroArgNonVoid(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data);
+                    BSG_Void BSG_Method__MethodCast·oneArgVoid(BSG_AnyInstancePtr _tmp_3,BSG_Opaque data,BSG_Any a);
+                    BSG_Any BSG_Method__MethodCast·oneArgNonVoid(BSG_AnyInstancePtr _tmp_4,BSG_Opaque data,BSG_Any a);
+                    BSG_Void BSG_Method__MethodCast·tester(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data);
+
+                    // Class Singletons
+                    extern struct BSG_Class__MethodCast BSG_ClassSingleton__MethodCast_MethodCast;
+
+                    // Constructor
+                    extern struct BSG_Instance__MethodCast* BSG_Constructor__MethodCast();
+
+                    // Singleton
+                    
+                    #endif
+                """.trimIndent() + "\n",
+
+                "MethodCast.c" to """
+                    // Includes
+                    #include "MethodCast.h"
+
+                    // Base Methods
+                    struct BSG_AnyInstance* BSG_BaseMethod__MethodCast_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+                        struct BSG_BaseInstance__MethodCast* b = (struct BSG_BaseInstance__MethodCast*)base;
+                        switch(type) {
+                            case BSG_Type__MethodCast:
+                                return (struct BSG_AnyInstance*)&b->MethodCast;
+                        }
+                        return NULL;
+                    }
+                    BSG_Bool BSG_BaseMethod__MethodCast_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+                        struct BSG_BaseInstance__MethodCast* b = (struct BSG_BaseInstance__MethodCast*)base;
+                        switch(type) {
+                            case BSG_Type__MethodCast:
+                                return true;
+                        }
+                        return false;
+                    }
+                    void BSG_BaseMethod__MethodCast_retain(struct BSG_AnyBaseInstance* base) {
+                        base->refCount++;
+                    }
+                    void BSG_BaseMethod__MethodCast_release(struct BSG_AnyBaseInstance* base) {
+                        base->refCount--;
+                        if(base->refCount <= 0) {
+                            struct BSG_BaseInstance__MethodCast* b = (struct BSG_BaseInstance__MethodCast*)base;
+                            free(base);
+                        }
+                    }
+
+                    // Base Class Singleton
+                    struct BSG_BaseClass BSG_BaseClassSingleton__MethodCast = {
+                        .cast = &BSG_BaseMethod__MethodCast_cast,
+                        .canCast = &BSG_BaseMethod__MethodCast_canCast,
+                        .retain = &BSG_BaseMethod__MethodCast_retain,
+                        .release = &BSG_BaseMethod__MethodCast_release,
+                    };
+
+                    // Methods
+                    BSG_Any BSG_Method__MethodCast·zeroArgNonVoid(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
+                        BSG_InstancePtr__MethodCast this = (struct BSG_Instance__MethodCast*)_tmp_0;
+                        BSG_Int _tmp_1 = 0;
+                        BSG_Any _tmp_2;
+                        _tmp_2.type = BSG_Any_ContentType__Primitive;
+                        _tmp_2.content.primitive.IntValue = _tmp_1;
+                        if(this) {
+                            this->baseInstance->baseClass->release(this->baseInstance);
+                        }
+                        return _tmp_2;
+                    }
+                    BSG_Void BSG_Method__MethodCast·oneArgVoid(BSG_AnyInstancePtr _tmp_3,BSG_Opaque data,BSG_Any a) {
+                        BSG_InstancePtr__MethodCast this = (struct BSG_Instance__MethodCast*)_tmp_3;
+                        if(this) {
+                            this->baseInstance->baseClass->release(this->baseInstance);
+                        }
+                        if(a.type == BSG_Any_ContentType__Instance && a.content.instance) {
+                            a.content.instance->baseInstance->baseClass->release(a.content.instance->baseInstance);
+                        } else if(a.type == BSG_Any_ContentType__Method && a.content.method.this) {
+                            a.content.method.this->baseInstance->baseClass->release(a.content.method.this->baseInstance);
+                        }
+                        return;
+                    }
+                    BSG_Any BSG_Method__MethodCast·oneArgNonVoid(BSG_AnyInstancePtr _tmp_4,BSG_Opaque data,BSG_Any a) {
+                        BSG_InstancePtr__MethodCast this = (struct BSG_Instance__MethodCast*)_tmp_4;
+                        if(this) {
+                            this->baseInstance->baseClass->release(this->baseInstance);
+                        }
+                        if(a.type == BSG_Any_ContentType__Instance && a.content.instance) {
+                            a.content.instance->baseInstance->baseClass->release(a.content.instance->baseInstance);
+                        } else if(a.type == BSG_Any_ContentType__Method && a.content.method.this) {
+                            a.content.method.this->baseInstance->baseClass->release(a.content.method.this->baseInstance);
+                        }
+                        return;
+                    }
+                    BSG_Void BSG_Method__MethodCast·tester(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data) {
+                        BSG_InstancePtr__MethodCast this = (struct BSG_Instance__MethodCast*)_tmp_5;
+                        BSG_MethodFatPtr__｢｣￫BSG_Any _tmp_6;
+                        _tmp_6.this = (BSG_AnyInstancePtr) this;
+                        _tmp_6.method = this->class->zeroArgNonVoid;
+                        BSG_MethodFatPtr__｢｣￫BSG_Int _tmp_7;
+                        _tmp_7.this = _tmp_6.this;
+                        _tmp_7.data = (BSG_Opaque) _tmp_6.method;
+                        _tmp_7.method = &BSG_MethodCastShim__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int;
+                        BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Void _tmp_10;
+                        _tmp_10.this = (BSG_AnyInstancePtr) this;
+                        _tmp_10.method = this->class->oneArgVoid;
+                        BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Void _tmp_11;
+                        _tmp_11.this = _tmp_10.this;
+                        _tmp_11.data = (BSG_Opaque) _tmp_10.method;
+                        _tmp_11.method = &BSG_MethodCastShim__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void;
+                        BSG_MethodFatPtr__｢BSG_Any｣￫BSG_Any _tmp_14;
+                        _tmp_14.this = (BSG_AnyInstancePtr) this;
+                        _tmp_14.method = this->class->oneArgNonVoid;
+                        BSG_MethodFatPtr__｢BSG_Int｣￫BSG_Int _tmp_15;
+                        _tmp_15.this = _tmp_14.this;
+                        _tmp_15.data = (BSG_Opaque) _tmp_14.method;
+                        _tmp_15.method = &BSG_MethodCastShim__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int;
+                        if(this) {
+                            this->baseInstance->baseClass->release(this->baseInstance);
+                        }
+                        return;
+                    }
+                    #ifndef BSG_MethodCastShimDef_C__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int
+                    #define BSG_MethodCastShimDef_C__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int
+                    BSG_Int BSG_MethodCastShim__｢｣￫BSG_Any_castTo_｢｣￫BSG_Int(BSG_AnyInstancePtr this,BSG_Opaque data) {
+                        BSG_Function__｢｣￫BSG_Any originalMethod = (BSG_Function__｢｣￫BSG_Any)data;
+                        BSG_Any _tmp_8 = originalMethod(this,NULL);
+                        BSG_Int _tmp_9 = _tmp_8.content.primitive.IntValue;
+                        return _tmp_9;
+                    }
+                    #endif
+                    #ifndef BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void
+                    #define BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void
+                    BSG_Void BSG_MethodCastShim__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void(BSG_AnyInstancePtr this,BSG_Opaque data,BSG_Int _tmp_12) {
+                        BSG_Any _tmp_13;
+                        _tmp_13.type = BSG_Any_ContentType__Primitive;
+                        _tmp_13.content.primitive.IntValue = _tmp_12;
+                        BSG_Function__｢BSG_Any｣￫BSG_Void originalMethod = (BSG_Function__｢BSG_Any｣￫BSG_Void)data;
+                        originalMethod(this,NULL,_tmp_13);
+                    }
+                    #endif
+                    #ifndef BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int
+                    #define BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int
+                    BSG_Int BSG_MethodCastShim__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int(BSG_AnyInstancePtr this,BSG_Opaque data,BSG_Int _tmp_16) {
+                        BSG_Any _tmp_17;
+                        _tmp_17.type = BSG_Any_ContentType__Primitive;
+                        _tmp_17.content.primitive.IntValue = _tmp_16;
+                        BSG_Function__｢BSG_Any｣￫BSG_Any originalMethod = (BSG_Function__｢BSG_Any｣￫BSG_Any)data;
+                        BSG_Any _tmp_18 = originalMethod(this,NULL,_tmp_17);
+                        BSG_Int _tmp_19 = _tmp_18.content.primitive.IntValue;
+                        return _tmp_19;
+                    }
+                    #endif
+
+                    // Class Singletons
+                    struct BSG_Class__MethodCast BSG_ClassSingleton__MethodCast_MethodCast = {
+                        .zeroArgNonVoid = &BSG_Method__MethodCast·zeroArgNonVoid,
+                        .oneArgVoid = &BSG_Method__MethodCast·oneArgVoid,
+                        .oneArgNonVoid = &BSG_Method__MethodCast·oneArgNonVoid,
+                        .tester = &BSG_Method__MethodCast·tester,
+                    };
+
+                    // Constructor
+                    struct BSG_Instance__MethodCast* BSG_Constructor__MethodCast() {
+                        struct BSG_BaseInstance__MethodCast* baseInstance = malloc(sizeof(struct BSG_BaseInstance__MethodCast));
+                        baseInstance->MethodCast = (struct BSG_Instance__MethodCast) {
+                            .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
+                            .class = &BSG_ClassSingleton__MethodCast_MethodCast,
+                        };
+                        baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__MethodCast;
+                        return &baseInstance->MethodCast;
+                    }
+
+                    // Singleton
+                """.trimIndent() + "\n"
+        )
+
+        assertEquals(expectedOutput["MethodCast.h"], polyOutput["MethodCast.h"])
+        assertEquals(expectedOutput["MethodCast.c"], polyOutput["MethodCast.c"])
     }
 }
