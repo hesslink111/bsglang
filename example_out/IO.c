@@ -2,11 +2,11 @@
 #include "IO.h"
 
 // Base Methods
-struct BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+BSG_AnyInstance* BSG_BaseMethod__IO_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
     struct BSG_BaseInstance__IO* b = (struct BSG_BaseInstance__IO*)base;
     switch(type) {
         case BSG_Type__IO:
-            return (struct BSG_AnyInstance*)&b->IO;
+            return (BSG_AnyInstance*)&b->IO;
     }
     return NULL;
 }
@@ -38,7 +38,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__IO = {
 };
 
 // Methods
-BSG_Void BSG_Method__IO·println(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__String message) {
+BSG_Void BSG_Method__IO·println(BSG_AnyInstance* _tmp_0,BSG_InstancePtr__String message) {
     BSG_InstancePtr__IO this = (struct BSG_Instance__IO*)_tmp_0;
     puts(message->cStr);
     if(this) {
@@ -58,6 +58,7 @@ struct BSG_Class__IO BSG_ClassSingleton__IO_IO = {
 // Constructor
 struct BSG_Instance__IO* BSG_Constructor__IO() {
     struct BSG_BaseInstance__IO* baseInstance = malloc(sizeof(struct BSG_BaseInstance__IO));
+    baseInstance->refCount = 0;
     baseInstance->IO = (struct BSG_Instance__IO) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
         .class = &BSG_ClassSingleton__IO_IO,

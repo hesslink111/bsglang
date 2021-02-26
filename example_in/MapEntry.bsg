@@ -1,6 +1,11 @@
 import Hashable;
+import IO;
 
 class MapEntry {
     var key: Hashable;
     var value: Any;
+
+    deinit(): Void {
+        IO.println("Map entry freed");
+    }
 }

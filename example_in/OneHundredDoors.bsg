@@ -7,10 +7,10 @@ import StringEx;
 class OneHundredDoors {
     [Main]
     main(): Void {
-        var list: List = new List();
+        var list: List<E: Bool> = new List<E: Bool>();
         var i: Int = 1;
         while(i <= 100) {
-            list.add(false as Any);
+            list.add(false);
             i = i + 1;
         }
 
@@ -18,7 +18,7 @@ class OneHundredDoors {
         while(i <= 100) {
             var j: Int = i;
             while(j <= 100) {
-                list.set(j - 1, (list.get(j - 1) as Bool != true) as Any);
+                list.set(j - 1, (list.get(j - 1) != true));
                 j = j + i;
             }
             i = i + 1;
@@ -27,8 +27,8 @@ class OneHundredDoors {
         list.forEachIndexed(maybePrintDoorStatus);
     }
 
-    maybePrintDoorStatus(i: Int, status: Any): Void {
-        if(status as Bool) {
+    maybePrintDoorStatus(i: Int, status: Bool): Void {
+        if(status) {
             IO.println("Door ".plus(StringEx.ofInt(i + 1)).plus(" is open."));
         }
     }

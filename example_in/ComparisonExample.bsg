@@ -1,0 +1,33 @@
+import String;
+import StringEx;
+import IO;
+import List;
+import ListEx;
+
+[Singleton]
+class ComparisonExample {
+    [Main]
+    main(): Void {
+        var aVsB: Int = StringEx.compare("A", "B");
+        IO.println("A vs. B: ".plus(StringEx.ofInt(aVsB)));
+
+        var aVsA: Int = StringEx.compare("A", "A");
+        IO.println("A vs. A: ".plus(StringEx.ofInt(aVsA)));
+
+        var aVsAA: Int = StringEx.compare("A", "AA");
+        IO.println("A vs. AA: ".plus(StringEx.ofInt(aVsAA)));
+
+        var strList: List<E: String> = new List<E: String>();
+        strList.add("A");
+        strList.add("B");
+        strList.add("AA");
+        strList.add("BCAB");
+        strList.add("ABCDE");
+        strList.add("A");
+        strList.add("ZZTOP");
+        IO.println("String List: ".plus((strList as ToString).toString()));
+
+        var sortedStrList: List<E: String> = ListEx.sort<T: String>(strList, StringEx.compare);
+        IO.println("Sorted List: ".plus((sortedStrList as ToString).toString()));
+    }
+}

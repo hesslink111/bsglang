@@ -11,8 +11,9 @@ import org.jparsec.Parsers.sequence
 object PostfixParser {
     val dot: Parser<BsgPostfix> = sequence(
         Tokens.dot.followedBy(Tokens.ws),
-        Tokens.identifier
-    ) { _, id -> BsgPostfix.Dot(id) }
+        Tokens.identifier.followedBy(Tokens.ws),
+        TypeParser.typeArgs(TypeParser.type)
+    ) { _, id, typeArgs -> BsgPostfix.Dot(id, typeArgs) }
 
     fun callArgs(exp: Parser<BsgExpression>): Parser<List<BsgExpression>> = sequence(
         exp.followedBy(Tokens.ws),

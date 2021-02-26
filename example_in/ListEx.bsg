@@ -1,8 +1,9 @@
 import List;
+import Math;
 
 [Singleton]
 class ListEx {
-    map(list: List, mapper: (<T: Any>)-><T: Any>): List {
+    map(list: List<E: <T: Any>>, mapper: (<T: Any>)-><R: Any>): List<E: <R: Any>> {
         var newList: List = new List();
         var i: Int = 0;
         while(i < list.size) {
@@ -12,7 +13,7 @@ class ListEx {
         return newList;
     }
 
-    fold(list: List, initial: <T: Any>, operation: (<T: Any>, <T: Any>)-><T: Any>): <T: Any> {
+    fold(list: List<E: <T: Any>>, initial: <R: Any>, operation: (<R: Any>, <T: Any>)-><R: Any>): <R: Any> {
         var acc: Any = initial;
         var i: Int = 0;
         while(i < list.size) {
@@ -20,5 +21,60 @@ class ListEx {
             i = i + 1;
         }
         return acc;
+    }
+
+    sort(list: List<E: <T: Any>>, compare: (<T: Any>, <T: Any>)->Int): List<E: <T: Any>> {
+        if(list.size <= 1) {
+            return list;
+        }
+        return merge(sort(take(list, list.size / 2), compare), sort(drop(list, list.size / 2), compare), compare);
+    }
+
+    merge(listA: List<E: <T: Any>>, listB: List<E: <T: Any>>, compare: (<T: Any>, <T: Any>)->Int): List<E: <T: Any>> {
+        var newList: List = new List();
+        var indexA: Int = 0;
+        var indexB: Int = 0;
+        while(indexA < listA.size && indexB < listB.size) {
+            var valueA: Any = listA.get(indexA);
+            var valueB: Any = listB.get(indexB);
+            var compareResult: Int = compare(valueA, valueB);
+            if(compareResult <= 0) {
+                newList.add(valueA);
+                indexA = indexA + 1;
+            }
+            if(compareResult > 0) {
+                newList.add(valueB);
+                indexB = indexB + 1;
+            }
+        }
+        while(indexA < listA.size) {
+            newList.add(listA.get(indexA));
+            indexA = indexA + 1;
+        }
+        while(indexB < listB.size) {
+            newList.add(listB.get(indexB));
+            indexB = indexB + 1;
+        }
+        return newList;
+    }
+
+    take(list: List<E: <T: Any>>, n: Int): List<E: <T: Any>> {
+        var newList: List = new List();
+        var i: Int = 0;
+        while(i < Math.min(list.size, n)) {
+            newList.add(list.get(i));
+            i = i + 1;
+        }
+        return newList;
+    }
+
+    drop(list: List<E: <T: Any>>, n: Int): List<E: <T: Any>> {
+        var newList: List = new List();
+        var i: Int = n;
+        while(i < list.size) {
+            newList.add(list.get(i));
+            i = i + 1;
+        }
+        return newList;
     }
 }

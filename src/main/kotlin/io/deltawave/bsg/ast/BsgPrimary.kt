@@ -8,10 +8,13 @@ import io.deltawave.bsg.context.VarMetadata
 import io.deltawave.bsg.util.writelnNotBlank
 
 sealed class BsgPrimary {
-    data class Var(val identifier: String): BsgPrimary() {
+    data class Var(val identifier: String, val typeArgs: Map<String, BsgType>): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val varMeta = scope.getVarMeta(identifier)
             return if(varMeta is VarMetadata.LocalOrGlobal) {
+                if(typeArgs.isNotEmpty()) {
+                    error("Type arguments can only be used on accessing class fields or methods. They may not be used on local or global variables.")
+                }
                 if(varMeta.isGlobal) {
                     // Global variable, does not have lifetime.
                     val resultVarName = ctx.getUniqueVarName()
@@ -32,7 +35,7 @@ sealed class BsgPrimary {
             } else {
                 // "this" access.
                 val (thisLifetime, thisType) = scope.getLifetime("this") ?: error("'this' must always be in scope.")
-                methodOrFieldAccessToC(ctx, scope, VarLifetime("this", thisLifetime), thisType as BsgType.Class, identifier)
+                methodOrFieldAccessToC(ctx, scope, VarLifetime("this", thisLifetime), thisType as BsgType.Class, identifier, typeArgs)
             }
         }
 

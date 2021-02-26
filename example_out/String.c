@@ -2,15 +2,15 @@
 #include "String.h"
 
 // Base Methods
-struct BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+BSG_AnyInstance* BSG_BaseMethod__String_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
     struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
     switch(type) {
         case BSG_Type__String:
-            return (struct BSG_AnyInstance*)&b->String;
+            return (BSG_AnyInstance*)&b->String;
         case BSG_Type__Hashable:
-            return (struct BSG_AnyInstance*)&b->Hashable;
+            return (BSG_AnyInstance*)&b->Hashable;
         case BSG_Type__Equatable:
-            return (struct BSG_AnyInstance*)&b->Equatable;
+            return (BSG_AnyInstance*)&b->Equatable;
     }
     return NULL;
 }
@@ -35,7 +35,7 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base) {
         struct BSG_BaseInstance__String* b = (struct BSG_BaseInstance__String*)base;
         base->refCount += 2;
         struct BSG_Instance__String* this = &b->String;
-        this->class->deinit((BSG_AnyInstancePtr)this, NULL);
+        this->class->deinit((BSG_AnyInstance*)this);
         base->refCount--;
         free(base);
     }
@@ -50,7 +50,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__String = {
 };
 
 // Methods
-BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
+BSG_Void BSG_Method__String·init(BSG_AnyInstance* _tmp_0) {
     BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_0;
     this->cStr = "";
     BSG_Int* _tmp_1;
@@ -66,7 +66,7 @@ BSG_Void BSG_Method__String·init(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
     }
     return;
 }
-BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data) {
+BSG_Int BSG_Method__String·hashCode(BSG_AnyInstance* _tmp_5) {
     BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_5->baseInstance->baseClass->cast(_tmp_5->baseInstance, BSG_Type__String);
     BSG_Int h;
     BSG_Int* _tmp_6;
@@ -103,7 +103,7 @@ BSG_Int BSG_Method__String·hashCode(BSG_AnyInstancePtr _tmp_5,BSG_Opaque data) 
     }
     return h;
 }
-BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__String·equals(BSG_AnyInstance* _tmp_19,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__String this = (BSG_InstancePtr__String)_tmp_19->baseInstance->baseClass->cast(_tmp_19->baseInstance, BSG_Type__String);
     BSG_Bool _tmp_20 = other->baseInstance->baseClass->canCast(other->baseInstance, BSG_Type__String);
     BSG_Bool _tmp_21 = false;
@@ -175,22 +175,31 @@ BSG_Bool BSG_Method__String·equals(BSG_AnyInstancePtr _tmp_19,BSG_Opaque data,B
     }
     return eq;
 }
-BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_Opaque data,BSG_InstancePtr__String otherString) {
+BSG_Char BSG_Method__String·get(BSG_AnyInstance* _tmp_42,BSG_Int i) {
     BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_42;
+    BSG_Char c;
+    c = ((char*)this->cStr)[i];
+    if(this) {
+        this->baseInstance->baseClass->release(this->baseInstance);
+    }
+    return c;
+}
+BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstance* _tmp_43,BSG_InstancePtr__String otherString) {
+    BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_43;
     BSG_InstancePtr__String newString;
-    BSG_InstancePtr__String* _tmp_43;
-    _tmp_43 = &newString;
-    BSG_InstancePtr__String _tmp_44 = BSG_Constructor__String();
-    _tmp_44->baseInstance->baseClass->retain(_tmp_44->baseInstance);
-    *_tmp_43 = _tmp_44;
-    BSG_Int* _tmp_45 = &newString->length;
-    BSG_Int _tmp_46 = this->length;
-    BSG_Int _tmp_47 = otherString->length;
-    BSG_Int _tmp_48 = _tmp_46 + _tmp_47;
-    *_tmp_45 = _tmp_48;
-    BSG_Bool* _tmp_49 = &newString->isLiteral;
-    BSG_Bool _tmp_50 = false;
-    *_tmp_49 = _tmp_50;
+    BSG_InstancePtr__String* _tmp_44;
+    _tmp_44 = &newString;
+    BSG_InstancePtr__String _tmp_45 = BSG_Constructor__String();
+    _tmp_45->baseInstance->baseClass->retain(_tmp_45->baseInstance);
+    *_tmp_44 = _tmp_45;
+    BSG_Int* _tmp_46 = &newString->length;
+    BSG_Int _tmp_47 = this->length;
+    BSG_Int _tmp_48 = otherString->length;
+    BSG_Int _tmp_49 = _tmp_47 + _tmp_48;
+    *_tmp_46 = _tmp_49;
+    BSG_Bool* _tmp_50 = &newString->isLiteral;
+    BSG_Bool _tmp_51 = false;
+    *_tmp_50 = _tmp_51;
     newString->cStr = malloc((newString->length + 1) * sizeof(char));
     strcpy(newString->cStr, this->cStr);
     strcat(newString->cStr, otherString->cStr);
@@ -202,12 +211,12 @@ BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstancePtr _tmp_42,BSG_
     }
     return newString;
 }
-BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51,BSG_Opaque data) {
-    BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_51;
-    BSG_Bool _tmp_52 = this->isLiteral;
-    BSG_Bool _tmp_53 = false;
-    BSG_Bool _tmp_54 = _tmp_52 == _tmp_53;
-    if(_tmp_54) {
+BSG_Void BSG_Method__String·deinit(BSG_AnyInstance* _tmp_52) {
+    BSG_InstancePtr__String this = (struct BSG_Instance__String*)_tmp_52;
+    BSG_Bool _tmp_53 = this->isLiteral;
+    BSG_Bool _tmp_54 = false;
+    BSG_Bool _tmp_55 = _tmp_53 == _tmp_54;
+    if(_tmp_55) {
         free(this->cStr);
     }
     if(this) {
@@ -219,6 +228,7 @@ BSG_Void BSG_Method__String·deinit(BSG_AnyInstancePtr _tmp_51,BSG_Opaque data) 
 // Class Singletons
 struct BSG_Class__String BSG_ClassSingleton__String_String = {
     .init = &BSG_Method__String·init,
+    .get = &BSG_Method__String·get,
     .plus = &BSG_Method__String·plus,
     .deinit = &BSG_Method__String·deinit,
 };
@@ -232,6 +242,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__String_Equatable = {
 // Constructor
 struct BSG_Instance__String* BSG_Constructor__String() {
     struct BSG_BaseInstance__String* baseInstance = malloc(sizeof(struct BSG_BaseInstance__String));
+    baseInstance->refCount = 0;
     baseInstance->String = (struct BSG_Instance__String) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
         .class = &BSG_ClassSingleton__String_String,
@@ -247,7 +258,7 @@ struct BSG_Instance__String* BSG_Constructor__String() {
     baseInstance->baseClass = (struct BSG_AnyBaseClass*) &BSG_BaseClassSingleton__String;
     baseInstance->refCount += 2;
     struct BSG_Instance__String* this = &baseInstance->String;
-    this->class->init((BSG_AnyInstancePtr)this, NULL);
+    this->class->init((BSG_AnyInstance*)this);
     baseInstance->refCount--;
     return &baseInstance->String;
 }

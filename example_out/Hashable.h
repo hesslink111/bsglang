@@ -26,20 +26,18 @@ struct BSG_BaseInstance__Hashable {
 // Method Typedefs
 #ifndef BSG_MethodDef__｢｣￫BSG_Int
 #define BSG_MethodDef__｢｣￫BSG_Int
-typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstancePtr,BSG_Opaque);
+typedef BSG_Int (*BSG_Function__｢｣￫BSG_Int)(BSG_AnyInstance*);
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int {
-    BSG_AnyInstancePtr this;
-    BSG_Opaque data;
+    BSG_AnyInstance* this;
     BSG_Function__｢｣￫BSG_Int method;
 } BSG_MethodFatPtr__｢｣￫BSG_Int;
 typedef struct BSG_MethodFatPtr__｢｣￫BSG_Int BSG_MethodFatPtr__｢｣￫BSG_Int;
 #endif
 #ifndef BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
 #define BSG_MethodDef__｢BSG_InstancePtr__Equatable｣￫BSG_Bool
-typedef BSG_Bool (*BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstancePtr,BSG_Opaque,BSG_InstancePtr__Equatable);
+typedef BSG_Bool (*BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool)(BSG_AnyInstance*,BSG_InstancePtr__Equatable);
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool {
-    BSG_AnyInstancePtr this;
-    BSG_Opaque data;
+    BSG_AnyInstance* this;
     BSG_Function__｢BSG_InstancePtr__Equatable｣￫BSG_Bool method;
 } BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
 typedef struct BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool BSG_MethodFatPtr__｢BSG_InstancePtr__Equatable｣￫BSG_Bool;
@@ -51,7 +49,7 @@ struct BSG_Class__Hashable {
 };
 
 // Base Methods
-struct BSG_AnyInstance* BSG_BaseMethod__Hashable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
+BSG_AnyInstance* BSG_BaseMethod__Hashable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
 BSG_Bool BSG_BaseMethod__Hashable_canCast(struct BSG_AnyBaseInstance* base, BSG_AnyType type);
 void BSG_BaseMethod__Hashable_retain(struct BSG_AnyBaseInstance* base);
 void BSG_BaseMethod__Hashable_release(struct BSG_AnyBaseInstance* base);
@@ -60,8 +58,8 @@ void BSG_BaseMethod__Hashable_release(struct BSG_AnyBaseInstance* base);
 extern struct BSG_BaseClass BSG_BaseClassSingleton__Hashable;
 
 // Methods
-BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data);
-BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstancePtr _tmp_2,BSG_Opaque data,BSG_InstancePtr__Equatable other);
+BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstance* _tmp_0);
+BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstance* _tmp_2,BSG_InstancePtr__Equatable other);
 
 // Class Singletons
 extern struct BSG_Class__Hashable BSG_ClassSingleton__Hashable_Hashable;

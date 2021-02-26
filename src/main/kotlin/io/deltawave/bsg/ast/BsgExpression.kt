@@ -9,11 +9,22 @@ sealed class BsgExpression {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (expVar, expLifetime) = exp.toC(ctx, scope)
             val expType = exp.getType(ctx, scope)
+
             val resultVar = ctx.getUniqueVarName()
 
             expType.writeCCast(expVar, toType, resultVar, ctx, ctx.cMethods, ctx.hNewMethodWriter, ctx.cNewMethodWriter)
+            val resultLifetime = if(expType is BsgType.Method && toType is BsgType.Method) {
+                // Retain boxed instance.
+                toType.writeCRetain(resultVar, ctx.cMethods)
+                // Must store new lifetime for casted method.
+                val castedLifetime = ctx.getUniqueLifetime()
+                scope.storeLifetimeAssociation(resultVar, castedLifetime, toType)
+                castedLifetime
+            } else {
+                expLifetime
+            }
 
-            return VarLifetime(resultVar, expLifetime)
+            return VarLifetime(resultVar, resultLifetime)
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
@@ -252,52 +263,74 @@ data class BsgPostfixExpression(
     }
 }
 
-fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLifetime: VarLifetime, instanceType: BsgType.Class, identifier: String): VarLifetime {
+fun methodOrFieldAccessToC(ctx: ClassContext, scope: BlockScope, instanceVarLifetime: VarLifetime, instanceType: BsgType.Class, identifier: String, typeArgs: Map<String, BsgType>): VarLifetime {
     val (instanceVar, instanceLifetime) = instanceVarLifetime
     val instanceMeta = ctx.astMetadata.getClass(instanceType.name)
-    val resultVarName = ctx.getUniqueVarName()
 
-    return when (identifier) {
+    val (accessedVar, accessedLifetime, accessedType) = when (identifier) {
         in instanceMeta.methods -> {
+            val methodVar = ctx.getUniqueVarName()
             val method = instanceMeta.methods[identifier]!!
-            ctx.cMethods.writeln("${method.type.getCType()} $resultVarName;")
+            ctx.cMethods.writeln("${method.type.getCType()} $methodVar;")
             if(method.methodOf != instanceMeta.genericType) {
-                ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
+                ctx.cMethods.writeln("$methodVar.this = (BSG_AnyInstance*) $instanceVar->baseInstance->baseClass->cast($instanceVar->baseInstance, BSG_Type__${method.methodOf.name});")
             } else {
-                ctx.cMethods.writeln("$resultVarName.this = (BSG_AnyInstancePtr) $instanceVar;")
+                ctx.cMethods.writeln("$methodVar.this = (BSG_AnyInstance*) $instanceVar;")
             }
-            ctx.cMethods.writeln("$resultVarName.method = $instanceVar->class->$identifier;")
+            ctx.cMethods.writeln("$methodVar.method = $instanceVar->class->$identifier;")
 
             // Methods are already retained ("this" is already retained)
-            VarLifetime(resultVarName, instanceLifetime)
+            Triple(methodVar, instanceLifetime, method.type)
         }
         in instanceMeta.fields -> {
+            val fieldVar = ctx.getUniqueVarName()
             val field = instanceMeta.fields[identifier]!!
-            ctx.cMethods.writeln("${field.type.getCType()} $resultVarName = $instanceVar->$identifier;")
+            ctx.cMethods.writeln("${field.type.getCType()} $fieldVar = $instanceVar->$identifier;")
 
             // Retain
-            field.type.writeCRetain(resultVarName, ctx.cMethods)
+            field.type.writeCRetain(fieldVar, ctx.cMethods)
             val resultLifetime = ctx.getUniqueLifetime()
-            scope.storeLifetimeAssociation(resultVarName, resultLifetime, field.type)
+            scope.storeLifetimeAssociation(fieldVar, resultLifetime, field.type)
 
-            VarLifetime(resultVarName, resultLifetime)
+            Triple(fieldVar, resultLifetime, field.type)
         }
         else -> error("No field or method in ${instanceMeta.genericType} named $identifier")
+    }
+
+    // Cast if generic.
+    val specifiedType = accessedType.specify(instanceType.typeArgs + typeArgs)
+    return if(specifiedType != accessedType) {
+        val castedVar = ctx.getUniqueVarName()
+        accessedType.writeCCast(accessedVar, specifiedType, castedVar, ctx, ctx.cMethods, ctx.hNewMethodWriter, ctx.cNewMethodWriter)
+        val lifetime = if(accessedType is BsgType.Method && specifiedType is BsgType.Method) {
+            // Retain boxed instance.
+            specifiedType.writeCRetain(castedVar, ctx.cMethods)
+            // Must store new lifetime for casted method.
+            val castedLifetime = ctx.getUniqueLifetime()
+            scope.storeLifetimeAssociation(castedVar, castedLifetime, specifiedType)
+            castedLifetime
+        } else {
+            accessedLifetime
+        }
+
+        VarLifetime(castedVar, lifetime)
+    } else {
+        VarLifetime(accessedVar, accessedLifetime)
     }
 }
 
 sealed class BsgPostfix {
-    data class Dot(val identifier: String): BsgPostfix() {
+    data class Dot(val identifier: String, val typeArgs: Map<String, BsgType>): BsgPostfix() {
         override fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val expVarLifetime = exp.toC(ctx, scope)
             val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Cannot perform dot access on ${exp.getType(ctx, scope)}.")
-            return methodOrFieldAccessToC(ctx, scope, expVarLifetime, expType, identifier)
+            return methodOrFieldAccessToC(ctx, scope, expVarLifetime, expType, identifier, typeArgs)
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType {
             val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
             return ctx.astMetadata.getClass(expType.name).let {
-                it.methods[identifier]?.type ?: it.fields[identifier]?.type ?: error("No field or method in $expType named $identifier")
+                (it.methods[identifier]?.type ?: it.fields[identifier]?.type)?.specify(expType.typeArgs + typeArgs) ?: error("No field or method in $expType named $identifier")
             }
         }
     }
@@ -308,7 +341,7 @@ sealed class BsgPostfix {
             val (expVar, _) = exp.toC(ctx, scope) // Method Fat Pointer
             val methodType = exp.getType(ctx, scope)
             if(methodType !is BsgType.Method || methodType.argTypes != args.map { it.getType(ctx, scope) }) {
-                error("Call can only be performed on method where arg and parameter types match.")
+                error("Call can only be performed on method where arg and parameter types match - method type: ${methodType}, call args: ${args.map { it.getType(ctx, scope) }}")
             }
 
             val argVarNames = args.map { it.toC(ctx, scope).varName }
@@ -321,7 +354,7 @@ sealed class BsgPostfix {
                 argType.writeCRetain(argName, ctx.cMethods)
             }
 
-            val argVars = (listOf("$expVar.this", "$expVar.data") + argVarNames).joinToString(",")
+            val argVars = (listOf("$expVar.this") + argVarNames).joinToString(",")
             val resultVar = ctx.getUniqueVarName()
             val resultType = getType(ctx, scope, exp)
             if(resultType is BsgType.Primitive && resultType.name == "Void") {

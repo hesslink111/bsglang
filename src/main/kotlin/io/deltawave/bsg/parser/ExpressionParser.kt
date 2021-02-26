@@ -138,8 +138,18 @@ object ExpressionParser {
 
     val lValueExpression: Parser<BsgLValueExpression> = expression.map {
         when {
-            it is BsgPostfixExpression && it.postfix is BsgPostfix.Dot -> BsgLValueExpression.Access(it.exp, it.postfix.identifier)
-            it is BsgExpression.Primary && it.primary is BsgPrimary.Var -> BsgLValueExpression.Var(it.primary.identifier)
+            it is BsgPostfixExpression && it.postfix is BsgPostfix.Dot -> {
+                if(it.postfix.typeArgs.isNotEmpty()) {
+                    error("TypeArgs may not be used on L-Value dot access.")
+                }
+                BsgLValueExpression.Access(it.exp, it.postfix.identifier)
+            }
+            it is BsgExpression.Primary && it.primary is BsgPrimary.Var -> {
+                if(it.primary.typeArgs.isNotEmpty()) {
+                    error("TypeArgs may not be used on L-Value var.")
+                }
+                BsgLValueExpression.Var(it.primary.identifier)
+            }
             else -> error("Invalid LValueExpression: $it")
         }
     }

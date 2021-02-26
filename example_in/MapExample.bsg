@@ -10,48 +10,48 @@ import StringEx;
 class MapExample {
     [Main]
     main(): Void {
-        var map: Map = new Map();
-        map.put("Hi" as Hashable, new Cat() as Any);
-        IO.println((map.get("Hi" as Hashable) as Animal).talk());
+        var map: Map<K: String, V: Animal> = new Map<K: String, V: Animal>();
+        map.put("Hi", new Cat() as Animal);
+        IO.println(map.get("Hi").talk());
 
-        map.put("Hello" as Hashable, new Dog() as Any);
-        map.put("Sup" as Hashable, new Dog() as Any);
-        map.put("Heyo" as Hashable, new Dog() as Any);
-        map.put("Haro" as Hashable, new Dog() as Any);
-        map.put("Hey" as Hashable, new Dog() as Any);
-        map.put("What's up" as Hashable, new Dog() as Any);
-        map.put("Sup dude" as Hashable, new Dog() as Any);
-        map.put("What's crackin" as Hashable, new Dog() as Any);
+        map.put("Hello", new Dog() as Animal);
+        map.put("Sup", new Dog() as Animal);
+        map.put("Heyo", new Dog() as Animal);
+        map.put("Haro", new Dog() as Animal);
+        map.put("Hey", new Dog() as Animal);
+        map.put("What's up", new Dog() as Animal);
+        map.put("Sup dude", new Dog() as Animal);
+        map.put("What's crackin", new Dog() as Animal);
 
         IO.println((map as ToString).toString());
 
-        map.remove("Sup" as Hashable);
-        map.remove("Sup dude" as Hashable);
+        map.remove("Sup");
+        map.remove("Sup dude");
 
-        IO.println((map.get("Hi" as Hashable) as Animal).talk());
-        IO.println((map.get("Hello" as Hashable) as Animal).talk());
+        IO.println(map.get("Hi").talk());
+        IO.println(map.get("Hello").talk());
 
         IO.println("Sets:");
-        var set: Set = new Set();
-        set.add("eyes" as Hashable);
-        set.add("ears" as Hashable);
-        set.add("mouth" as Hashable);
-        set.add("nose" as Hashable);
-        set.add("cheeks" as Hashable);
-        set.add("lungs" as Hashable);
-        set.add("tongue" as Hashable);
-        set.add("teeth" as Hashable);
-        set.add("lashes" as Hashable);
-        set.add("lips" as Hashable);
-        IO.println("Set contains eyes: ".plus(StringEx.ofBool(set.contains("eyes" as Hashable))));
-        IO.println("Set contains ears: ".plus(StringEx.ofBool(set.contains("ears" as Hashable))));
-        IO.println("Set contains mouth: ".plus(StringEx.ofBool(set.contains("mouth" as Hashable))));
-        IO.println("Set contains nose: ".plus(StringEx.ofBool(set.contains("nose" as Hashable))));
-        IO.println("Set contains lashes: ".plus(StringEx.ofBool(set.contains("lashes" as Hashable))));
-        set.remove("ears" as Hashable);
-        IO.println("Removed ears, set contains ears: ".plus(StringEx.ofBool(set.contains("ears" as Hashable))));
-        IO.println("Set contains eyes: ".plus(StringEx.ofBool(set.contains("eyes" as Hashable))));
-        IO.println("Set contains foot: ".plus(StringEx.ofBool(set.contains("foot" as Hashable))));
+        var set: Set<E: String> = new Set<E: String>();
+        set.add("eyes");
+        set.add("ears");
+        set.add("mouth");
+        set.add("nose");
+        set.add("cheeks");
+        set.add("lungs");
+        set.add("tongue");
+        set.add("teeth");
+        set.add("lashes");
+        set.add("lips");
+        IO.println("Set contains eyes: ".plus(StringEx.ofBool(set.contains("eyes"))));
+        IO.println("Set contains ears: ".plus(StringEx.ofBool(set.contains("ears"))));
+        IO.println("Set contains mouth: ".plus(StringEx.ofBool(set.contains("mouth"))));
+        IO.println("Set contains nose: ".plus(StringEx.ofBool(set.contains("nose"))));
+        IO.println("Set contains lashes: ".plus(StringEx.ofBool(set.contains("lashes"))));
+        set.remove("ears");
+        IO.println("Removed ears, set contains ears: ".plus(StringEx.ofBool(set.contains("ears"))));
+        IO.println("Set contains eyes: ".plus(StringEx.ofBool(set.contains("eyes"))));
+        IO.println("Set contains foot: ".plus(StringEx.ofBool(set.contains("foot"))));
 
         IO.println((set as ToString).toString());
     }

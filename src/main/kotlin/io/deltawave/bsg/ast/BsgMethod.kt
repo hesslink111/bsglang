@@ -19,9 +19,9 @@ data class BsgMethod(
         val type = getType(ctx, baseType)
 
         val thisParam = ctx.getUniqueVarName()
-        val thisArg = "BSG_AnyInstancePtr $thisParam"
+        val thisArg = "BSG_AnyInstance* $thisParam"
         val otherArgs = arguments.map { (argName, type) -> "${type.getCType()} $argName" }
-        val args = (listOf(thisArg, "BSG_Opaque data") + otherArgs).joinToString(",")
+        val args = (listOf(thisArg) + otherArgs).joinToString(",")
 
         // Function declaration. - any instance as this param.
         ctx.hMethods.writeln("${type.returnType.getCType()} BSG_Method__${baseType.name}·$name($args);")

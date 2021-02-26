@@ -95,9 +95,15 @@ sealed class BsgType {
                 Any -> {
                     cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
                     cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__Instance;")
-                    cCurrentMethodWriter.writeln("$toVar.content.instance = (BSG_AnyInstancePtr) $fromVar;")
+                    cCurrentMethodWriter.writeln("$toVar.content.instance = (BSG_AnyInstance*) $fromVar;")
                 }
-                is Class -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});")
+                is Class -> {
+                    if(this == toType) {
+                        cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = $fromVar;")
+                    } else {
+                        cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar->baseInstance->baseClass->cast($fromVar->baseInstance, BSG_Type__${toType.name});")
+                    }
+                }
                 is Primitive -> error("Cannot cast from Class to Primitive.")
                 is Method -> error("Cannot cast from Class to Method.")
                 is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
@@ -168,7 +174,7 @@ sealed class BsgType {
 
     data class Method(val argTypes: List<BsgType>, val returnType: BsgType): BsgType() {
         private fun args() = argTypes.map { it.getCType() }
-        private fun argsWithThisAndData() = listOf("BSG_AnyInstancePtr", "BSG_Opaque") + args()
+        private fun argsWithThis() = listOf("BSG_AnyInstance*") + args()
 
         fun getFName(): String {
             return "BSG_Function__｢${args().joinToString("·")}｣￫${returnType.getCType()}"
@@ -186,10 +192,9 @@ sealed class BsgType {
             return argTypes.filterIsInstance<Method>().flatMap { it.getCDefinitions(astMetadata) } + listOf("""
                 #ifndef ${getDName()}
                 #define ${getDName()}
-                typedef ${returnType.getCType()} (*${getFName()})(${argsWithThisAndData().joinToString(",")});
+                typedef ${returnType.getCType()} (*${getFName()})(${argsWithThis().joinToString(",")});
                 typedef struct ${getMName()} {
-                    BSG_AnyInstancePtr this;
-                    BSG_Opaque data;
+                    BSG_AnyInstance* this;
                     ${getFName()} method;
                 } ${getMName()};
                 typedef struct ${getMName()} ${getMName()};
@@ -238,12 +243,12 @@ sealed class BsgType {
                     val shimName = "｢${args().joinToString("·")}｣￫${returnType.getCType()}_castTo_｢${toType.args().joinToString("·")}｣￫${toType.returnType.getCType()}"
                     hNewMethodWriter.writeln("#ifndef BSG_MethodCastShimDef_H__$shimName")
                     hNewMethodWriter.writeln("#define BSG_MethodCastShimDef_H__$shimName")
-                    hNewMethodWriter.writeln("${toType.returnType.getCType()} BSG_MethodCastShim__$shimName(${toType.argsWithThisAndData().joinToString(",")});")
+                    hNewMethodWriter.writeln("${toType.returnType.getCType()} BSG_MethodCastShim__$shimName(${toType.argsWithThis().joinToString(",")});")
                     hNewMethodWriter.writeln("#endif")
 
                     val castableArgNames = argTypes.map { ctx.getUniqueVarName() }
-                    val argNames = listOf("this", "data") + castableArgNames
-                    val cArgTypesWithNames = toType.argsWithThisAndData().mapIndexed { i, cType -> "$cType ${argNames[i]}" }.joinToString(",")
+                    val argNames = listOf("this") + castableArgNames
+                    val cArgTypesWithNames = toType.argsWithThis().mapIndexed { i, cType -> "$cType ${argNames[i]}" }.joinToString(",")
 
                     // Make a definition for the method shim.
                     cNewMethodWriter.writeln("#ifndef BSG_MethodCastShimDef_C__$shimName")
@@ -256,29 +261,52 @@ sealed class BsgType {
                         // Write casted arg, and any new methods needed. Return new var.
                         val resultVar = ctx.getUniqueVarName()
                         argType.writeCCast(argName, argToType, resultVar, ctx, cNewMethodWriter, hNewMethodWriterBefore, cNewMethodWriterBefore)
+
+                        // Retain casted methods. They will be freed by the accepting function.
+                        if(argType is Method && argToType is Method) {
+                            argToType.writeCRetain(resultVar, cNewMethodWriter)
+                        }
                         resultVar
                     }
-                    // Cast data parameter to the original function type.
-                    cNewMethodWriter.writeln("${getFName()} originalMethod = (${getFName()})data;")
+                    // Get original function from box.
+                    cNewMethodWriter.writeln("${getFName()} originalMethod = (${getFName()}) ((BSG_Instance__BoxedMethod*)this)->method.method;")
 
                     // Call the original method.
-                    val argsForOriginalMethod = (listOf("this", "NULL") + castedNames).joinToString(",")
+                    val argsForOriginalMethod = (listOf("((BSG_Instance__BoxedMethod*)this)->method.this") + castedNames).joinToString(",")
+                    // Retain original "this" instance before passing to method.
+                    cNewMethodWriter.writeln("((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance->baseClass->retain(((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance);")
                     if(returnType is Primitive && returnType.name == "Void") {
                         cNewMethodWriter.writeln("originalMethod($argsForOriginalMethod);")
+                        // Release box.
+                        cNewMethodWriter.writeln("this->baseInstance->baseClass->release(this->baseInstance);")
                     } else {
                         val returnVar = ctx.getUniqueVarName()
                         val returnVarCasted = ctx.getUniqueVarName()
                         cNewMethodWriter.writeln("${returnType.getCType()} $returnVar = originalMethod($argsForOriginalMethod);")
+                        // Release box.
+                        cNewMethodWriter.writeln("this->baseInstance->baseClass->release(this->baseInstance);")
+
+                        // Return types are retained.
                         returnType.writeCCast(returnVar, toType.returnType, returnVarCasted, ctx, cNewMethodWriter, hNewMethodWriterBefore, cNewMethodWriterBefore)
+                        if(returnType is Method && toType.returnType is Method) {
+                            toType.returnType.writeCRetain(returnVar, cNewMethodWriter)
+                        }
                         cNewMethodWriter.writeln("return $returnVarCasted;")
                     }
                     cNewMethodWriter.writeln_l("}")
                     cNewMethodWriter.writeln("#endif")
 
-                    // Create a var to hold the fat pointer.
+                    // Put old instance and old method in a BoxedMethod instance.
+                    val boxVar = ctx.getUniqueVarName()
+                    cCurrentMethodWriter.writeln("BSG_Instance__BoxedMethod* $boxVar = BSG_Constructor__BoxedMethod();")
+                    cCurrentMethodWriter.writeln("$boxVar->method.this = $fromVar.this;")
+                    cCurrentMethodWriter.writeln("$boxVar->method.method = (BSG_AnyMethod)$fromVar.method;")
+                    // Retain value saved to box.
+                    cCurrentMethodWriter.writeln("$fromVar.this->baseInstance->baseClass->retain($fromVar.this->baseInstance);")
+
+                    // Put box in new MethodFatPtr.
                     cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
-                    cCurrentMethodWriter.writeln("$toVar.this = $fromVar.this;")
-                    cCurrentMethodWriter.writeln("$toVar.data = (BSG_Opaque) $fromVar.method;")
+                    cCurrentMethodWriter.writeln("$toVar.this = (BSG_AnyInstance*)$boxVar;")
                     cCurrentMethodWriter.writeln("$toVar.method = &BSG_MethodCastShim__$shimName;")
                 }
                 is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
@@ -331,7 +359,7 @@ sealed class BsgType {
         }
 
         override fun specify(typeArgs: Map<String, BsgType>): BsgType {
-            return typeArgs[name] ?: error("Type arg not found for generic $name.")
+            return typeArgs[name] ?: this
         }
 
         override fun hashCode(): Int {

@@ -6,27 +6,28 @@ import Dog;
 import Animal;
 import Equatable;
 import ListEx;
+import ToString;
 
 [Singleton]
 class ListExample {
     [Main]
     main(): Void {
-        var l: List<T: Animal> = new List<T: Animal>();
+        var l: List<E: Animal> = new List<E: Animal>();
 
         IO.println("Add two cats:");
         var i: Int = 0;
         while(i < 2) {
-            l.add(new Cat() as Any);
+            l.add(new Cat() as Animal);
             i = i + 1;
         }
 
         IO.println("Replace first cat with dog:");
-        l.set(0, new Dog() as Any);
+        l.set(0, new Dog() as Animal);
 
         IO.println("List with Cats and dogs:");
         i = 0;
         while(i < 2) {
-            IO.println((l.get(i) as Animal).talk());
+            IO.println((l.get(i)).talk());
             i = i + 1;
         }
 
@@ -36,34 +37,42 @@ class ListExample {
         IO.println("List with just 1 cat:");
         i = 0;
         while(i < 1) {
-            IO.println((l.get(i) as Animal).talk());
+            IO.println((l.get(i)).talk());
             i = i + 1;
         }
 
-        var catStringsList: List = new List();
-        catStringsList.add("Cat" as Any);
-        catStringsList.add("Dog" as Any);
-        catStringsList.add("Dog" as Any);
-        catStringsList.add("Cat" as Any);
-        catStringsList.add("Cat" as Any);
-        IO.println("Cat strings list: ".plus(StringEx.ofAny(catStringsList as Any)));
+        var catStringsList: List<E: String> = new List<E: String>();
+        catStringsList.add("Cat");
+        catStringsList.add("Dog");
+        catStringsList.add("Dog");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        catStringsList.add("Cat");
+        IO.println("Cat strings list: ".plus((catStringsList as ToString).toString()));
         var numCats: Int = catStringsList
-            |> ListEx.map(it, stringToAnimal)
-            |> ListEx.fold(it, 0 as Any, countCats)
+            |> ListEx.map<T: String, R: Animal>(it, stringToAnimal)
+            |> ListEx.fold<T: Animal, R: Int>(it, 0, countCats)
             |> it as Int;
         IO.println("Number of cats: ".plus(StringEx.ofInt(numCats)));
     }
 
-    stringToAnimal(value: Any): Any {
+    stringToAnimal(value: String): Animal {
         if(value is Equatable && (value as Equatable).equals("Cat" as Equatable)) {
-            return new Cat() as Any;
+            return new Cat() as Animal;
         }
-        return new Dog() as Any;
+        return new Dog() as Animal;
     }
 
-    countCats(acc: Any, value: Any): Any {
-        if((value is Cat)) {
-            return ((acc as Int) + 1) as Any;
+    countCats(acc: Int, value: Animal): Int {
+        if(value is Cat) {
+            return acc + 1;
         }
         return acc;
     }

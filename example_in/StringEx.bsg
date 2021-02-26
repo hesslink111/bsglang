@@ -2,6 +2,7 @@ h "#include <stdio.h>";
 h "#include <string.h>";
 import String;
 import ToString;
+import Math;
 
 [Singleton]
 class StringEx {
@@ -53,5 +54,18 @@ class StringEx {
             return (value as ToString).toString();
         }
         return "Any";
+    }
+
+    compare(a: String, b: String): Int {
+        var i: Int = 0;
+        while(i < Math.min(a.length, b.length)) {
+            var charComparison: Int = (a.get(i) as Int) - (b.get(i) as Int);
+            if(charComparison != 0) {
+                return charComparison;
+            }
+            i = i + 1;
+        }
+
+        return a.length - b.length;
     }
 }

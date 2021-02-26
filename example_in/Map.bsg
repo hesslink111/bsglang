@@ -22,7 +22,7 @@ class Map: ToString {
         }
     }
 
-    put(key: Hashable, value: Any): Void {
+    put(key: <K: Hashable>, value: <V: Any>): Void {
         if(size + 1 > ((bucketList.size * 3) / 4)) {
             rehash(bucketList.size * 2);
         }
@@ -39,7 +39,7 @@ class Map: ToString {
         var bucket: List = getBucket(entry.key, bucketListParam);
 
         var i: Int = 0;
-        while(i < bucket.size && (bucket.get(i) as MapEntry).key.equals(entry.key) == false) {
+        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(entry.key as Equatable) == false) {
             i = i + 1;
         }
 
@@ -60,22 +60,22 @@ class Map: ToString {
         return bucketListParam.get(index) as List;
     }
 
-    containsKey(key: Hashable): Bool {
+    containsKey(key: <K: Hashable>): Bool {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && (bucket.get(i) as MapEntry).key.equals(key) == false) {
+        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
             i = i + 1;
         }
 
         return i < bucket.size;
     }
 
-    get(key: Hashable): Any {
+    get(key: <K: Hashable>): <V: Any> {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && (bucket.get(i) as MapEntry).key.equals(key) == false) {
+        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
             i = i + 1;
         }
 
@@ -86,11 +86,11 @@ class Map: ToString {
         return 0 as Any;
     }
 
-    remove(key: Hashable): Void {
+    remove(key: <K: Hashable>): Void {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && (bucket.get(i) as MapEntry).key.equals(key) == false) {
+        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
             i = i + 1;
         }
 

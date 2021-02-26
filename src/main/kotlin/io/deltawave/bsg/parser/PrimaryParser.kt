@@ -4,13 +4,17 @@ import io.deltawave.bsg.ast.BsgPrimary
 import org.jparsec.Parser
 import org.jparsec.Parsers
 import org.jparsec.Parsers.or
+import org.jparsec.Parsers.sequence
 
 object PrimaryParser {
     val boolLiteral: Parser<BsgPrimary> = Tokens.boolLiteral.map { BsgPrimary.BoolLiteral(it) }
-    val identifier: Parser<BsgPrimary> = Tokens.identifier.map { BsgPrimary.Var(it) }
+    val namedVar: Parser<BsgPrimary> = sequence(
+        Tokens.identifier.followedBy(Tokens.ws),
+        TypeParser.typeArgs(TypeParser.type)
+    ) { id, typeArgs -> BsgPrimary.Var(id, typeArgs) }
     val floatLiteral: Parser<BsgPrimary> = Tokens.floatLiteral.map { BsgPrimary.FloatLiteral(it) }
     val intLiteral: Parser<BsgPrimary> = Tokens.integerLiteral.map { BsgPrimary.IntLiteral(it) }
-    val construction: Parser<BsgPrimary> = Parsers.sequence(
+    val construction: Parser<BsgPrimary> = sequence(
         Tokens.newKeyword.followedBy(Tokens.ws),
         Tokens.identifier
             .followedBy(Tokens.ws),
@@ -24,7 +28,7 @@ object PrimaryParser {
     val primary: Parser<BsgPrimary> = or(
         construction,
         boolLiteral,
-        identifier,
+        namedVar,
         stringLiteral,
         floatLiteral,
         intLiteral

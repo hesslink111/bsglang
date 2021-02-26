@@ -2,11 +2,11 @@
 #include "Equatable.h"
 
 // Base Methods
-struct BSG_AnyInstance* BSG_BaseMethod__Equatable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+BSG_AnyInstance* BSG_BaseMethod__Equatable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
     struct BSG_BaseInstance__Equatable* b = (struct BSG_BaseInstance__Equatable*)base;
     switch(type) {
         case BSG_Type__Equatable:
-            return (struct BSG_AnyInstance*)&b->Equatable;
+            return (BSG_AnyInstance*)&b->Equatable;
     }
     return NULL;
 }
@@ -38,7 +38,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Equatable = {
 };
 
 // Methods
-BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__Equatable·equals(BSG_AnyInstance* _tmp_0,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__Equatable this = (struct BSG_Instance__Equatable*)_tmp_0;
     BSG_Bool _tmp_1 = false;
     if(this) {
@@ -58,6 +58,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__Equatable_Equatable = {
 // Constructor
 struct BSG_Instance__Equatable* BSG_Constructor__Equatable() {
     struct BSG_BaseInstance__Equatable* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Equatable));
+    baseInstance->refCount = 0;
     baseInstance->Equatable = (struct BSG_Instance__Equatable) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
         .class = &BSG_ClassSingleton__Equatable_Equatable,

@@ -43,6 +43,12 @@ class String: Hashable {
         return eq;
     }
 
+    get(i: Int): Char {
+        var c: Char;
+        c 'c = ((char*)this->cStr)[i];';
+        return c;
+    }
+
     plus(otherString: String): String {
         var newString: String = new String();
         newString.length = length + otherString.length;

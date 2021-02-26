@@ -41,11 +41,16 @@ fun main(args: Array<String>) {
     if(!outputDir.exists()) {
         outputDir.mkdirs()
     }
-    val preambleFile = outputDir.resolve("bsg_preamble.h")
-    if(!preambleFile.exists()) {
-        preambleFile.createNewFile()
+    val preambleHFile = outputDir.resolve("bsg_preamble.h")
+    if(!preambleHFile.exists()) {
+        preambleHFile.createNewFile()
     }
-    File("bsg_preamble.h").copyTo(preambleFile, overwrite = true)
+    File("bsg_preamble.h").copyTo(preambleHFile, overwrite = true)
+    val preambleCFile = outputDir.resolve("bsg_preamble.c")
+    if(!preambleCFile.exists()) {
+        preambleCFile.createNewFile()
+    }
+    File("bsg_preamble.c").copyTo(preambleCFile, overwrite = true)
 
     // Compile.
     val compiledFiles = Compiler.compile(inputFilename)

@@ -63,18 +63,19 @@ struct BSG_AnyInstance {
     struct BSG_AnyBaseInstance* baseInstance;
     BSG_AnyClass class;
 };
-typedef struct BSG_AnyInstance* BSG_AnyInstancePtr;
+typedef struct BSG_AnyInstance BSG_AnyInstance;
 
 typedef void* BSG_AnyMethod;
 
 struct BSG_AnyMethodFatPtr {
-    struct BSG_AnyInstance* this;
+    BSG_AnyInstance* this;
     BSG_AnyMethod method;
 };
+typedef struct BSG_AnyMethodFatPtr BSG_AnyMethodFatPtr;
 
 union BSG_Any_Content {
-    struct BSG_AnyInstance* instance;
-    struct BSG_AnyMethodFatPtr method;
+    BSG_AnyInstance* instance;
+    BSG_AnyMethodFatPtr method;
     union BSG_AnyPrimitive primitive;
 };
 
@@ -89,5 +90,27 @@ struct BSG_Any {
     union BSG_Any_Content content;
 };
 typedef struct BSG_Any BSG_Any;
+
+// Boxed Method
+struct BSG_Instance__BoxedMethod {
+    struct BSG_AnyBaseInstance* baseInstance;
+    BSG_AnyClass class;
+    BSG_AnyMethodFatPtr method;
+};
+typedef struct BSG_Instance__BoxedMethod BSG_Instance__BoxedMethod;
+
+struct BSG_BaseInstance__BoxedMethod {
+    struct BSG_AnyBaseClass* baseClass;
+    int refCount;
+    BSG_Instance__BoxedMethod BoxedMethod;
+};
+typedef struct BSG_BaseInstance__BoxedMethod BSG_BaseInstance__BoxedMethod;
+
+void BSG_BaseMethod__BoxedMethod_retain(struct BSG_AnyBaseInstance* base);
+void BSG_BaseMethod__BoxedMethod_release(struct BSG_AnyBaseInstance* base);
+
+extern struct BSG_BaseClass BSG_BaseClassSingleton__BoxedMethod;
+
+extern struct BSG_Instance__BoxedMethod* BSG_Constructor__BoxedMethod();
 
 #endif

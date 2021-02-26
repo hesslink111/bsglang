@@ -2,13 +2,13 @@
 #include "Hashable.h"
 
 // Base Methods
-struct BSG_AnyInstance* BSG_BaseMethod__Hashable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
+BSG_AnyInstance* BSG_BaseMethod__Hashable_cast(struct BSG_AnyBaseInstance* base, BSG_AnyType type) {
     struct BSG_BaseInstance__Hashable* b = (struct BSG_BaseInstance__Hashable*)base;
     switch(type) {
         case BSG_Type__Hashable:
-            return (struct BSG_AnyInstance*)&b->Hashable;
+            return (BSG_AnyInstance*)&b->Hashable;
         case BSG_Type__Equatable:
-            return (struct BSG_AnyInstance*)&b->Equatable;
+            return (BSG_AnyInstance*)&b->Equatable;
     }
     return NULL;
 }
@@ -42,7 +42,7 @@ struct BSG_BaseClass BSG_BaseClassSingleton__Hashable = {
 };
 
 // Methods
-BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data) {
+BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstance* _tmp_0) {
     BSG_InstancePtr__Hashable this = (struct BSG_Instance__Hashable*)_tmp_0;
     BSG_Int _tmp_1 = 0;
     if(this) {
@@ -50,7 +50,7 @@ BSG_Int BSG_Method__Hashable·hashCode(BSG_AnyInstancePtr _tmp_0,BSG_Opaque data
     }
     return _tmp_1;
 }
-BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstancePtr _tmp_2,BSG_Opaque data,BSG_InstancePtr__Equatable other) {
+BSG_Bool BSG_Method__Hashable·equals(BSG_AnyInstance* _tmp_2,BSG_InstancePtr__Equatable other) {
     BSG_InstancePtr__Hashable this = (BSG_InstancePtr__Hashable)_tmp_2->baseInstance->baseClass->cast(_tmp_2->baseInstance, BSG_Type__Hashable);
     BSG_Bool _tmp_3 = true;
     if(this) {
@@ -73,6 +73,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__Hashable_Equatable = {
 // Constructor
 struct BSG_Instance__Hashable* BSG_Constructor__Hashable() {
     struct BSG_BaseInstance__Hashable* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Hashable));
+    baseInstance->refCount = 0;
     baseInstance->Hashable = (struct BSG_Instance__Hashable) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
         .class = &BSG_ClassSingleton__Hashable_Hashable,

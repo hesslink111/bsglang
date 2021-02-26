@@ -9,15 +9,15 @@ class Set: ToString {
         map = new Map();
     }
 
-    add(value: Hashable): Void {
+    add(value: <E: Hashable>): Void {
         map.put(value, value as Any);
     }
 
-    contains(value: Hashable): Bool {
+    contains(value: <E: Hashable>): Bool {
         return map.containsKey(value);
     }
 
-    remove(value: Hashable): Void {
+    remove(value: <E: Hashable>): Void {
         map.remove(value);
     }
 
