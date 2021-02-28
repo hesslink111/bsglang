@@ -1,11 +1,11 @@
 import List;
 import MapEntry;
-import Hashable;
 import IO;
 import StringEx;
 import StringBuilder;
 import ToString;
 import System;
+import AnyEx;
 
 class Map: ToString {
     var bucketList: List;
@@ -22,7 +22,7 @@ class Map: ToString {
         }
     }
 
-    put(key: <K: Hashable>, value: <V: Any>): Void {
+    put(key: <K: Any>, value: <V: Any>): Void {
         if(size + 1 > ((bucketList.size * 3) / 4)) {
             rehash(bucketList.size * 2);
         }
@@ -39,7 +39,7 @@ class Map: ToString {
         var bucket: List = getBucket(entry.key, bucketListParam);
 
         var i: Int = 0;
-        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(entry.key as Equatable) == false) {
+        while(i < bucket.size && AnyEx.equalityOf((bucket.get(i) as MapEntry).key, entry.key) == false) {
             i = i + 1;
         }
 
@@ -51,8 +51,8 @@ class Map: ToString {
         return true;
     }
 
-    getBucket(key: Hashable, bucketListParam: List): List {
-        var index: Int = key.hashCode() % bucketListParam.size;
+    getBucket(key: Any, bucketListParam: List): List {
+        var index: Int = AnyEx.hashOf(key) % bucketListParam.size;
         if(index < 0) {
             index = index + bucketListParam.size;
         }
@@ -60,37 +60,37 @@ class Map: ToString {
         return bucketListParam.get(index) as List;
     }
 
-    containsKey(key: <K: Hashable>): Bool {
+    containsKey(key: <K: Any>): Bool {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
+        while(i < bucket.size && AnyEx.equalityOf((bucket.get(i) as MapEntry).key, key) == false) {
             i = i + 1;
         }
 
         return i < bucket.size;
     }
 
-    get(key: <K: Hashable>): <V: Any> {
+    get(key: <K: Any>): <V: Any> {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
+        while(i < bucket.size && AnyEx.equalityOf((bucket.get(i) as MapEntry).key, key) == false) {
             i = i + 1;
         }
 
         if(i < bucket.size) {
             return (bucket.get(i) as MapEntry).value;
         }
-        System.error("Key does not exist in map: ".plus(StringEx.ofAny(key as Any)));
+        System.error("Key does not exist in map: ".plus(StringEx.ofAny(key)));
         return 0 as Any;
     }
 
-    remove(key: <K: Hashable>): Void {
+    remove(key: <K: Any>): Void {
         var bucket: List = getBucket(key, bucketList);
 
         var i: Int = 0;
-        while(i < bucket.size && ((bucket.get(i) as MapEntry).key as Equatable).equals(key as Equatable) == false) {
+        while(i < bucket.size && AnyEx.equalityOf((bucket.get(i) as MapEntry).key, key) == false) {
             i = i + 1;
         }
 
@@ -155,7 +155,7 @@ class Map: ToString {
             if(i > 0) {
                 builder.append(",");
             }
-            builder.appendAny(entry.key as Any);
+            builder.appendAny(entry.key);
             builder.append("=");
             builder.appendAny(entry.value);
             i = i + 1;

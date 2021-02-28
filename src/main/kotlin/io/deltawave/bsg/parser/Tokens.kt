@@ -2,13 +2,28 @@ package io.deltawave.bsg.parser
 
 import io.deltawave.bsg.ast.ReservedWords.Var
 import org.jparsec.Parser
+import org.jparsec.Parsers
 import org.jparsec.Parsers.or
+import org.jparsec.Parsers.sequence
 import org.jparsec.Scanners
 import org.jparsec.pattern.CharPredicates
 import org.jparsec.pattern.Patterns
 
 object Tokens {
-    val ws: Parser<Void> = Patterns.many(CharPredicates.IS_WHITESPACE).toScanner("whitespace")
+    val lineComment: Parser<Void> = sequence(
+            Scanners.string("//"),
+            Patterns.many(CharPredicates.notChar('\n')).toScanner("non-newline"),
+            Scanners.isChar('\n')
+    )
+    val whitespace: Parser<Void> = or(
+            Scanners.isChar(' '),
+            Scanners.isChar('\t'),
+            Scanners.isChar('\n')
+    )
+    val ws: Parser<Unit> = or(
+            whitespace,
+            lineComment
+    ).many().map {}
 
     val classKeyword: Parser<Void> = Scanners.string("class")
     val returnKeyword: Parser<Void> = Scanners.string("return")

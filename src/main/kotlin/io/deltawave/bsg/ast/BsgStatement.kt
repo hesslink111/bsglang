@@ -2,7 +2,9 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
+import io.deltawave.bsg.util.parseError
 import io.deltawave.bsg.util.writelnNotBlank
+import org.jparsec.SourceLocation
 
 sealed class BsgStatement {
     data class If(val condition: BsgExpression, val statements: List<BsgStatement>): BsgStatement() {
@@ -31,10 +33,11 @@ sealed class BsgStatement {
             val (conditionVarName, _) = condition.toC(ctx, subScope)
             val conditionType = condition.getType(ctx, subScope)
             if(conditionType !is BsgType.Primitive || conditionType.name != "Bool") {
-                error("While condition must be a boolean.")
+                error("While condition must result in boolean.")
             }
 
             ctx.cMethods.writeln_r("if(!$conditionVarName) {")
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
             ctx.cMethods.writeln("break;")
             ctx.cMethods.writeln_l("}")
 
@@ -51,12 +54,12 @@ sealed class BsgStatement {
         }
     }
 
-    data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression): BsgStatement() {
+    data class Assignment(val lValue: BsgLValueExpression, val rValue: BsgExpression, val sl: SourceLocation): BsgStatement() {
         override fun toC(ctx: ClassContext, scope: BlockScope) {
             val lValueType = lValue.getType(ctx, scope)
             val rValueType = rValue.getType(ctx, scope)
             if(lValueType != rValueType) {
-                error("L-Value and R-Value must be equal: $lValueType, $rValueType")
+                parseError(sl, "L-Value and R-Value must be of the same type: $lValueType, $rValueType")
             }
 
             val lValueMeta = lValue.toC(ctx, scope)

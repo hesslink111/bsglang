@@ -71,8 +71,29 @@ sealed class BsgExpression {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val (var1, _) = e1.toC(ctx, scope)
             val (var2, _) = e2.toC(ctx, scope)
+            val e1Type = e1.getType(ctx, scope)
             val u = ctx.getUniqueVarName()
-            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+            // TODO: Equality for different types:
+            // TODO: - Equality and inequality function for Any type - switch case and stuff in preamble.c.
+            fun write(type: BsgType) {
+                when(type) {
+                    BsgType.Any -> {
+                        when(op) {
+                            "==" -> ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = BSG_Any_Equality($var1, $var2);")
+                            "!=" -> ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = BSG_Any_Equality($var1, $var2) == false;")
+                            else -> error("Unknown equality operator: $op")
+                        }
+                    }
+                    is BsgType.Class -> ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+                    is BsgType.Primitive -> ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1 $op $var2;")
+                    is BsgType.Method -> {
+                        ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1.this $op $var2.this;")
+                        ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $u = $var1.method $op $var2.method;")
+                    }
+                    is BsgType.Generic -> write(type.rawType)
+                }
+            }
+            write(e1Type)
             return VarLifetime(u, null) // Only used for primitives.
         }
 
@@ -118,7 +139,7 @@ sealed class BsgExpression {
             val (e2Var, e2Lifetime) = e2.toC(ctx, subScope)
             ctx.cMethods.writeln("$resultVar = $e2Var;")
 
-            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock())
+            releaseLifetimes(ctx, subScope, subScope.getAllLifetimesInBlock() - listOfNotNull(e2Lifetime))
             ctx.cMethods.writeln_l("}")
 
             return VarLifetime(resultVar, e2Lifetime)
@@ -328,7 +349,7 @@ sealed class BsgPostfix {
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType {
-            val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type.")
+            val expType = exp.getType(ctx, scope) as? BsgType.Class ?: error("Dot access can only be performed on class type: ${exp.getType(ctx, scope)}")
             return ctx.astMetadata.getClass(expType.name).let {
                 (it.methods[identifier]?.type ?: it.fields[identifier]?.type)?.specify(expType.typeArgs + typeArgs) ?: error("No field or method in $expType named $identifier")
             }
@@ -362,13 +383,10 @@ sealed class BsgPostfix {
             } else {
                 ctx.cMethods.writeln("${getType(ctx, scope, exp).getCType()} $resultVar = $expVar.method($argVars);")
             }
-            return if(resultType.let { it is BsgType.Class || it is BsgType.Method || it is BsgType.Any }) {
-                val resultLifetime = ctx.getUniqueLifetime()
-                scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
-                VarLifetime(resultVar, resultLifetime)
-            } else {
-                VarLifetime(resultVar, null)
-            }
+
+            val resultLifetime = ctx.getUniqueLifetime()
+            scope.storeLifetimeAssociation(resultVar, resultLifetime, getType(ctx, scope, exp))
+            return VarLifetime(resultVar, resultLifetime)
         }
 
         override fun getType(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): BsgType {

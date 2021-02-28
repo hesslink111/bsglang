@@ -25,7 +25,7 @@ void BSG_BaseMethod__Equatable_release(struct BSG_AnyBaseInstance* base) {
     base->refCount--;
     if(base->refCount <= 0) {
         struct BSG_BaseInstance__Equatable* b = (struct BSG_BaseInstance__Equatable*)base;
-        free(base);
+        deallocate(base);
     }
 }
 
@@ -57,7 +57,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__Equatable_Equatable = {
 
 // Constructor
 struct BSG_Instance__Equatable* BSG_Constructor__Equatable() {
-    struct BSG_BaseInstance__Equatable* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Equatable));
+    struct BSG_BaseInstance__Equatable* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Equatable));
     baseInstance->refCount = 0;
     baseInstance->Equatable = (struct BSG_Instance__Equatable) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

@@ -6,6 +6,7 @@ import io.deltawave.bsg.ast.BsgLValueExpression
 import io.deltawave.bsg.ast.BsgStatement
 import io.deltawave.bsg.ast.type.BsgType
 import org.jparsec.Parser
+import org.jparsec.Parsers
 import org.jparsec.Parsers.or
 import org.jparsec.Parsers.sequence
 
@@ -77,6 +78,7 @@ object StatementParser {
             .map { BsgStatement.Expression(it) }
 
     val assignmentStatement: Parser<BsgStatement> = sequence(
+        Parsers.SOURCE_LOCATION,
         ExpressionParser.lValueExpression
             .followedBy(Tokens.ws)
             .followedBy(Tokens.equals)
@@ -84,9 +86,10 @@ object StatementParser {
         ExpressionParser.expression
             .followedBy(Tokens.ws)
             .followedBy(Tokens.semicolon)
-    ) { lValue, rValue -> BsgStatement.Assignment(lValue, rValue) }
+    ) { sl, lValue, rValue -> BsgStatement.Assignment(lValue, rValue, sl) }
 
     val declarationAndAssignmentStatement: Parser<BsgStatement> = sequence(
+            Parsers.SOURCE_LOCATION,
             Tokens.varKeyword.followedBy(Tokens.ws),
             fieldNameAndType.map { (varName, type) -> BsgField(varName, type) }.map { BsgStatement.Declaration(it) }
                     .followedBy(Tokens.ws)
@@ -95,9 +98,9 @@ object StatementParser {
             ExpressionParser.expression
                     .followedBy(Tokens.ws)
                     .followedBy(Tokens.semicolon)
-    ) { _, declaration, expression -> BsgStatement.MultipleStatements(listOf(
+    ) { sl, _, declaration, expression -> BsgStatement.MultipleStatements(listOf(
             declaration,
-            BsgStatement.Assignment(BsgLValueExpression.Var(declaration.field.name), expression)
+            BsgStatement.Assignment(BsgLValueExpression.Var(declaration.field.name), expression, sl)
     ))}
 
     val cSourceStatement: Parser<BsgStatement> = sequence(

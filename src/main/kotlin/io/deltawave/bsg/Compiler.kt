@@ -83,7 +83,12 @@ object Compiler {
                     astMetadata = astMeta
             )
 
-            bsgFile.toC(ctx, globalScope)
+            try {
+                bsgFile.toC(ctx, globalScope)
+            } catch(error: Exception) {
+                println("Error while compiling ${bsgFile.cls.name}.")
+                throw error
+            }
 
             outputFiles["${bsgFile.cls.name}.h"] = ctx.h.toString()
             outputFiles["${bsgFile.cls.name}.c"] = ctx.c.toString()

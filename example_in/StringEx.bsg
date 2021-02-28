@@ -30,7 +30,7 @@ class StringEx {
 
     ofInt(i: Int): String {
         var str: String = new String();
-        c 'str->cStr = malloc(12);';
+        c 'str->cStr = allocate(12);';
         c 'snprintf(str->cStr, 12, "%d", i);';
         c 'str->length = (BSG_Int) strlen(str->cStr);';
         str.isLiteral = false;
@@ -39,7 +39,7 @@ class StringEx {
 
     ofOpaque(i: Opaque): String {
         var str: String = new String();
-        c "str->cStr = malloc(12);";
+        c "str->cStr = allocate(12);";
         c 'snprintf(str->cStr, 12, "%p", i);';
         c 'str->length = (BSG_Int) strlen(str->cStr);';
         str.isLiteral = false;

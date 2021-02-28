@@ -1,6 +1,5 @@
 import Animal;
 import String;
-import IO;
 import ToString;
 
 class Cat: Animal, ToString {

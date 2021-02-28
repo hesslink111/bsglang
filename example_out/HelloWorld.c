@@ -25,7 +25,7 @@ void BSG_BaseMethod__HelloWorld_release(struct BSG_AnyBaseInstance* base) {
     base->refCount--;
     if(base->refCount <= 0) {
         struct BSG_BaseInstance__HelloWorld* b = (struct BSG_BaseInstance__HelloWorld*)base;
-        free(base);
+        deallocate(base);
     }
 }
 
@@ -77,7 +77,7 @@ struct BSG_Class__HelloWorld BSG_ClassSingleton__HelloWorld_HelloWorld = {
 
 // Constructor
 struct BSG_Instance__HelloWorld* BSG_Constructor__HelloWorld() {
-    struct BSG_BaseInstance__HelloWorld* baseInstance = malloc(sizeof(struct BSG_BaseInstance__HelloWorld));
+    struct BSG_BaseInstance__HelloWorld* baseInstance = allocate(sizeof(struct BSG_BaseInstance__HelloWorld));
     baseInstance->refCount = 0;
     baseInstance->HelloWorld = (struct BSG_Instance__HelloWorld) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

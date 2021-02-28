@@ -1,0 +1,54 @@
+import String;
+import List;
+import IO;
+
+[Singleton]
+class DailyProgrammer383 {
+    [Main]
+    main(): Void {
+        IO.println("nicole, icolen: ".plus(StringEx.ofBool(isSameNecklace("nicole", "icolen"))));
+        IO.println("nicole, coneli: ".plus(StringEx.ofBool(isSameNecklace("nicole", "coneli"))));
+        IO.println("aabaaaaabaab, aabaabaabaaa: ".plus(StringEx.ofBool(isSameNecklace("aabaaaaabaab", "aabaabaabaaa"))));
+        IO.println("abc, cba: ".plus(StringEx.ofBool(isSameNecklace("abc", "cba"))));
+        IO.println("xxyyy, xxxyy: ".plus(StringEx.ofBool(isSameNecklace("xxyyy", "xxxyy"))));
+        IO.println("xyxxz, xxyxz: ".plus(StringEx.ofBool(isSameNecklace("xyxxz", "xxyxz"))));
+        IO.println("x, x: ".plus(StringEx.ofBool(isSameNecklace("x", "x"))));
+        IO.println("x, xx: ".plus(StringEx.ofBool(isSameNecklace("x", "xx"))));
+        IO.println("x, : ".plus(StringEx.ofBool(isSameNecklace("x", ""))));
+        IO.println(", : ".plus(StringEx.ofBool(isSameNecklace("", ""))));
+    }
+
+    isSameNecklace(n1: String, n2: String): Bool {
+        if(n1.length != n2.length) {
+            return false;
+        }
+
+        if(n1.length == 0) {
+            return true;
+        }
+
+        var i: Int = 0;
+        while(i < n1.length) {
+            if(sameFrom(i, n1, n2)) {
+                return true;
+            }
+            i = i + 1;
+        }
+
+        return false;
+    }
+
+    sameFrom(i: Int, n1: String, n2: String): Bool {
+        var j: Int = i;
+        var k: Int = 0;
+        while(k < n1.length) {
+            if(n1.get(j) != n2.get(k)) {
+                return false;
+            }
+            j = (j + 1) % n1.length;
+            k = k + 1;
+        }
+
+        return true;
+    }
+}

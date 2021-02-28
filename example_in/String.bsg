@@ -1,7 +1,7 @@
 h "#include <string.h>";
 import Hashable;
 
-class String: Hashable {
+class String: Hashable, Equatable {
     var cStr: Opaque;
     var length: Int;
     var isLiteral: Bool;
@@ -53,7 +53,7 @@ class String: Hashable {
         var newString: String = new String();
         newString.length = length + otherString.length;
         newString.isLiteral = false;
-        c 'newString->cStr = malloc((newString->length + 1) * sizeof(char));';
+        c 'newString->cStr = allocate((newString->length + 1) * sizeof(char));';
         c 'strcpy(newString->cStr, this->cStr);';
         c 'strcat(newString->cStr, otherString->cStr);';
         return newString;
@@ -61,7 +61,7 @@ class String: Hashable {
 
     deinit(): Void {
         if(isLiteral == false) {
-            c "free(this->cStr);";
+            c "deallocate(this->cStr);";
         }
     }
 }

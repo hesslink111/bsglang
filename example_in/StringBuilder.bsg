@@ -10,7 +10,7 @@ class StringBuilder {
     var capacity: Int;
 
     init(): Void {
-        c 'this->cStr = malloc(11 * sizeof(char));';
+        c 'this->cStr = allocate(11 * sizeof(char));';
         c '((char*)this->cStr)[0] = 0;';
         length = 0;
         capacity = 10;
@@ -42,10 +42,14 @@ class StringBuilder {
 
     toString(): String {
         var str: String = new String();
-        c 'str->cStr = malloc((this->length + 1) * sizeof(char));';
+        c 'str->cStr = allocate((this->length + 1) * sizeof(char));';
         c 'strcpy(str->cStr, this->cStr);';
         str.length = length;
         str.isLiteral = false;
         return str;
+    }
+
+    deinit(): Void {
+        c 'deallocate(this->cStr);';
     }
 }

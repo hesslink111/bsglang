@@ -1,0 +1,14 @@
+import IO;
+import List;
+import Cat;
+import Map;
+import Dog;
+import Animal;
+
+[Singleton]
+class AllocationTest {
+    [Main]
+    main(): Void {
+         (new Map()).rehash(0);
+    }
+}

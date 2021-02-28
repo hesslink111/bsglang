@@ -92,7 +92,7 @@ class CompilerTest {
                 base->refCount--;
                 if(base->refCount <= 0) {
                     struct BSG_BaseInstance__Empty* b = (struct BSG_BaseInstance__Empty*)base;
-                    free(base);
+                    deallocate(base);
                 }
             }
             
@@ -112,7 +112,7 @@ class CompilerTest {
             
             // Constructor
             struct BSG_Instance__Empty* BSG_Constructor__Empty() {
-                struct BSG_BaseInstance__Empty* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Empty));
+                struct BSG_BaseInstance__Empty* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Empty));
                 baseInstance->refCount = 0;
                 baseInstance->Empty = (struct BSG_Instance__Empty) {
                     .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
@@ -310,7 +310,7 @@ class CompilerTest {
                         base->refCount--;
                         if(base->refCount <= 0) {
                             struct BSG_BaseInstance__Animal* b = (struct BSG_BaseInstance__Animal*)base;
-                            free(base);
+                            deallocate(base);
                         }
                     }
                     
@@ -339,7 +339,7 @@ class CompilerTest {
                     
                     // Constructor
                     struct BSG_Instance__Animal* BSG_Constructor__Animal() {
-                        struct BSG_BaseInstance__Animal* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Animal));
+                        struct BSG_BaseInstance__Animal* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Animal));
                         baseInstance->refCount = 0;
                         baseInstance->Animal = (struct BSG_Instance__Animal) {
                             .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
@@ -432,7 +432,7 @@ class CompilerTest {
                         base->refCount--;
                         if(base->refCount <= 0) {
                             struct BSG_BaseInstance__Cat* b = (struct BSG_BaseInstance__Cat*)base;
-                            free(base);
+                            deallocate(base);
                         }
                     }
                     
@@ -452,7 +452,7 @@ class CompilerTest {
                     
                     // Constructor
                     struct BSG_Instance__Cat* BSG_Constructor__Cat() {
-                        struct BSG_BaseInstance__Cat* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Cat));
+                        struct BSG_BaseInstance__Cat* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Cat));
                         baseInstance->refCount = 0;
                         baseInstance->Cat = (struct BSG_Instance__Cat) {
                             .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
@@ -556,7 +556,7 @@ class CompilerTest {
                         base->refCount--;
                         if(base->refCount <= 0) {
                             struct BSG_BaseInstance__Dog* b = (struct BSG_BaseInstance__Dog*)base;
-                            free(base);
+                            deallocate(base);
                         }
                     }
                     
@@ -585,7 +585,7 @@ class CompilerTest {
                     
                     // Constructor
                     struct BSG_Instance__Dog* BSG_Constructor__Dog() {
-                        struct BSG_BaseInstance__Dog* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Dog));
+                        struct BSG_BaseInstance__Dog* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Dog));
                         baseInstance->refCount = 0;
                         baseInstance->Dog = (struct BSG_Instance__Dog) {
                             .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,
@@ -794,7 +794,7 @@ class CompilerTest {
                         base->refCount--;
                         if(base->refCount <= 0) {
                             struct BSG_BaseInstance__MethodCast* b = (struct BSG_BaseInstance__MethodCast*)base;
-                            free(base);
+                            deallocate(base);
                         }
                     }
                     
@@ -811,7 +811,7 @@ class CompilerTest {
                         BSG_InstancePtr__MethodCast this = (struct BSG_Instance__MethodCast*)_tmp_0;
                         BSG_Int _tmp_1 = 0;
                         BSG_Any _tmp_2;
-                        _tmp_2.type = BSG_Any_ContentType__Primitive;
+                        _tmp_2.type = BSG_Any_ContentType__Int;
                         _tmp_2.content.primitive.IntValue = _tmp_1;
                         if(this) {
                             this->baseInstance->baseClass->release(this->baseInstance);
@@ -904,7 +904,53 @@ class CompilerTest {
                         ((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance->baseClass->retain(((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance);
                         BSG_Any _tmp_8 = originalMethod(((BSG_Instance__BoxedMethod*)this)->method.this);
                         this->baseInstance->baseClass->release(this->baseInstance);
-                        BSG_Int _tmp_9 = _tmp_8.content.primitive.IntValue;
+                        BSG_Int _tmp_9;
+                        switch(_tmp_8.type) {
+                            case BSG_Any_ContentType__Char:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.CharValue;
+                                break;
+                            case BSG_Any_ContentType__Byte:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.ByteValue;
+                                break;
+                            case BSG_Any_ContentType__Short:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.ShortValue;
+                                break;
+                            case BSG_Any_ContentType__Int:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.IntValue;
+                                break;
+                            case BSG_Any_ContentType__Long:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.LongValue;
+                                break;
+                            case BSG_Any_ContentType__UByte:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.UByteValue;
+                                break;
+                            case BSG_Any_ContentType__UShort:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.UShortValue;
+                                break;
+                            case BSG_Any_ContentType__UInt:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.UIntValue;
+                                break;
+                            case BSG_Any_ContentType__ULong:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.ULongValue;
+                                break;
+                            case BSG_Any_ContentType__Float:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.FloatValue;
+                                break;
+                            case BSG_Any_ContentType__Double:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.DoubleValue;
+                                break;
+                            case BSG_Any_ContentType__Bool:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.BoolValue;
+                                break;
+                            case BSG_Any_ContentType__Opaque:
+                                _tmp_9 = (BSG_Int) _tmp_8.content.primitive.OpaqueValue;
+                                break;
+                            case BSG_Any_ContentType__Instance:
+                            case BSG_Any_ContentType__Method:
+                            default:
+                                printf("Attempted to cast from Instance or Method to Primitive.\n");
+                                exit(1);
+                        }
                         return _tmp_9;
                     }
                     #endif
@@ -912,7 +958,7 @@ class CompilerTest {
                     #define BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void
                     BSG_Void BSG_MethodCastShim__｢BSG_Any｣￫BSG_Void_castTo_｢BSG_Int｣￫BSG_Void(BSG_AnyInstance* this,BSG_Int _tmp_13) {
                         BSG_Any _tmp_14;
-                        _tmp_14.type = BSG_Any_ContentType__Primitive;
+                        _tmp_14.type = BSG_Any_ContentType__Int;
                         _tmp_14.content.primitive.IntValue = _tmp_13;
                         BSG_Function__｢BSG_Any｣￫BSG_Void originalMethod = (BSG_Function__｢BSG_Any｣￫BSG_Void) ((BSG_Instance__BoxedMethod*)this)->method.method;
                         ((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance->baseClass->retain(((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance);
@@ -924,13 +970,59 @@ class CompilerTest {
                     #define BSG_MethodCastShimDef_C__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int
                     BSG_Int BSG_MethodCastShim__｢BSG_Any｣￫BSG_Any_castTo_｢BSG_Int｣￫BSG_Int(BSG_AnyInstance* this,BSG_Int _tmp_18) {
                         BSG_Any _tmp_19;
-                        _tmp_19.type = BSG_Any_ContentType__Primitive;
+                        _tmp_19.type = BSG_Any_ContentType__Int;
                         _tmp_19.content.primitive.IntValue = _tmp_18;
                         BSG_Function__｢BSG_Any｣￫BSG_Any originalMethod = (BSG_Function__｢BSG_Any｣￫BSG_Any) ((BSG_Instance__BoxedMethod*)this)->method.method;
                         ((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance->baseClass->retain(((BSG_Instance__BoxedMethod*)this)->method.this->baseInstance);
                         BSG_Any _tmp_20 = originalMethod(((BSG_Instance__BoxedMethod*)this)->method.this,_tmp_19);
                         this->baseInstance->baseClass->release(this->baseInstance);
-                        BSG_Int _tmp_21 = _tmp_20.content.primitive.IntValue;
+                        BSG_Int _tmp_21;
+                        switch(_tmp_20.type) {
+                            case BSG_Any_ContentType__Char:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.CharValue;
+                                break;
+                            case BSG_Any_ContentType__Byte:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.ByteValue;
+                                break;
+                            case BSG_Any_ContentType__Short:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.ShortValue;
+                                break;
+                            case BSG_Any_ContentType__Int:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.IntValue;
+                                break;
+                            case BSG_Any_ContentType__Long:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.LongValue;
+                                break;
+                            case BSG_Any_ContentType__UByte:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.UByteValue;
+                                break;
+                            case BSG_Any_ContentType__UShort:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.UShortValue;
+                                break;
+                            case BSG_Any_ContentType__UInt:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.UIntValue;
+                                break;
+                            case BSG_Any_ContentType__ULong:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.ULongValue;
+                                break;
+                            case BSG_Any_ContentType__Float:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.FloatValue;
+                                break;
+                            case BSG_Any_ContentType__Double:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.DoubleValue;
+                                break;
+                            case BSG_Any_ContentType__Bool:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.BoolValue;
+                                break;
+                            case BSG_Any_ContentType__Opaque:
+                                _tmp_21 = (BSG_Int) _tmp_20.content.primitive.OpaqueValue;
+                                break;
+                            case BSG_Any_ContentType__Instance:
+                            case BSG_Any_ContentType__Method:
+                            default:
+                                printf("Attempted to cast from Instance or Method to Primitive.\n");
+                                exit(1);
+                        }
                         return _tmp_21;
                     }
                     #endif
@@ -945,7 +1037,7 @@ class CompilerTest {
                     
                     // Constructor
                     struct BSG_Instance__MethodCast* BSG_Constructor__MethodCast() {
-                        struct BSG_BaseInstance__MethodCast* baseInstance = malloc(sizeof(struct BSG_BaseInstance__MethodCast));
+                        struct BSG_BaseInstance__MethodCast* baseInstance = allocate(sizeof(struct BSG_BaseInstance__MethodCast));
                         baseInstance->refCount = 0;
                         baseInstance->MethodCast = (struct BSG_Instance__MethodCast) {
                             .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

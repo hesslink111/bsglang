@@ -29,7 +29,7 @@ void BSG_BaseMethod__Hashable_release(struct BSG_AnyBaseInstance* base) {
     base->refCount--;
     if(base->refCount <= 0) {
         struct BSG_BaseInstance__Hashable* b = (struct BSG_BaseInstance__Hashable*)base;
-        free(base);
+        deallocate(base);
     }
 }
 
@@ -72,7 +72,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__Hashable_Equatable = {
 
 // Constructor
 struct BSG_Instance__Hashable* BSG_Constructor__Hashable() {
-    struct BSG_BaseInstance__Hashable* baseInstance = malloc(sizeof(struct BSG_BaseInstance__Hashable));
+    struct BSG_BaseInstance__Hashable* baseInstance = allocate(sizeof(struct BSG_BaseInstance__Hashable));
     baseInstance->refCount = 0;
     baseInstance->Hashable = (struct BSG_Instance__Hashable) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

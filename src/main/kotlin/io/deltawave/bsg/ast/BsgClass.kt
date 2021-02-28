@@ -118,7 +118,7 @@ data class BsgClass(
                     // Release fields.
                     field.type.writeCRelease(fieldVar, ctx.cBaseMethods)
                 }
-        ctx.cBaseMethods.writeln("free(base);")
+        ctx.cBaseMethods.writeln("deallocate(base);")
         ctx.cBaseMethods.writeln_l("}")
         ctx.cBaseMethods.writeln_l("}")
 
@@ -154,7 +154,7 @@ data class BsgClass(
         // Constructor - Function for creating class.
         ctx.hConstructor.writeln("extern struct BSG_Instance__$name* BSG_Constructor__$name();")
         ctx.cConstructor.writeln_r("struct BSG_Instance__$name* BSG_Constructor__$name() {")
-        ctx.cConstructor.writeln("struct BSG_BaseInstance__$name* baseInstance = malloc(sizeof(struct BSG_BaseInstance__$name));")
+        ctx.cConstructor.writeln("struct BSG_BaseInstance__$name* baseInstance = allocate(sizeof(struct BSG_BaseInstance__$name));")
         ctx.cConstructor.writeln("baseInstance->refCount = 0;")
         getSelfAndSuperClasses(ctx).forEach { cls ->
             ctx.cConstructor.writeln_r("baseInstance->${cls.name} = (struct BSG_Instance__${cls.name}) {")
@@ -168,15 +168,19 @@ data class BsgClass(
             cls.fields.values.filter { it.fieldOf.name == cls.name }.forEach { field ->
                 val fieldAccess = "baseInstance->${cls.name}.${field.varName}"
                 // Initialize fields to null.
-                when (field.type) {
-                    is BsgType.Class -> ctx.cConstructor.writeln("$fieldAccess = NULL;")
-                    is BsgType.Method -> ctx.cConstructor.writeln("$fieldAccess.this = NULL;")
-                    is BsgType.Any -> {
-                        ctx.cConstructor.writeln("$fieldAccess.type = BSG_Any_ContentType__Primitive;")
-                        ctx.cConstructor.writeln("$fieldAccess.content.primitive.IntValue = 0;")
+                fun init(type: BsgType) {
+                    when (type) {
+                        is BsgType.Class -> ctx.cConstructor.writeln("$fieldAccess = NULL;")
+                        is BsgType.Method -> ctx.cConstructor.writeln("$fieldAccess.this = NULL;")
+                        is BsgType.Any -> {
+                            ctx.cConstructor.writeln("$fieldAccess.type = BSG_Any_ContentType__Int;")
+                            ctx.cConstructor.writeln("$fieldAccess.content.primitive.IntValue = 0;")
+                        }
+                        is BsgType.Primitive -> {} // No need to initialize.
+                        is BsgType.Generic -> init(type.rawType)
                     }
-                    is BsgType.Primitive -> {} // No need to initialize.
                 }
+                init(field.type)
             }
         }
         // Call init method.

@@ -1,5 +1,4 @@
 h '#include <string.h>';
-import IO;
 import StringEx;
 import System;
 import ToString;
@@ -12,7 +11,7 @@ class List: ToString {
     var capacity: Int;
 
     init(): Void {
-        c "this->arr = malloc(10 * sizeof(struct BSG_Any));";
+        c "this->arr = allocate(10 * sizeof(struct BSG_Any));";
         this.capacity = 10;
         this.size = 0;
     }
@@ -149,6 +148,6 @@ class List: ToString {
 
     deinit(): Void {
         releaseAll();
-        c "free(this->arr);";
+        c "deallocate(this->arr);";
     }
 }

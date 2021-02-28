@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef uint8_t BSG_Char;
 typedef int8_t BSG_Byte;
@@ -80,9 +81,21 @@ union BSG_Any_Content {
 };
 
 enum BSG_Any_ContentType {
-    BSG_Any_ContentType__Instance = 0,
-    BSG_Any_ContentType__Method = 1,
-    BSG_Any_ContentType__Primitive = 2,
+    BSG_Any_ContentType__Instance,
+    BSG_Any_ContentType__Method,
+    BSG_Any_ContentType__Char,
+    BSG_Any_ContentType__Byte,
+    BSG_Any_ContentType__Short,
+    BSG_Any_ContentType__Int,
+    BSG_Any_ContentType__Long,
+    BSG_Any_ContentType__UByte,
+    BSG_Any_ContentType__UShort,
+    BSG_Any_ContentType__UInt,
+    BSG_Any_ContentType__ULong,
+    BSG_Any_ContentType__Float,
+    BSG_Any_ContentType__Double,
+    BSG_Any_ContentType__Bool,
+    BSG_Any_ContentType__Opaque,
 };
 
 struct BSG_Any {
@@ -90,6 +103,12 @@ struct BSG_Any {
     union BSG_Any_Content content;
 };
 typedef struct BSG_Any BSG_Any;
+
+BSG_Bool BSG_Any_Equality(BSG_Any, BSG_Any);
+
+// Debuggable Allocator
+void* allocate(size_t size);
+void deallocate(void* ptr);
 
 // Boxed Method
 struct BSG_Instance__BoxedMethod {

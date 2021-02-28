@@ -1,0 +1,29 @@
+import Equatable;
+import Hashable;
+
+[Singleton]
+class AnyEx {
+    hashOf(any: Any): Int {
+        if(any is Hashable) {
+            return (any as Hashable).hashCode();
+        }
+        if(any is Int) {
+            return any as Int;
+        }
+        var hash: Int = 0;
+        c "if(any.type == BSG_Any_ContentType__Instance && any.content.instance) {";
+        c "hash = 31 * ((int) any.content.instance);";
+        c "} else if(any.type == BSG_Any_ContentType__Method && any.content.method.this) {";
+        c "hash = 31 * ((int) any.content.method.this);";
+        c "hash = 31 * ((int) any.content.method.method);";
+        c "}";
+        return hash;
+    }
+
+    equalityOf(a: Any, b: Any): Bool {
+        if(a is Equatable && b is Equatable) {
+            return (a as Equatable).equals(b as Equatable);
+        }
+        return a == b;
+    }
+}

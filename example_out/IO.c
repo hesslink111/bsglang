@@ -25,7 +25,7 @@ void BSG_BaseMethod__IO_release(struct BSG_AnyBaseInstance* base) {
     base->refCount--;
     if(base->refCount <= 0) {
         struct BSG_BaseInstance__IO* b = (struct BSG_BaseInstance__IO*)base;
-        free(base);
+        deallocate(base);
     }
 }
 
@@ -57,7 +57,7 @@ struct BSG_Class__IO BSG_ClassSingleton__IO_IO = {
 
 // Constructor
 struct BSG_Instance__IO* BSG_Constructor__IO() {
-    struct BSG_BaseInstance__IO* baseInstance = malloc(sizeof(struct BSG_BaseInstance__IO));
+    struct BSG_BaseInstance__IO* baseInstance = allocate(sizeof(struct BSG_BaseInstance__IO));
     baseInstance->refCount = 0;
     baseInstance->IO = (struct BSG_Instance__IO) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

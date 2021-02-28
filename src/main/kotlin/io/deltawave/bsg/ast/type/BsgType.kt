@@ -35,7 +35,71 @@ sealed class BsgType {
             when(toType) {
                 Any -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = $fromVar;")
                 is Class -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.instance->baseInstance->baseClass->cast($fromVar.content.instance->baseInstance, BSG_Type__${toType.name});")
-                is Primitive -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = $fromVar.content.primitive.${toType.name}Value;")
+                is Primitive -> {
+                    // TODO: Function in preamble.c.
+                    cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
+                    cCurrentMethodWriter.writeln_r("switch($fromVar.type) {")
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Char:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.CharValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Byte:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.ByteValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Short:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.ShortValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Int:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.IntValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Long:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.LongValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__UByte:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.UByteValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__UShort:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.UShortValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__UInt:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.UIntValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__ULong:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.ULongValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Float:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.FloatValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Double:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.DoubleValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Bool:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.BoolValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_r("case BSG_Any_ContentType__Opaque:")
+                    cCurrentMethodWriter.writeln("$toVar = (${toType.getCType()}) $fromVar.content.primitive.OpaqueValue;")
+                    cCurrentMethodWriter.writeln("break;")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln("case BSG_Any_ContentType__Instance:")
+                    cCurrentMethodWriter.writeln("case BSG_Any_ContentType__Method:")
+                    cCurrentMethodWriter.writeln_r("default:")
+                    // Throw error
+                    cCurrentMethodWriter.writeln("printf(\"Attempted to cast from Instance or Method to Primitive.\\n\");")
+                    cCurrentMethodWriter.writeln("exit(1);")
+                    cCurrentMethodWriter.indentLeft()
+                    cCurrentMethodWriter.writeln_l("}")
+                }
                 is Method -> cCurrentMethodWriter.writeln("${toType.getCType()} $toVar = (${toType.getCType()}) $fromVar.content.method;")
                 is Generic -> writeCCast(fromVar, toType.rawType, toVar, ctx, cCurrentMethodWriter, hNewMethodWriter, cNewMethodWriter)
             }
@@ -45,7 +109,7 @@ sealed class BsgType {
             return when(isType) {
                 Any -> "BSG_Bool $toVar = true;"
                 is Class -> "BSG_Bool $toVar = $fromVar.type == BSG_Any_ContentType__Instance && $fromVar.content.instance->baseInstance->baseClass->canCast($fromVar.content.instance->baseInstance, BSG_Type__${isType.name});"
-                is Primitive -> error("'Any is PrimitiveType' is not yet supported.")
+                is Primitive -> "BSG_Bool $toVar = true;" // Primitives can all be casted to each other.
                 is Method -> error("'Any is MethodType' is not yet supported.")
                 is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }
@@ -147,7 +211,7 @@ sealed class BsgType {
             when(toType) {
                 Any -> {
                     cCurrentMethodWriter.writeln("${toType.getCType()} $toVar;")
-                    cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__Primitive;")
+                    cCurrentMethodWriter.writeln("$toVar.type = BSG_Any_ContentType__${name};")
                     cCurrentMethodWriter.writeln("$toVar.content.primitive.${name}Value = $fromVar;")
                 }
                 is Class -> error("Cannot cast from Primitive to Class.")
@@ -161,7 +225,7 @@ sealed class BsgType {
             return when(isType) {
                 Any -> "BSG_Bool $toVar = true;"
                 is Class -> error("Primitive type can never be a class.")
-                is Primitive -> error("'PrimitiveType is PrimitiveType' is not yet supported.")
+                is Primitive -> "BSG_Bool $toVar = ${name == isType.name};"
                 is Method -> error("Primitive type can never be a method.")
                 is Generic -> getCInstanceOf(fromVar, isType.rawType, toVar)
             }

@@ -9,15 +9,15 @@ class Set: ToString {
         map = new Map();
     }
 
-    add(value: <E: Hashable>): Void {
+    add(value: <E: Any>): Void {
         map.put(value, value as Any);
     }
 
-    contains(value: <E: Hashable>): Bool {
+    contains(value: <E: Any>): Bool {
         return map.containsKey(value);
     }
 
-    remove(value: <E: Hashable>): Void {
+    remove(value: <E: Any>): Void {
         map.remove(value);
     }
 
@@ -25,7 +25,7 @@ class Set: ToString {
         map.clear();
     }
 
-    values(): List {
+    values(): List<E: <E: Any>> {
         var entries: List = map.entries();
         var vals: List = new List();
 
@@ -41,7 +41,7 @@ class Set: ToString {
     toString(): String {
         var builder: StringBuilder = new StringBuilder()
             .append("Set(");
-        var vals: List = values();
+        var vals: List<E: <E: Any>> = values();
 
         var i: Int = 0;
         while(i < vals.size) {

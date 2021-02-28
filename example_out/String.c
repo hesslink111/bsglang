@@ -37,7 +37,7 @@ void BSG_BaseMethod__String_release(struct BSG_AnyBaseInstance* base) {
         struct BSG_Instance__String* this = &b->String;
         this->class->deinit((BSG_AnyInstance*)this);
         base->refCount--;
-        free(base);
+        deallocate(base);
     }
 }
 
@@ -200,7 +200,7 @@ BSG_InstancePtr__String BSG_Method__String·plus(BSG_AnyInstance* _tmp_43,BSG_In
     BSG_Bool* _tmp_50 = &newString->isLiteral;
     BSG_Bool _tmp_51 = false;
     *_tmp_50 = _tmp_51;
-    newString->cStr = malloc((newString->length + 1) * sizeof(char));
+    newString->cStr = allocate((newString->length + 1) * sizeof(char));
     strcpy(newString->cStr, this->cStr);
     strcat(newString->cStr, otherString->cStr);
     if(this) {
@@ -217,7 +217,7 @@ BSG_Void BSG_Method__String·deinit(BSG_AnyInstance* _tmp_52) {
     BSG_Bool _tmp_54 = false;
     BSG_Bool _tmp_55 = _tmp_53 == _tmp_54;
     if(_tmp_55) {
-        free(this->cStr);
+        deallocate(this->cStr);
     }
     if(this) {
         this->baseInstance->baseClass->release(this->baseInstance);
@@ -241,7 +241,7 @@ struct BSG_Class__Equatable BSG_ClassSingleton__String_Equatable = {
 
 // Constructor
 struct BSG_Instance__String* BSG_Constructor__String() {
-    struct BSG_BaseInstance__String* baseInstance = malloc(sizeof(struct BSG_BaseInstance__String));
+    struct BSG_BaseInstance__String* baseInstance = allocate(sizeof(struct BSG_BaseInstance__String));
     baseInstance->refCount = 0;
     baseInstance->String = (struct BSG_Instance__String) {
         .baseInstance = (struct BSG_AnyBaseInstance*)baseInstance,

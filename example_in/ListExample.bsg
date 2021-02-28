@@ -64,7 +64,7 @@ class ListExample {
     }
 
     stringToAnimal(value: String): Animal {
-        if(value is Equatable && (value as Equatable).equals("Cat" as Equatable)) {
+        if(value is Equatable && (value as Equatable).equals("Cat" as Any)) {
             return new Cat() as Animal;
         }
         return new Dog() as Animal;

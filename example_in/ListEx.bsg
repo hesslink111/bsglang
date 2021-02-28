@@ -1,5 +1,7 @@
 import List;
 import Math;
+import String;
+import Set;
 
 [Singleton]
 class ListEx {
@@ -76,5 +78,25 @@ class ListEx {
             i = i + 1;
         }
         return newList;
+    }
+
+    fromString(str: String): List<E: Char> {
+        var charList: List<E: Char> = new List<E: Char>();
+        var i: Int = 0;
+        while(i < str.length) {
+            charList.add(str.get(i));
+            i = i + 1;
+        }
+        return charList;
+    }
+
+    toSet(list: List<E: <T: Any>>): Set<E: <T: Any>> {
+        var set: Set = new Set();
+        var i: Int = 0;
+        while(i < list.size) {
+            set.add(list.get(i));
+            i = i + 1;
+        }
+        return set;
     }
 }

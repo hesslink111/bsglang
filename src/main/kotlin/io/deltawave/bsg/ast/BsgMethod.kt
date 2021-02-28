@@ -36,8 +36,7 @@ data class BsgMethod(
         }
 
         scope.storeLifetimeAssociation("this", ctx.getUniqueLifetime(), scope.getThisType())
-        arguments.filter { (_, argType) -> argType is BsgType.Class || argType is BsgType.Method || argType is BsgType.Any }
-                .forEach { (argName, argType) ->
+        arguments.forEach { (argName, argType) ->
             scope.storeLifetimeAssociation(argName, ctx.getUniqueLifetime(), argType)
         }
         body.toC(ctx, scope)
