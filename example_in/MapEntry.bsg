@@ -1,4 +1,12 @@
 class MapEntry {
     var key: Any;
     var value: Any;
+
+    getKey(): <K: Any> {
+        return key;
+    }
+
+    getValue(): <V: Any> {
+        return value;
+    }
 }

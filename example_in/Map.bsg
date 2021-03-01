@@ -127,7 +127,7 @@ class Map: ToString {
         init();
     }
 
-    entries(): List {
+    entries(): List<E: MapEntry<K: <K: Any>, V: <V: Any>>> {
         var list: List = new List();
 
         var i: Int = 0;
@@ -148,10 +148,10 @@ class Map: ToString {
         var builder: StringBuilder = new StringBuilder();
         builder.append("Map(");
 
-        var entryList: List = entries();
+        var entryList: List<E:MapEntry<K:<K:Any>,V:<V:Any>>> = entries();
         var i: Int = 0;
         while(i < entryList.size) {
-            var entry: MapEntry = entryList.get(i) as MapEntry;
+            var entry: MapEntry<K:<K:Any>,V:<V:Any>> = entryList.get(i);
             if(i > 0) {
                 builder.append(",");
             }

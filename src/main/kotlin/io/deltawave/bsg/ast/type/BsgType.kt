@@ -304,7 +304,7 @@ sealed class BsgType {
                     toType.getCDefinitions(ctx.astMetadata).forEach { ctx.hMethodTypedefs.writelnNotBlank(it) }
 
                     // Make a declaration for the method shim.
-                    val shimName = "｢${args().joinToString("·")}｣￫${returnType.getCType()}_castTo_｢${toType.args().joinToString("·")}｣￫${toType.returnType.getCType()}"
+                    val shimName = "${ctx.className}_｢${args().joinToString("·")}｣￫${returnType.getCType()}_castTo_｢${toType.args().joinToString("·")}｣￫${toType.returnType.getCType()}"
                     hNewMethodWriter.writeln("#ifndef BSG_MethodCastShimDef_H__$shimName")
                     hNewMethodWriter.writeln("#define BSG_MethodCastShimDef_H__$shimName")
                     hNewMethodWriter.writeln("${toType.returnType.getCType()} BSG_MethodCastShim__$shimName(${toType.argsWithThis().joinToString(",")});")

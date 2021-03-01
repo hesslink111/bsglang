@@ -5,6 +5,7 @@ import io.deltawave.bsg.ast.BsgPostfix
 import io.deltawave.bsg.ast.BsgPostfixExpression
 import io.deltawave.bsg.util.orNull
 import org.jparsec.Parser
+import org.jparsec.Parsers
 import org.jparsec.Parsers.or
 import org.jparsec.Parsers.sequence
 
@@ -26,11 +27,12 @@ object PostfixParser {
         .map { it.orNull() ?: emptyList() }
 
     fun call(exp: Parser<BsgExpression>): Parser<BsgPostfix> = sequence(
+        Parsers.SOURCE_LOCATION,
         Tokens.openParen.followedBy(Tokens.ws),
         callArgs(exp)
             .followedBy(Tokens.ws)
             .followedBy(Tokens.closeParen),
-    ) { _, args -> BsgPostfix.Call(args) }
+    ) { sl, _, args -> BsgPostfix.Call(args, sl) }
 
     fun postfix(exp: Parser<BsgExpression>): Parser<BsgPostfix> = or(
         dot,

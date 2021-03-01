@@ -23,13 +23,15 @@ object PrimaryParser {
             .followedBy(Tokens.ws)
             .followedBy(Tokens.closeParen),
     ) { _, constructorName, typeArgs -> BsgPrimary.Construction(constructorName, typeArgs) }
-    val stringLiteral: Parser<BsgPrimary> = Tokens.stringLiteral.map { BsgPrimary.StringLiteral(it) }
+    val stringLiteral: Parser<BsgPrimary> = Tokens.doubleQStringLiteral.map { BsgPrimary.StringLiteral(it) }
+    val charLiteral: Parser<BsgPrimary> = Tokens.singleQStringLiteral.map { BsgPrimary.CharLiteral(it) }
 
     val primary: Parser<BsgPrimary> = or(
         construction,
         boolLiteral,
         namedVar,
         stringLiteral,
+    charLiteral,
         floatLiteral,
         intLiteral
     )

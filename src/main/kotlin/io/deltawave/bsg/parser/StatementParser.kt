@@ -105,14 +105,14 @@ object StatementParser {
 
     val cSourceStatement: Parser<BsgStatement> = sequence(
         Tokens.cKeyword.followedBy(Tokens.ws),
-        Tokens.stringLiteral
+        or(Tokens.doubleQStringLiteral, Tokens.singleQStringLiteral)
                 .followedBy(Tokens.ws)
                 .followedBy(Tokens.semicolon)
     ) { _, str -> BsgStatement.CSource(str) }
 
     val hSourceStatement: Parser<BsgHeaderStatement> = sequence(
             Tokens.hKeyword.followedBy(Tokens.ws),
-            Tokens.stringLiteral
+            or(Tokens.doubleQStringLiteral, Tokens.singleQStringLiteral)
                     .followedBy(Tokens.ws)
                     .followedBy(Tokens.semicolon)
     ) { _, str -> BsgHeaderStatement.HSource(str) }

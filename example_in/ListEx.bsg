@@ -2,6 +2,7 @@ import List;
 import Math;
 import String;
 import Set;
+import Map;
 
 [Singleton]
 class ListEx {
@@ -98,5 +99,24 @@ class ListEx {
             i = i + 1;
         }
         return set;
+    }
+
+    group(list: List<E:<T:Any>>, by: (<T:Any>)-><K:Any>): Map<K:<K:Any>,V:List<E:<T:Any>>> {
+        var map: Map<K:<K:Any>,V:List<E:<T:Any>>> = new Map<K:<K:Any>,V:List<E:<T:Any>>>();
+        var i: Int = 0;
+        while(i < list.size) {
+            var value: <T:Any> = list.get(i);
+            var entryList: List<E:<T:Any>>;
+            if(map.containsKey(by(value)) == false) {
+                entryList = new List<E:<T:Any>>();
+                map.put(by(value), entryList);
+            }
+            if(map.containsKey(value)) {
+                entryList = map.get(by(value));
+            }
+            entryList.add(value);
+            i = i + 1;
+        }
+        return map;
     }
 }

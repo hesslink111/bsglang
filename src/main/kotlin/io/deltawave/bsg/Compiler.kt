@@ -75,6 +75,7 @@ object Compiler {
 
         filesCompleted.values.forEach { bsgFile ->
             val ctx = ClassContext(
+                    className = bsgFile.cls.name,
                     globalContext = globalContext,
                     mainHIncludes = mainHIncludes,
                     mainCInit = mainCInit,

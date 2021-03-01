@@ -3,6 +3,7 @@ package io.deltawave.bsg.context
 import org.ainslec.picocog.PicoWriter
 
 class ClassContext(
+    val className: String,
     val globalContext: GlobalContext,
     val mainHIncludes: PicoWriter,
     val mainCInit: PicoWriter,

@@ -77,6 +77,21 @@ sealed class BsgPrimary {
         }
     }
 
+    data class CharLiteral(val charContents: String): BsgPrimary() {
+        override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
+            if(charContents.length != 1) {
+                error("Char literal must contain a single character.")
+            }
+            val resultName = ctx.getUniqueVarName()
+            ctx.cMethods.writeln("${getType(ctx, scope).getCType()} $resultName = '$charContents';")
+            return VarLifetime(resultName, null)
+        }
+
+        override fun getType(ctx: ClassContext, scope: BlockScope): BsgType {
+            return BsgType.Primitive("Char")
+        }
+    }
+
     data class BoolLiteral(val bool: String): BsgPrimary() {
         override fun toC(ctx: ClassContext, scope: BlockScope): VarLifetime {
             val resultName = ctx.getUniqueVarName()

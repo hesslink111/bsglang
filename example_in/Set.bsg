@@ -3,14 +3,14 @@ import ToString;
 import StringBuilder;
 
 class Set: ToString {
-    var map: Map;
+    var map: Map<K:<E:Any>,V:<E:Any>>;
 
     init(): Void {
-        map = new Map();
+        map = new Map<K:<E:Any>,V:<E:Any>>();
     }
 
     add(value: <E: Any>): Void {
-        map.put(value, value as Any);
+        map.put(value, value);
     }
 
     contains(value: <E: Any>): Bool {
@@ -26,7 +26,7 @@ class Set: ToString {
     }
 
     values(): List<E: <E: Any>> {
-        var entries: List = map.entries();
+        var entries: List<E:MapEntry<K:<E:Any>,V:<E:Any>>> = map.entries();
         var vals: List = new List();
 
         var i: Int = 0;

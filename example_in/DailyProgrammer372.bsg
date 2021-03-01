@@ -1,0 +1,78 @@
+import String;
+import StringEx;
+import List;
+import ListEx;
+import IO;
+import MapEntry;
+import MapEx;
+
+[Singleton]
+class DailyProgrammer372 {
+    [Main]
+    main(): Void {
+        IO.println("Is Balanced:");
+        IO.println("xxxyyy: ".plus(StringEx.ofBool(isBalanced("xxxyyy"))));
+        IO.println("yyyxxx: ".plus(StringEx.ofBool(isBalanced("yyyxxx"))));
+        IO.println("xxxyyyy: ".plus(StringEx.ofBool(isBalanced("xxxyyyy"))));
+        IO.println("yyxyxxyxxyyyyxxxyxyx: ".plus(StringEx.ofBool(isBalanced("yyxyxxyxxyyyyxxxyxyx"))));
+        IO.println("xyxxxxyyyxyxxyxxyy: ".plus(StringEx.ofBool(isBalanced("xyxxxxyyyxyxxyxxyy"))));
+        IO.println(": ".plus(StringEx.ofBool(isBalanced(""))));
+        IO.println("x: ".plus(StringEx.ofBool(isBalanced("x"))));
+
+        IO.println("Is Balanced Bonus:");
+        IO.println("xxxyyyzzz: ".plus(StringEx.ofBool(isBalancedBonus("xxxyyyzzz"))));
+        IO.println("abccbaabccba: ".plus(StringEx.ofBool(isBalancedBonus("abccbaabccba"))));
+        IO.println("xxxyyyzzzz: ".plus(StringEx.ofBool(isBalancedBonus("xxxyyyzzzz"))));
+        IO.println("abcdefghijklmnopqrstuvwxyz: ".plus(StringEx.ofBool(isBalancedBonus("abcdefghijklmnopqrstuvwxyz"))));
+        IO.println("pqq: ".plus(StringEx.ofBool(isBalancedBonus("pqq"))));
+        IO.println("fdedfdeffeddefeeeefddf: ".plus(StringEx.ofBool(isBalancedBonus("fdedfdeffeddefeeeefddf"))));
+        IO.println("www: ".plus(StringEx.ofBool(isBalancedBonus("www"))));
+        IO.println("x: ".plus(StringEx.ofBool(isBalancedBonus("x"))));
+        IO.println(": ".plus(StringEx.ofBool(isBalancedBonus(""))));
+    }
+
+    // Same #s of x any y Chars.
+    isBalanced(str: String): Bool {
+        var charCounts: Map<K:Char,V:Int> = str
+            |> ListEx.fromString(it)
+            |> ListEx.group<T:Char,K:Char>(it, charToChar)
+            |> MapEx.mapValues<K:Char,V:List<E:Char>,R:Int>(it, getCharCount);
+
+        return (charCounts.containsKey('x') && charCounts.containsKey('y')) && (charCounts.get('x') == charCounts.get('y')) ||
+            (charCounts.containsKey('x') == false) && (charCounts.containsKey('y') == false);
+
+    }
+
+    getCharCount(key: Char, value: List<E:Char>): Int {
+        return value.size;
+    }
+
+    // Same #s of any Char.
+    isBalancedBonus(str: String): Bool {
+        return str
+            |> ListEx.fromString(it)
+            |> ListEx.group<T:Char,K:Char>(it, charToChar)
+            |> it.entries()
+            |> ListEx.map<T:MapEntry<K:Char,V:List<E:Char>>,R:Int>(it, entryToCharCount)
+            |> ListEx.fold<T:Int,R:Int>(it, 0, hasSameCount)
+            |> it >= 0;
+    }
+
+    charToChar(c: Char): Char {
+        return c;
+    }
+
+    entryToCharCount(mapEntry: MapEntry<K: Char, V: List<E: Char>>): Int {
+        return mapEntry.getValue().size;
+    }
+
+    hasSameCount(acc: Int, count: Int): Int {
+        if(acc == 0) {
+            return count;
+        }
+        if(acc > 0 && count == acc) {
+            return acc;
+        }
+        return 0-1;
+    }
+}

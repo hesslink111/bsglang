@@ -1,0 +1,16 @@
+import Map;
+
+[Singleton]
+class MapEx {
+    mapValues(map: Map<K:<K:Any>,V:<V:Any>>, mapper: (<K:Any>,<V:Any>)-><R:Any>): Map<K:<K:Any>,V:<R:Any>> {
+        var e: List<E:MapEntry<K:<K:Any>,V:<V:Any>>> = map.entries();
+        var i: Int = 0;
+        var newMap: Map<K:<K:Any>,V:<V:Any>> = new Map<K:<K:Any>,V:<V:Any>>();
+        while(i < e.size) {
+            var entry: MapEntry<K:<K:Any>,V:<V:Any>> = e.get(i);
+            newMap.put(entry.getKey(), mapper(entry.getKey(), entry.getValue()));
+            i = i + 1;
+        }
+        return newMap;
+    }
+}

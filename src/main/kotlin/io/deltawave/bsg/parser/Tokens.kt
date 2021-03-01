@@ -93,6 +93,8 @@ object Tokens {
     val boolLiteral: Parser<String> = or(Scanners.string("false"), Scanners.string("true")).source()
     val integerLiteral: Parser<String> = Scanners.INTEGER
     val floatLiteral: Parser<String> = Scanners.INTEGER.followedBy(dot).followedBy(Scanners.INTEGER)
-    val stringLiteral: Parser<String> = or(Scanners.DOUBLE_QUOTE_STRING, Scanners.SINGLE_QUOTE_STRING)
+    val doubleQStringLiteral: Parser<String> = Scanners.DOUBLE_QUOTE_STRING
+            .map { it.drop(1).dropLast(1) }
+    val singleQStringLiteral: Parser<String> = Scanners.SINGLE_QUOTE_STRING
             .map { it.drop(1).dropLast(1) }
 }

@@ -2,7 +2,9 @@ package io.deltawave.bsg.ast
 
 import io.deltawave.bsg.ast.type.BsgType
 import io.deltawave.bsg.context.*
+import io.deltawave.bsg.util.parseError
 import io.deltawave.bsg.util.writelnNotBlank
+import org.jparsec.SourceLocation
 
 sealed class BsgExpression {
     data class Cast(val exp: BsgExpression, val toType: BsgType): BsgExpression() {
@@ -357,12 +359,12 @@ sealed class BsgPostfix {
     }
 
     // Need to have the object whose method is being called.
-    data class Call(val args: List<BsgExpression>): BsgPostfix() {
+    data class Call(val args: List<BsgExpression>, val sl: SourceLocation): BsgPostfix() {
         override fun toC(ctx: ClassContext, scope: BlockScope, exp: BsgExpression): VarLifetime {
             val (expVar, _) = exp.toC(ctx, scope) // Method Fat Pointer
             val methodType = exp.getType(ctx, scope)
             if(methodType !is BsgType.Method || methodType.argTypes != args.map { it.getType(ctx, scope) }) {
-                error("Call can only be performed on method where arg and parameter types match - method type: ${methodType}, call args: ${args.map { it.getType(ctx, scope) }}")
+                parseError(sl, "Call can only be performed on method where arg and parameter types match - method type: ${methodType}, call args: ${args.map { it.getType(ctx, scope) }}")
             }
 
             val argVarNames = args.map { it.toC(ctx, scope).varName }

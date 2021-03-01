@@ -46,6 +46,16 @@ class StringEx {
         return str;
     }
 
+    ofChar(value: Char): String {
+        var str: String = new String();
+        c "str->cStr = allocate(2);";
+        c "((char*)str->cStr)[0] = value;";
+        c "((char*)str->cStr)[1] = 0;";
+        str.length = 1;
+        str.isLiteral = false;
+        return str;
+    }
+
     ofAny(value: Any): String {
         if(value is String) {
             return value as String;
