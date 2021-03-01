@@ -13,4 +13,8 @@ class Math {
         }
         return b;
     }
+
+    clamp(a: Int, b: Int, c: Int): Int {
+        return max(b, min(a, c));
+    }
 }

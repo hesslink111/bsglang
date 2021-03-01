@@ -3,10 +3,11 @@ import Math;
 import String;
 import Set;
 import Map;
+import String;
 
 [Singleton]
 class ListEx {
-    map(list: List<E: <T: Any>>, mapper: (<T: Any>)-><R: Any>): List<E: <R: Any>> {
+    map(list: List<E:<T:Any>>, mapper: (<T:Any>)-><R:Any>): List<E:<R:Any>> {
         var newList: List = new List();
         var i: Int = 0;
         while(i < list.size) {
@@ -16,7 +17,7 @@ class ListEx {
         return newList;
     }
 
-    fold(list: List<E: <T: Any>>, initial: <R: Any>, operation: (<R: Any>, <T: Any>)-><R: Any>): <R: Any> {
+    fold(list: List<E:<T:Any>>, initial: <R:Any>, operation: (<R:Any>,<T:Any>)-><R:Any>): <R:Any> {
         var acc: Any = initial;
         var i: Int = 0;
         while(i < list.size) {
@@ -26,7 +27,7 @@ class ListEx {
         return acc;
     }
 
-    sort(list: List<E: <T: Any>>, compare: (<T: Any>, <T: Any>)->Int): List<E: <T: Any>> {
+    sort(list: List<E:<T:Any>>, compare: (<T:Any>, <T:Any>)->Int): List<E:<T:Any>> {
         if(list.size <= 1) {
             return list;
         }
